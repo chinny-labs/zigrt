@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Zigrt lesson practice, dark theme</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+body{margin:0}
+a{color:#F1F4FF}a:hover{color:#6C8CFF}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0E1433; color: #F1F4FF; font-family: 'Nunito', system-ui, sans-serif; display: flex; flex-direction: column; padding: 20px; gap: 16px">
+<div style="display: flex; align-items: center; gap: 12px; height: 44px">
+<a href="S03-HomeDark.dc.html" aria-label="Stop and go home" style="width: 44px; height: 44px; border-radius: 14px; background: #1A2250; display: flex; align-items: center; justify-content: center; color: #F1F4FF"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></a>
+<div role="img" aria-label="Step 2 of 3" style="flex-grow: 1; display: flex; gap: 6px">
+<div style="flex-grow: 1; height: 12px; border-radius: 999px; background: #6C8CFF"></div>
+<div style="flex-grow: 1; height: 12px; border-radius: 999px; background: #FFC533"></div>
+<div style="flex-grow: 1; height: 12px; border-radius: 999px; background: #2A3470"></div>
+</div>
+<span style="font-weight: 800; font-size: 15px">12 XP</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 13px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: #B9C2EE">Adding with regrouping</span>
+<h1 style="margin: 0; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 24px; line-height: 1.2">Add the two numbers.</h1>
+</div>
+<div style="flex-grow: 1; background: #1A2250; border-radius: 24px; display: flex; align-items: center; justify-content: center">
+<div style="display: flex; flex-direction: column; align-items: flex-end; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 64px; line-height: 1.1; letter-spacing: 0.08em">
+<span>47</span>
+<span><span style="color: #6C8CFF; margin-right: 18px">+</span>38</span>
+<div style="align-self: stretch; height: 5px; border-radius: 999px; background: #F1F4FF; margin: 6px 0 12px"></div>
+<div aria-label="Your answer: 85" role="img" style="min-width: 150px; box-sizing: border-box; padding: 2px 14px; border-radius: 16px; background: #FFF3CC; color: #1B2559; box-shadow: inset 0 0 0 3px #FFC533; text-align: right">85</div>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+<sc-for list="{{keys}}" as="k" hint-placeholder-count="12">
+<button type="button" aria-label="{{k.name}}" style="height: 60px; border: 0; border-radius: 18px; background: #1A2250; color: #F1F4FF; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 28px; box-shadow: 0 4px 0 #2A3470; cursor: pointer">{{k.label}}</button>
+</sc-for>
+</div>
+<button type="button" style="height: 64px; border: 0; border-radius: 22px; background: #6C8CFF; color: #0B1233; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 22px; box-shadow: 0 5px 0 #3F5FD6; cursor: pointer; margin-bottom: 5px">Check</button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+const labels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'Clear', '0', 'Del'];
+return { keys: labels.map((l) => ({ label: l, name: l === 'Del' ? 'Delete last digit' : l })) };
+}
+}
+</script>
+</body>
+</html>

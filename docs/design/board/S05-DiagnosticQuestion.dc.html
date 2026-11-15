@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Zigrt, placement check question</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+body{margin:0}
+a{color:#1B2559}a:hover{color:#2F5BEA}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F2F6FF; color: #1B2559; font-family: 'Nunito', system-ui, sans-serif; display: flex; flex-direction: column; padding: 20px; gap: 16px">
+<div style="display: flex; align-items: center; gap: 12px; height: 44px">
+<a href="Main.dc.html" aria-label="Stop for now" style="width: 44px; height: 44px; border-radius: 14px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; color: #1B2559"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></a>
+<div role="img" aria-label="About a third of the way through" style="flex-grow: 1; height: 12px; border-radius: 999px; background: #DCE4FA; overflow: hidden"><div style="width: 34%; height: 100%; border-radius: 999px; background: #2F5BEA"></div></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 13px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: #4A5480">Finding your start</span>
+<h1 style="margin: 0; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 24px; line-height: 1.2">Which sign goes in the middle?</h1>
+</div>
+<div style="flex-grow: 1; background: #FFFFFF; border-radius: 24px; display: flex; align-items: center; justify-content: center; gap: 22px; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 60px; line-height: 1">
+<div role="img" aria-label="three quarters" style="display: flex; flex-direction: column; align-items: center; gap: 8px"><span>3</span><span style="width: 62px; height: 6px; border-radius: 999px; background: #1B2559"></span><span>4</span></div>
+<div aria-hidden="true" style="width: 72px; height: 72px; border-radius: 20px; box-sizing: border-box; border: 4px dashed #2F5BEA; background: #F2F6FF"></div>
+<div role="img" aria-label="two thirds" style="display: flex; flex-direction: column; align-items: center; gap: 8px"><span>2</span><span style="width: 62px; height: 6px; border-radius: 999px; background: #1B2559"></span><span>3</span></div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+<button type="button" aria-label="Less than" style="height: 84px; border: 0; border-radius: 22px; background: #FFFFFF; color: #1B2559; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 44px; box-shadow: 0 5px 0 #DCE4FA; cursor: pointer">&lt;</button>
+<button type="button" aria-label="Equal to" style="height: 84px; border: 0; border-radius: 22px; background: #FFFFFF; color: #1B2559; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 44px; box-shadow: 0 5px 0 #DCE4FA; cursor: pointer">=</button>
+<button type="button" aria-label="Greater than" style="height: 84px; border: 0; border-radius: 22px; background: #FFFFFF; color: #1B2559; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 44px; box-shadow: 0 5px 0 #DCE4FA; cursor: pointer">&gt;</button>
+</div>
+<button type="button" style="height: 60px; border: 0; border-radius: 20px; background: #E4E9F7; color: #1B2559; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 18px; cursor: pointer">I haven't learned this yet</button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

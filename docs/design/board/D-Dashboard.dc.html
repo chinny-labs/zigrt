@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Zigrt, parent dashboard, dark theme</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+body{margin:0}
+a{color:#F1F4FF}a:hover{color:#6C8CFF}
+</style>
+</helmet>
+<div style="width: 390px; height: 900px; box-sizing: border-box; background: #0E1433; color: #F1F4FF; font-family: 'Nunito', system-ui, sans-serif; display: flex; flex-direction: column; padding: 20px 20px 28px; gap: 16px">
+<div style="display: flex; align-items: center; justify-content: space-between; height: 44px">
+<div aria-label="zigrt" role="img" style="display: flex; align-items: flex-end; gap: 1px; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 28px; line-height: 1; color: #6C8CFF; height: 38px">
+<span style="transform: translateY(0px)">z</span><span style="transform: translateY(-3px)">i</span><span style="transform: translateY(-6px)">g</span><span style="transform: translateY(-9px)">r</span><span style="transform: translateY(-12px); color: #FFC533">t</span>
+</div>
+<div style="display: flex; gap: 8px">
+<a href="P6-Notifications.dc.html" aria-label="Notifications, 2 new" style="position: relative; width: 44px; height: 44px; border-radius: 14px; background: #1A2250; display: flex; align-items: center; justify-content: center; color: #F1F4FF"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4zM10 21h4"/></svg><span aria-hidden="true" style="position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; border-radius: 999px; background: #FFC533; color: #1B2559; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center">2</span></a>
+<a href="P5-Household.dc.html" aria-label="Household settings" style="width: 44px; height: 44px; border-radius: 14px; background: #1A2250; display: flex; align-items: center; justify-content: center; color: #F1F4FF"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg></a>
+</div>
+</div>
+<div style="display: flex; align-items: baseline; justify-content: space-between">
+<h1 style="margin: 0; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 28px; line-height: 1.15">This week</h1>
+<span style="font-size: 14px; font-weight: 800; color: #B9C2EE">Mon 9 to Sun 15 Nov</span>
+</div>
+<sc-for list="{{kids}}" as="kid" hint-placeholder-count="3">
+<a href="P3-Student.dc.html" style="text-decoration: none; background: #1A2250; border-radius: 24px; padding: 16px; display: flex; flex-direction: column; gap: 12px; color: #F1F4FF">
+<div style="display: flex; align-items: center; gap: 12px">
+<span aria-hidden="true" style="flex-shrink: 0; width: 48px; height: 48px; border-radius: 999px; background: {{kid.tint}}; color: {{kid.ink}}; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 22px; display: flex; align-items: center; justify-content: center">{{kid.initial}}</span>
+<div style="flex-grow: 1; display: flex; flex-direction: column">
+<span style="font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 20px; line-height: 1.2">{{kid.name}}</span>
+<span style="font-size: 14px; font-weight: 700; color: #B9C2EE">{{kid.where}} · {{kid.last}}</span>
+</div>
+<span style="font-size: 14px; font-weight: 800; white-space: nowrap">{{kid.streak}}</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 14px"><span>{{kid.week}} XP of {{kid.goal}} this week</span><span style="color: #B9C2EE">Today {{kid.today}}</span></div>
+<div aria-hidden="true" style="height: 10px; border-radius: 999px; background: #2A3470; overflow: hidden"><div style="width: {{kid.pct}}; height: 100%; border-radius: 999px; background: #6C8CFF"></div></div>
+</div>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; font-weight: 800">
+<span>{{kid.blocks}}</span>
+<sc-if value="{{kid.stuck}}" hint-placeholder-val="{{false}}"><span style="background: #FFF3CC; color: #1B2559; box-shadow: inset 0 0 0 2px #FFC533; border-radius: 999px; padding: 6px 12px">Stuck on: {{kid.stuck}}</span></sc-if>
+</div>
+</a>
+</sc-for>
+<div style="flex-grow: 1"></div>
+<a href="P4-StudentSettings.dc.html" style="text-decoration: none; height: 56px; border-radius: 20px; background: #1A2250; color: #F1F4FF; font-weight: 800; font-size: 17px; box-shadow: 0 4px 0 #2A3470; display: flex; align-items: center; justify-content: center; margin-bottom: 4px">Add a student</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic {
+renderVals() {
+return { kids: [
+{ name: 'Mika', initial: 'M', tint: '#FFC533', ink: '#1B2559', where: 'Grade 2', last: 'active today', streak: '12 day streak', week: 74, goal: 105, pct: '70%', today: '9 of 15', blocks: '4 new blocks placed', stuck: '' },
+{ name: 'Theo', initial: 'T', tint: '#6C8CFF', ink: '#0B1233', where: 'Grade 4', last: 'active yesterday', streak: '3 day streak', week: 52, goal: 140, pct: '37%', today: '0 of 20', blocks: '1 new block placed', stuck: 'Long division' },
+{ name: 'June', initial: 'J', tint: '#2A3470', ink: '#F1F4FF', where: 'Kindergarten', last: 'active today', streak: '5 day streak', week: 38, goal: 50, pct: '76%', today: '10 of 10', blocks: '3 new blocks placed', stuck: '' }
+] };
+}
+}
+</script>
+</body>
+</html>

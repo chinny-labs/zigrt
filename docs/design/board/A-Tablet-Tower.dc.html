@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Zigrt, my tower on a tablet</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+body{margin:0}
+a{color:#1B2559}a:hover{color:#2F5BEA}
+</style>
+</helmet>
+<div style="width: 1024px; height: 768px; box-sizing: border-box; background: #F2F6FF; color: #1B2559; font-family: 'Nunito', system-ui, sans-serif; display: flex; flex-direction: column; padding: 24px 32px 32px; gap: 20px">
+<div style="display: flex; align-items: center; justify-content: space-between; height: 56px">
+<div aria-label="zigrt" role="img" style="display: flex; align-items: flex-end; gap: 1px; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 36px; line-height: 1; color: #2F5BEA; height: 48px; width: 200px">
+<span style="transform: translateY(0px)">z</span><span style="transform: translateY(-4px)">i</span><span style="transform: translateY(-8px)">g</span><span style="transform: translateY(-12px)">r</span><span style="transform: translateY(-16px); color: #E09A00">t</span>
+</div>
+<nav aria-label="Main" style="display: flex; gap: 6px; background: #FFFFFF; border-radius: 999px; padding: 6px; font-weight: 800; font-size: 16px">
+<a href="A-Tablet-Home.dc.html" style="text-decoration: none; color: #4A5480; border-radius: 999px; padding: 0 24px; height: 44px; display: flex; align-items: center">Home</a>
+<a href="A-Tablet-Tower.dc.html" style="text-decoration: none; color: #4A5480; border-radius: 999px; padding: 0 24px; height: 44px; display: flex; align-items: center">Drills</a>
+<a href="A-Tablet-Tower.dc.html" style="text-decoration: none; background: #2F5BEA; color: #FFFFFF; border-radius: 999px; padding: 0 24px; height: 44px; display: flex; align-items: center">Tower</a>
+</nav>
+<div style="width: 200px; text-align: right; font-size: 16px; font-weight: 800; color: #4A5480">83 blocks placed</div>
+</div>
+<div style="flex-grow: 1; display: flex; gap: 24px">
+<div style="width: 360px; background: #FFFFFF; border-radius: 28px; padding: 22px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px">
+<span style="font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 22px">My tower</span>
+<div role="tablist" aria-label="Tier" style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px">
+<button type="button" role="tab" aria-selected="false" style="width: 34%; height: 56px; border: 0; border-radius: 12px; background: #E4E9F7; color: #4A5480; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px; cursor: pointer">Grade 5</button>
+<button type="button" role="tab" aria-selected="false" style="width: 47%; height: 56px; border: 0; border-radius: 12px; background: #E4E9F7; color: #4A5480; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px; cursor: pointer">Grade 4</button>
+<button type="button" role="tab" aria-selected="false" style="width: 60%; height: 56px; border: 0; border-radius: 12px; background: #E4E9F7; color: #4A5480; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px; cursor: pointer">Grade 3</button>
+<button type="button" role="tab" aria-selected="true" style="width: 73%; height: 60px; border: 0; border-radius: 12px; background: #FFC533; color: #1B2559; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px; box-shadow: 0 0 0 3px #1B2559; cursor: pointer">Grade 2 · 14 of 41</button>
+<button type="button" role="tab" aria-selected="false" style="width: 86%; height: 56px; border: 0; border-radius: 12px; background: #2F5BEA; color: #FFFFFF; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px; cursor: pointer">Grade 1 · all 38</button>
+<button type="button" role="tab" aria-selected="false" style="width: 100%; height: 56px; border: 0; border-radius: 12px; background: #2F5BEA; color: #FFFFFF; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px; box-shadow: inset 0 6px 0 #FFC533; cursor: pointer">Kindergarten · complete</button>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; font-weight: 800; color: #4A5480">
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 14px; height: 14px; border-radius: 4px; background: #2F5BEA"></span>Placed</span>
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 14px; height: 14px; border-radius: 4px; background: #2F5BEA; box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #B87400"></span>Needs mending</span>
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 14px; height: 14px; border-radius: 4px; background: #FFC533"></span>Building</span>
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 14px; height: 14px; border-radius: 4px; background: #FFFFFF; box-shadow: inset 0 0 0 2px #2F5BEA"></span>Ready</span>
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 14px; height: 14px; border-radius: 4px; background: #E4E9F7; box-shadow: inset 0 0 0 1.5px #4A5480"></span>Later</span>
+</div>
+</div>
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; gap: 8px">
+<button type="button" style="height: 48px; padding: 0 20px; border: 0; border-radius: 999px; background: #1B2559; color: #FFFFFF; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 16px; cursor: pointer">Adding</button>
+<button type="button" style="height: 48px; padding: 0 20px; border: 0; border-radius: 999px; background: #FFFFFF; color: #1B2559; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 16px; cursor: pointer">Taking away</button>
+<button type="button" style="height: 48px; padding: 0 20px; border: 0; border-radius: 999px; background: #FFFFFF; color: #1B2559; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 16px; cursor: pointer">Place value</button>
+<button type="button" style="height: 48px; padding: 0 20px; border: 0; border-radius: 999px; background: #FFFFFF; color: #1B2559; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 16px; cursor: pointer">Measuring</button>
+</div>
+<div style="background: #FFFFFF; border-radius: 28px; padding: 18px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px">
+<sc-for list="{{blocks}}" as="b" hint-placeholder-count="12">
+<button type="button" style="height: 76px; padding: 4px 8px; border: 0; border-radius: 14px; background: {{b.bg}}; color: {{b.ink}}; box-shadow: {{b.ring}}; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px; line-height: 1.2; cursor: pointer">{{b.name}}</button>
+</sc-for>
+</div>
+<div style="flex-grow: 1"></div>
+<div style="background: #FFFFFF; border-radius: 24px; padding: 18px 20px; display: flex; align-items: center; gap: 20px; box-shadow: inset 0 0 0 3px #1B2559">
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; align-items: baseline; gap: 12px"><span style="font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 22px">Sums to 20</span><span style="font-size: 15px; font-weight: 800; color: #B87400">Needs mending</span></div>
+<span style="font-size: 15px; font-weight: 700; color: #4A5480">Placed 3 weeks ago · mended 2 times</span>
+</div>
+<a href="A-Tablet-Practice.dc.html" style="text-decoration: none; height: 60px; padding: 0 26px; border-radius: 20px; background: #2F5BEA; color: #FFFFFF; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 20px; box-shadow: 0 5px 0 #1D3FB3; display: flex; align-items: center; white-space: nowrap; margin-bottom: 5px">Mend it now · 4 XP</a>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1024,"height":768}}'>
+class Component extends DCLogic {
+renderVals() {
+const looks = {
+placed: { bg: '#2F5BEA', ink: '#FFFFFF', ring: 'none' },
+mend: { bg: '#2F5BEA', ink: '#FFFFFF', ring: '0 0 0 2px #FFFFFF, 0 0 0 5px #B87400' },
+building: { bg: '#FFC533', ink: '#1B2559', ring: 'none' },
+ready: { bg: '#FFFFFF', ink: '#1B2559', ring: 'inset 0 0 0 3px #2F5BEA' },
+later: { bg: '#E4E9F7', ink: '#4A5480', ring: 'none' }
+};
+const data = [
+['Sums to 10', 'placed'], ['Doubles', 'placed'], ['Sums to 20', 'mend'], ['Add tens', 'placed'],
+['2-digit + 1-digit', 'placed'], ['Add with regrouping', 'building'], ['2-digit + 2-digit', 'ready'], ['Add three numbers', 'ready'],
+['Missing numbers', 'later'], ['Word problems', 'later'], ['Add hundreds', 'later'], ['3-digit + 2-digit', 'later']
+];
+return { blocks: data.map((d) => Object.assign({ name: d[0] }, looks[d[1]])) };
+}
+}
+</script>
+</body>
+</html>

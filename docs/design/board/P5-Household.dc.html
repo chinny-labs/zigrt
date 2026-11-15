@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Zigrt, household settings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+body{margin:0}
+a{color:#1B2559}a:hover{color:#2F5BEA}
+</style>
+</helmet>
+<div style="width: 390px; height: 1060px; box-sizing: border-box; background: #F2F6FF; color: #1B2559; font-family: 'Nunito', system-ui, sans-serif; display: flex; flex-direction: column; padding: 20px 20px 28px; gap: 14px">
+<div style="display: flex; align-items: center; gap: 12px; height: 44px">
+<a href="P2-Dashboard.dc.html" aria-label="Back to the dashboard" style="width: 44px; height: 44px; border-radius: 14px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; color: #1B2559"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+<h1 style="margin: 0; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 24px; line-height: 1.15">Household</h1>
+</div>
+<div style="background: #FFFFFF; border-radius: 24px; padding: 16px 16px 6px; display: flex; flex-direction: column">
+<span style="font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 18px; padding-bottom: 6px">Parents</span>
+<div style="min-height: 54px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 2px solid #F2F6FF"><span style="display: flex; flex-direction: column"><span style="font-weight: 800; font-size: 16px">Sam (you)</span><span style="font-size: 14px; font-weight: 700; color: #4A5480">sam@example.com</span></span><a href="P5-Household.dc.html" style="min-height: 44px; display: flex; align-items: center; font-weight: 800; font-size: 15px; color: #2F5BEA">Change password</a></div>
+<div style="min-height: 54px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 2px solid #F2F6FF"><span style="display: flex; flex-direction: column"><span style="font-weight: 800; font-size: 16px">Alex</span><span style="font-size: 14px; font-weight: 700; color: #4A5480">alex@example.com</span></span></div>
+<a href="P5-Household.dc.html" style="min-height: 50px; display: flex; align-items: center; font-weight: 800; font-size: 15px; color: #2F5BEA; border-top: 2px solid #F2F6FF">Add another parent</a>
+</div>
+<div style="background: #FFFFFF; border-radius: 24px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<span style="font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 18px">Time and email</span>
+<label style="display: flex; flex-direction: column; gap: 6px; font-weight: 800; font-size: 15px">Time zone
+<select style="height: 52px; box-sizing: border-box; padding: 0 12px; border: 0; border-radius: 14px; background: #F2F6FF; box-shadow: inset 0 0 0 2px #4A5480; color: #1B2559; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 17px"><option>America/New_York</option></select>
+</label>
+<label style="min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 12px">
+<span style="display: flex; flex-direction: column"><span style="font-weight: 800; font-size: 15px">Weekly summary email</span><span style="font-size: 14px; font-weight: 700; color: #4A5480">Sunday evening, to both parents</span></span>
+<input type="checkbox" checked style="flex-shrink: 0; width: 26px; height: 26px; accent-color: #2F5BEA">
+</label>
+</div>
+<div style="background: #FFFFFF; border-radius: 24px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 18px">Lessons</span>
+<div style="display: flex; flex-direction: column"><span style="font-weight: 800; font-size: 16px">Arithmetic K-5</span><span style="font-size: 14px; font-weight: 700; color: #4A5480">Content pack [PACK VERSION] · came with this version of Zigrt</span></div>
+<button type="button" style="height: 48px; border: 0; border-radius: 16px; background: #F2F6FF; color: #1B2559; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px; box-shadow: 0 4px 0 #DCE4FA; cursor: pointer">Upload a newer content pack</button>
+</div>
+<div style="background: #FFFFFF; border-radius: 24px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 18px">Backups</span>
+<span style="font-size: 15px; font-weight: 700; color: #4A5480">Last backup today at 03:15. The newest 14 are kept.</span>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding-bottom: 4px">
+<button type="button" style="height: 48px; border: 0; border-radius: 16px; background: #F2F6FF; color: #1B2559; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px; box-shadow: 0 4px 0 #DCE4FA; cursor: pointer">Back up now</button>
+<button type="button" style="height: 48px; border: 0; border-radius: 16px; background: #F2F6FF; color: #1B2559; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px; box-shadow: 0 4px 0 #DCE4FA; cursor: pointer">Export everything</button>
+</div>
+</div>
+<a href="P5-Household.dc.html" style="text-decoration: none; background: #FFFFFF; border-radius: 20px; padding: 0 16px; min-height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 10px; color: #1B2559"><span style="display: flex; flex-direction: column"><span style="font-weight: 800; font-size: 16px">API tokens</span><span style="font-size: 14px; font-weight: 700; color: #4A5480">For scripts and AI tools · 2 in use</span></span><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></a>
+<div style="flex-grow: 1"></div>
+<span style="text-align: center; font-size: 13px; font-weight: 700; color: #4A5480">Zigrt [APP VERSION] · SQLite</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1060}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Zigrt, the centred column on a tablet</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+body{margin:0}
+a{color:#1B2559}a:hover{color:#2F5BEA}
+</style>
+</helmet>
+<div style="width: 1024px; height: 768px; box-sizing: border-box; background: #F2F6FF; color: #1B2559; font-family: 'Nunito', system-ui, sans-serif; display: flex; justify-content: center; padding: 24px 32px 28px">
+<div style="width: 440px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; height: 48px">
+<a href="S01-Who.dc.html" style="text-decoration: none; height: 48px; padding: 0 18px 0 12px; border-radius: 16px; background: #FFFFFF; display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 17px; color: #1B2559"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>Not me</a>
+</div>
+<div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px">
+<span aria-hidden="true" style="width: 76px; height: 76px; border-radius: 999px; background: #FFC533; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 36px; display: flex; align-items: center; justify-content: center">M</span>
+<h1 style="margin: 0; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 28px; line-height: 1.2">Hi Mika. What's your PIN?</h1>
+<div role="img" aria-label="2 of 4 digits entered" style="display: flex; gap: 14px; padding-top: 4px">
+<span style="width: 24px; height: 24px; border-radius: 999px; background: #2F5BEA"></span>
+<span style="width: 24px; height: 24px; border-radius: 999px; background: #2F5BEA"></span>
+<span style="width: 24px; height: 24px; border-radius: 999px; box-sizing: border-box; border: 3px solid #4A5480"></span>
+<span style="width: 24px; height: 24px; border-radius: 999px; box-sizing: border-box; border: 3px solid #4A5480"></span>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+<sc-for list="{{keys}}" as="k" hint-placeholder-count="12">
+<button type="button" aria-label="{{k.name}}" style="height: 76px; border: 0; border-radius: 22px; background: {{k.bg}}; color: #1B2559; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: {{k.size}}; box-shadow: {{k.shadow}}; cursor: pointer">{{k.label}}</button>
+</sc-for>
+</div>
+<p style="margin: 0; text-align: center; font-size: 15px; font-weight: 700; color: #4A5480">Forgot it? Ask a parent to set a new one.</p>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1024,"height":768}}'>
+class Component extends DCLogic {
+renderVals() {
+const labels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'Del'];
+return { keys: labels.map((l) => ({
+label: l,
+name: l === 'Del' ? 'Delete last digit' : (l === '' ? 'No key' : l),
+bg: l === '' ? 'transparent' : '#FFFFFF',
+shadow: l === '' ? 'none' : '0 5px 0 #DCE4FA',
+size: l === 'Del' ? '22px' : '32px'
+})) };
+}
+}
+</script>
+</body>
+</html>

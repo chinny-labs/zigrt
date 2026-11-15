@@ -1,0 +1,502 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-15T12:00:00Z"
+  },
+  "title": "Zigrt Design",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [
+    {
+      "id": "directions",
+      "name": "A · First screens"
+    },
+    {
+      "id": "student",
+      "name": "A · Student screens"
+    },
+    {
+      "id": "parent",
+      "name": "A · Parent screens"
+    },
+    {
+      "id": "wide",
+      "name": "A · Tablet and desktop"
+    },
+    {
+      "id": "dark",
+      "name": "A · Dark theme"
+    }
+  ],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "A · Home",
+      "radius": 28
+    },
+    "A-Practice.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "A · Practice",
+      "radius": 28
+    },
+    "A-Tablet-Home.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1024,
+      "h": 768,
+      "title": "Tablet · Home",
+      "radius": 20,
+      "page": "wide"
+    },
+    "A-Tablet-Practice.dc.html": {
+      "x": 1104,
+      "y": 0,
+      "w": 1024,
+      "h": 768,
+      "title": "Tablet · Practice",
+      "radius": 20,
+      "page": "wide"
+    },
+    "A-Desktop-Home.dc.html": {
+      "x": 2208,
+      "y": 0,
+      "w": 1280,
+      "h": 800,
+      "title": "Desktop · Home",
+      "expand": "fill",
+      "page": "wide"
+    },
+    "S01-Who.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "S1 · Who's learning?",
+      "radius": 28,
+      "page": "student"
+    },
+    "S02-Pin.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "S2 · PIN pad",
+      "radius": 28,
+      "page": "student"
+    },
+    "S04-DiagnosticIntro.dc.html": {
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "S4 · Diagnostic intro",
+      "radius": 28,
+      "page": "student"
+    },
+    "S05-DiagnosticQuestion.dc.html": {
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "S5 · Diagnostic question",
+      "radius": 28,
+      "page": "student"
+    },
+    "S06-LessonExplain.dc.html": {
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "S6 · Lesson explanation",
+      "radius": 28,
+      "page": "student"
+    },
+    "S08a-FeedbackRight.dc.html": {
+      "x": 2350,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "S8 · Feedback, right",
+      "radius": 28,
+      "page": "student"
+    },
+    "S08b-FeedbackWrong.dc.html": {
+      "x": 2820,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "S8 · Feedback, not yet",
+      "radius": 28,
+      "page": "student"
+    },
+    "S09-Complete.dc.html": {
+      "x": 3290,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "S9 · Task complete",
+      "radius": 28,
+      "page": "student"
+    },
+    "S10-Paused.dc.html": {
+      "x": 0,
+      "y": 1100,
+      "w": 390,
+      "h": 844,
+      "title": "S10 · Lesson paused",
+      "radius": 28,
+      "page": "student"
+    },
+    "S11-QuizResults.dc.html": {
+      "x": 470,
+      "y": 1100,
+      "w": 390,
+      "h": 844,
+      "title": "S11 · Quiz results",
+      "radius": 28,
+      "page": "student"
+    },
+    "S12-Tower.dc.html": {
+      "x": 940,
+      "y": 1100,
+      "w": 390,
+      "h": 1040,
+      "title": "S12 · Tower (progress)",
+      "radius": 28,
+      "page": "student"
+    },
+    "S13-DrillBuilder.dc.html": {
+      "x": 1410,
+      "y": 1100,
+      "w": 390,
+      "h": 1000,
+      "title": "S13 · Drill builder",
+      "radius": 28,
+      "page": "student"
+    },
+    "S14-Drill.dc.html": {
+      "x": 1880,
+      "y": 1100,
+      "w": 390,
+      "h": 844,
+      "title": "S14 · Drill",
+      "radius": 28,
+      "page": "student"
+    },
+    "S15-DrillResults.dc.html": {
+      "x": 2350,
+      "y": 1100,
+      "w": 390,
+      "h": 844,
+      "title": "S15 · Drill results",
+      "radius": 28,
+      "page": "student"
+    },
+    "S16-Worksheet.dc.html": {
+      "x": 2820,
+      "y": 1100,
+      "w": 390,
+      "h": 960,
+      "title": "S16 · Worksheet preview",
+      "radius": 28,
+      "page": "student"
+    },
+    "S03-HomeDark.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Dark · Home",
+      "radius": 28,
+      "page": "dark"
+    },
+    "P1-SignIn.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "P1 · Parent sign-in",
+      "radius": 28,
+      "page": "parent"
+    },
+    "P2-Dashboard.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 900,
+      "title": "P2 · Dashboard",
+      "radius": 28,
+      "page": "parent"
+    },
+    "P3-Student.dc.html": {
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 1180,
+      "title": "P3 · One student",
+      "radius": 28,
+      "page": "parent"
+    },
+    "P4-StudentSettings.dc.html": {
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 1060,
+      "title": "P4 · Student settings",
+      "radius": 28,
+      "page": "parent"
+    },
+    "P5-Household.dc.html": {
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 1060,
+      "title": "P5 · Household settings",
+      "radius": 28,
+      "page": "parent"
+    },
+    "P6-Notifications.dc.html": {
+      "x": 2350,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "P6 · Notifications",
+      "radius": 28,
+      "page": "parent"
+    },
+    "S07b-Fraction.dc.html": {
+      "x": 0,
+      "y": 2300,
+      "w": 390,
+      "h": 844,
+      "title": "S7 · Answer: fraction",
+      "radius": 28,
+      "page": "student"
+    },
+    "S07c-Decimal.dc.html": {
+      "x": 470,
+      "y": 2300,
+      "w": 390,
+      "h": 844,
+      "title": "S7 · Answer: decimal",
+      "radius": 28,
+      "page": "student"
+    },
+    "S07d-Remainder.dc.html": {
+      "x": 940,
+      "y": 2300,
+      "w": 390,
+      "h": 844,
+      "title": "S7 · Answer: quotient and remainder",
+      "radius": 28,
+      "page": "student"
+    },
+    "S07e-Choice.dc.html": {
+      "x": 1410,
+      "y": 2300,
+      "w": 390,
+      "h": 844,
+      "title": "S7 · Answer: multiple choice",
+      "radius": 28,
+      "page": "student"
+    },
+    "S13b-TopicPicker.dc.html": {
+      "x": 1880,
+      "y": 2300,
+      "w": 390,
+      "h": 844,
+      "title": "S13 · Drill from my blocks",
+      "radius": 28,
+      "page": "student"
+    },
+    "S12b-Milestones.dc.html": {
+      "x": 2350,
+      "y": 2300,
+      "w": 390,
+      "h": 844,
+      "title": "S12 · Tower milestone states",
+      "radius": 28,
+      "page": "student"
+    },
+    "S09b-Milestone.dc.html": {
+      "x": 2820,
+      "y": 2300,
+      "w": 390,
+      "h": 844,
+      "title": "S9 · Milestone earned",
+      "radius": 28,
+      "page": "student"
+    },
+    "P0-Setup.dc.html": {
+      "x": 0,
+      "y": 1300,
+      "w": 390,
+      "h": 900,
+      "title": "P0 · First-run setup",
+      "radius": 28,
+      "page": "parent"
+    },
+    "P7-ApiTokens.dc.html": {
+      "x": 470,
+      "y": 1300,
+      "w": 390,
+      "h": 980,
+      "title": "P7 · API tokens",
+      "radius": 28,
+      "page": "parent"
+    },
+    "A-Tablet-Tower.dc.html": {
+      "x": 0,
+      "y": 1000,
+      "w": 1024,
+      "h": 768,
+      "title": "Tablet · Tower",
+      "radius": 20,
+      "page": "wide"
+    },
+    "A-Tablet-Feedback.dc.html": {
+      "x": 1104,
+      "y": 1000,
+      "w": 1024,
+      "h": 768,
+      "title": "Tablet · Feedback, not yet",
+      "radius": 20,
+      "page": "wide"
+    },
+    "A-Tablet-Column.dc.html": {
+      "x": 2208,
+      "y": 1000,
+      "w": 1024,
+      "h": 768,
+      "title": "Tablet · Every other screen (centred column)",
+      "radius": 20,
+      "page": "wide"
+    },
+    "A-Desktop-Dashboard.dc.html": {
+      "x": 0,
+      "y": 2000,
+      "w": 1280,
+      "h": 760,
+      "title": "Desktop · Parent dashboard",
+      "expand": "fill",
+      "page": "wide"
+    },
+    "A-Desktop-Student.dc.html": {
+      "x": 1360,
+      "y": 2000,
+      "w": 1280,
+      "h": 900,
+      "title": "Desktop · One student",
+      "expand": "fill",
+      "page": "wide"
+    },
+    "D-Practice.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Dark · Practice",
+      "radius": 28,
+      "page": "dark"
+    },
+    "D-FeedbackWrong.dc.html": {
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Dark · Feedback, not yet",
+      "radius": 28,
+      "page": "dark"
+    },
+    "D-Tower.dc.html": {
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 1040,
+      "title": "Dark · Tower",
+      "radius": 28,
+      "page": "dark"
+    },
+    "D-Dashboard.dc.html": {
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 900,
+      "title": "Dark · Parent dashboard",
+      "radius": 28,
+      "page": "dark"
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "A-Practice.dc.html",
+    "A-Tablet-Home.dc.html",
+    "A-Tablet-Practice.dc.html",
+    "A-Desktop-Home.dc.html",
+    "S01-Who.dc.html",
+    "S02-Pin.dc.html",
+    "S04-DiagnosticIntro.dc.html",
+    "S05-DiagnosticQuestion.dc.html",
+    "S06-LessonExplain.dc.html",
+    "S08a-FeedbackRight.dc.html",
+    "S08b-FeedbackWrong.dc.html",
+    "S09-Complete.dc.html",
+    "S10-Paused.dc.html",
+    "S11-QuizResults.dc.html",
+    "S12-Tower.dc.html",
+    "S13-DrillBuilder.dc.html",
+    "S14-Drill.dc.html",
+    "S15-DrillResults.dc.html",
+    "S16-Worksheet.dc.html",
+    "S03-HomeDark.dc.html",
+    "P1-SignIn.dc.html",
+    "P2-Dashboard.dc.html",
+    "P3-Student.dc.html",
+    "P4-StudentSettings.dc.html",
+    "P5-Household.dc.html",
+    "P6-Notifications.dc.html",
+    "S07b-Fraction.dc.html",
+    "S07c-Decimal.dc.html",
+    "S07d-Remainder.dc.html",
+    "S07e-Choice.dc.html",
+    "S13b-TopicPicker.dc.html",
+    "S12b-Milestones.dc.html",
+    "S09b-Milestone.dc.html",
+    "P0-Setup.dc.html",
+    "P7-ApiTokens.dc.html",
+    "A-Tablet-Tower.dc.html",
+    "A-Tablet-Feedback.dc.html",
+    "A-Tablet-Column.dc.html",
+    "A-Desktop-Dashboard.dc.html",
+    "A-Desktop-Student.dc.html",
+    "D-Practice.dc.html",
+    "D-FeedbackWrong.dc.html",
+    "D-Tower.dc.html",
+    "D-Dashboard.dc.html"
+  ],
+  "notes": {
+    "titleA": {
+      "x": 0,
+      "y": -300,
+      "text": "A · Building blocks",
+      "kind": "title1",
+      "maxW": 860
+    },
+    "noteA": {
+      "x": 0,
+      "y": 900,
+      "w": 860,
+      "text": "Bright and toy-like. White ground, one strong blue, a sunny yellow for what is in progress. Rounded type, chunky blocks, wordmark letters that step upward. Aimed at the youngest climbers.",
+      "color": "blue"
+    }
+  },
+  "designSystems": []
+}

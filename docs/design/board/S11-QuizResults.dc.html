@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Zigrt, quiz results</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+body{margin:0}
+a{color:#1B2559}a:hover{color:#2F5BEA}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F2F6FF; color: #1B2559; font-family: 'Nunito', system-ui, sans-serif; display: flex; flex-direction: column; padding: 28px 20px 28px; gap: 16px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 13px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: #4A5480">Quiz done</span>
+<h1 style="margin: 0; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 28px; line-height: 1.15">6 of 8 held firm.</h1>
+</div>
+<span style="background: #FFC533; font-weight: 800; font-size: 16px; border-radius: 999px; padding: 10px 14px; white-space: nowrap">+11 XP</span>
+</div>
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+<div style="background: {{r.bg}}; box-shadow: {{r.ring}}; border-radius: 16px; padding: 0 14px; height: 56px; display: flex; align-items: center; gap: 12px">
+<span aria-hidden="true" style="flex-shrink: 0; width: 28px; height: 28px; border-radius: 999px; background: {{r.dot}}; color: {{r.dotInk}}; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center">{{r.n}}</span>
+<span style="flex-grow: 1; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 20px">{{r.q}}</span>
+<span style="font-size: 14px; font-weight: 800; color: #4A5480; white-space: nowrap">{{r.note}}</span>
+</div>
+</sc-for>
+</div>
+<p style="margin: 0; font-size: 15px; font-weight: 700; color: #4A5480">Two blocks need mending. They are next on your list.</p>
+<a href="Main.dc.html" style="text-decoration: none; height: 64px; border-radius: 22px; background: #2F5BEA; color: #FFFFFF; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 22px; box-shadow: 0 5px 0 #1D3FB3; display: flex; align-items: center; justify-content: center; margin-bottom: 5px">Back to my tower</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+const data = [
+['9 + 6 = 15', true], ['14 − 8 = 6', true], ['23 + 5 = 28', true], ['40 − 7 = 33', false],
+['6 + 7 = 13', true], ['52 + 30 = 82', true], ['18 − 9 = 9', true], ['35 + 8 = 43', false]
+];
+return { rows: data.map((d, i) => ({
+n: i + 1, q: d[0],
+note: d[1] ? 'You got it' : 'See how',
+bg: d[1] ? '#FFFFFF' : '#FFF3CC',
+ring: d[1] ? 'none' : 'inset 0 0 0 3px #FFC533',
+dot: d[1] ? '#2F5BEA' : '#FFC533',
+dotInk: d[1] ? '#FFFFFF' : '#1B2559'
+})) };
+}
+}
+</script>
+</body>
+</html>
