@@ -1,0 +1,85 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-15T12:00:00Z"
+  },
+  "title": "Zigrt Design",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "A · Home",
+      "radius": 28
+    },
+    "A-Practice.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "A · Practice",
+      "radius": 28
+    },
+    "A-Tablet-Home.dc.html": {
+      "x": 0,
+      "y": 2400,
+      "w": 1024,
+      "h": 768,
+      "title": "A · Tablet home",
+      "radius": 20
+    },
+    "A-Tablet-Practice.dc.html": {
+      "x": 1104,
+      "y": 2400,
+      "w": 1024,
+      "h": 768,
+      "title": "A · Tablet practice",
+      "radius": 20
+    },
+    "A-Desktop-Home.dc.html": {
+      "x": 2208,
+      "y": 2400,
+      "w": 1280,
+      "h": 800,
+      "title": "A · Desktop home",
+      "expand": "fill"
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "A-Practice.dc.html",
+    "A-Tablet-Home.dc.html",
+    "A-Tablet-Practice.dc.html",
+    "A-Desktop-Home.dc.html"
+  ],
+  "notes": {
+    "titleA": {
+      "x": 0,
+      "y": -300,
+      "text": "A · Building blocks",
+      "kind": "title1",
+      "maxW": 860
+    },
+    "noteA": {
+      "x": 0,
+      "y": 900,
+      "w": 860,
+      "text": "Bright and toy-like. White ground, one strong blue, a sunny yellow for what is in progress. Rounded type, chunky blocks, wordmark letters that step upward. Aimed at the youngest climbers.",
+      "color": "blue"
+    },
+    "titleAWide": {
+      "x": 0,
+      "y": 2100,
+      "text": "A · Building blocks on tablet and desktop",
+      "kind": "title1",
+      "maxW": 3488
+    }
+  },
+  "designSystems": []
+}

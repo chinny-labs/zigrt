@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Zigrt lesson practice on a tablet, building blocks</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+body{margin:0}
+a{color:#1B2559}a:hover{color:#2F5BEA}
+</style>
+</helmet>
+<div style="width: 1024px; height: 768px; box-sizing: border-box; background: #F2F6FF; color: #1B2559; font-family: 'Nunito', system-ui, sans-serif; display: flex; flex-direction: column; padding: 24px 32px 32px; gap: 24px">
+<div style="display: flex; align-items: center; gap: 20px; height: 56px">
+<a href="A-Tablet-Home.dc.html" aria-label="Stop and go home" style="width: 56px; height: 56px; border-radius: 18px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; color: #1B2559"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></a>
+<div role="img" aria-label="Step 2 of 3" style="flex-grow: 1; display: flex; gap: 8px">
+<div style="flex-grow: 1; height: 16px; border-radius: 999px; background: #2F5BEA"></div>
+<div style="flex-grow: 1; height: 16px; border-radius: 999px; background: #FFC533"></div>
+<div style="flex-grow: 1; height: 16px; border-radius: 999px; background: #DCE4FA"></div>
+</div>
+<span style="font-weight: 800; font-size: 18px">12 XP</span>
+</div>
+<div style="flex-grow: 1; display: flex; gap: 24px">
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 14px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: #4A5480">Adding with regrouping</span>
+<h1 style="margin: 0; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 32px; line-height: 1.2">Add the two numbers.</h1>
+</div>
+<div style="flex-grow: 1; background: #FFFFFF; border-radius: 28px; display: flex; align-items: center; justify-content: center">
+<div style="display: flex; flex-direction: column; align-items: flex-end; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 104px; line-height: 1.1; letter-spacing: 0.08em">
+<span>47</span>
+<span><span style="color: #2F5BEA; margin-right: 28px">+</span>38</span>
+<div style="align-self: stretch; height: 7px; border-radius: 999px; background: #1B2559; margin: 10px 0 18px"></div>
+<div aria-label="Your answer: 85" role="img" style="min-width: 240px; box-sizing: border-box; padding: 2px 20px; border-radius: 22px; background: #FFF3CC; box-shadow: inset 0 0 0 4px #FFC533; text-align: right">85</div>
+</div>
+</div>
+</div>
+<div style="width: 340px; display: flex; flex-direction: column; justify-content: flex-end; gap: 14px">
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+<sc-for list="{{keys}}" as="k" hint-placeholder-count="12">
+<button type="button" aria-label="{{k.name}}" style="height: 84px; border: 0; border-radius: 22px; background: #FFFFFF; color: #1B2559; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 34px; box-shadow: 0 5px 0 #DCE4FA; cursor: pointer">{{k.label}}</button>
+</sc-for>
+</div>
+<button type="button" style="height: 84px; border: 0; border-radius: 26px; background: #2F5BEA; color: #FFFFFF; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 28px; box-shadow: 0 6px 0 #1D3FB3; cursor: pointer; margin-bottom: 6px">Check</button>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1024,"height":768}}'>
+class Component extends DCLogic {
+renderVals() {
+const labels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'Clear', '0', 'Del'];
+return { keys: labels.map((l) => ({ label: l, name: l === 'Del' ? 'Delete last digit' : l })) };
+}
+}
+</script>
+</body>
+</html>
