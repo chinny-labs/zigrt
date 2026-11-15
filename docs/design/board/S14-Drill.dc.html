@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Zigrt, drill</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+body{margin:0}
+a{color:#1B2559}a:hover{color:#2F5BEA}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F2F6FF; color: #1B2559; font-family: 'Nunito', system-ui, sans-serif; display: flex; flex-direction: column; padding: 20px; gap: 16px">
+<div style="display: flex; align-items: center; gap: 12px; height: 44px">
+<a href="S15-DrillResults.dc.html" aria-label="Stop the drill" style="width: 44px; height: 44px; border-radius: 14px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; color: #1B2559"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></a>
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 5px">
+<span style="font-weight: 800; font-size: 14px">7 of 20</span>
+<div role="img" aria-label="Problem 7 of 20" style="height: 10px; border-radius: 999px; background: #DCE4FA; overflow: hidden"><div style="width: 32%; height: 100%; border-radius: 999px; background: #2F5BEA"></div></div>
+</div>
+<button type="button" aria-label="Sound is on. Turn sound off" aria-pressed="true" style="width: 44px; height: 44px; border: 0; border-radius: 14px; background: #FFFFFF; color: #1B2559; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h4l5 4V6L8 10zM17 9a4 4 0 0 1 0 6"/></svg></button>
+</div>
+<div style="flex-grow: 1; background: #FFFFFF; border-radius: 24px; display: flex; align-items: center; justify-content: center; gap: 14px; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 60px; line-height: 1">
+<span>7</span><span style="color: #2F5BEA">×</span><span>8</span><span>=</span>
+<div aria-label="Your answer: 5, still typing" role="img" style="min-width: 104px; height: 84px; box-sizing: border-box; padding: 0 14px; border-radius: 18px; background: #FFF3CC; box-shadow: inset 0 0 0 3px #FFC533; display: flex; align-items: center; justify-content: flex-end; gap: 4px">5<span style="width: 4px; height: 52px; border-radius: 2px; background: #1B2559"></span></div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+<sc-for list="{{keys}}" as="k" hint-placeholder-count="12">
+<button type="button" aria-label="{{k.name}}" style="height: 60px; border: 0; border-radius: 18px; background: #FFFFFF; color: #1B2559; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 28px; box-shadow: 0 4px 0 #DCE4FA; cursor: pointer">{{k.label}}</button>
+</sc-for>
+</div>
+<button type="button" style="height: 64px; border: 0; border-radius: 22px; background: #2F5BEA; color: #FFFFFF; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 22px; box-shadow: 0 5px 0 #1D3FB3; cursor: pointer; margin-bottom: 5px">Check</button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+const labels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'Clear', '0', 'Del'];
+return { keys: labels.map((l) => ({ label: l, name: l === 'Del' ? 'Delete last digit' : l })) };
+}
+}
+</script>
+</body>
+</html>

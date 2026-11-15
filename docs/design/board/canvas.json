@@ -8,7 +8,20 @@
   "launch": {
     "view": "canvas"
   },
-  "pages": [],
+  "pages": [
+    {
+      "id": "directions",
+      "name": "A · First screens"
+    },
+    {
+      "id": "student",
+      "name": "A · Student screens"
+    },
+    {
+      "id": "parent",
+      "name": "A · Parent screens"
+    }
+  ],
   "boards": {
     "Main.dc.html": {
       "x": 0,
@@ -49,6 +62,204 @@
       "h": 800,
       "title": "A · Desktop home",
       "expand": "fill"
+    },
+    "S01-Who.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "S1 · Who's learning?",
+      "radius": 28,
+      "page": "student"
+    },
+    "S02-Pin.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "S2 · PIN pad",
+      "radius": 28,
+      "page": "student"
+    },
+    "S04-DiagnosticIntro.dc.html": {
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "S4 · Diagnostic intro",
+      "radius": 28,
+      "page": "student"
+    },
+    "S05-DiagnosticQuestion.dc.html": {
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "S5 · Diagnostic question",
+      "radius": 28,
+      "page": "student"
+    },
+    "S06-LessonExplain.dc.html": {
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "S6 · Lesson explanation",
+      "radius": 28,
+      "page": "student"
+    },
+    "S08a-FeedbackRight.dc.html": {
+      "x": 2350,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "S8 · Feedback, right",
+      "radius": 28,
+      "page": "student"
+    },
+    "S08b-FeedbackWrong.dc.html": {
+      "x": 2820,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "S8 · Feedback, not yet",
+      "radius": 28,
+      "page": "student"
+    },
+    "S09-Complete.dc.html": {
+      "x": 3290,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "S9 · Task complete",
+      "radius": 28,
+      "page": "student"
+    },
+    "S10-Paused.dc.html": {
+      "x": 0,
+      "y": 1100,
+      "w": 390,
+      "h": 844,
+      "title": "S10 · Lesson paused",
+      "radius": 28,
+      "page": "student"
+    },
+    "S11-QuizResults.dc.html": {
+      "x": 470,
+      "y": 1100,
+      "w": 390,
+      "h": 844,
+      "title": "S11 · Quiz results",
+      "radius": 28,
+      "page": "student"
+    },
+    "S12-Tower.dc.html": {
+      "x": 940,
+      "y": 1100,
+      "w": 390,
+      "h": 1040,
+      "title": "S12 · Tower (progress)",
+      "radius": 28,
+      "page": "student"
+    },
+    "S13-DrillBuilder.dc.html": {
+      "x": 1410,
+      "y": 1100,
+      "w": 390,
+      "h": 1000,
+      "title": "S13 · Drill builder",
+      "radius": 28,
+      "page": "student"
+    },
+    "S14-Drill.dc.html": {
+      "x": 1880,
+      "y": 1100,
+      "w": 390,
+      "h": 844,
+      "title": "S14 · Drill",
+      "radius": 28,
+      "page": "student"
+    },
+    "S15-DrillResults.dc.html": {
+      "x": 2350,
+      "y": 1100,
+      "w": 390,
+      "h": 844,
+      "title": "S15 · Drill results",
+      "radius": 28,
+      "page": "student"
+    },
+    "S16-Worksheet.dc.html": {
+      "x": 2820,
+      "y": 1100,
+      "w": 390,
+      "h": 960,
+      "title": "S16 · Worksheet preview",
+      "radius": 28,
+      "page": "student"
+    },
+    "S03-HomeDark.dc.html": {
+      "x": 3290,
+      "y": 1100,
+      "w": 390,
+      "h": 844,
+      "title": "S3 · Home, dark theme",
+      "radius": 28,
+      "page": "student"
+    },
+    "P1-SignIn.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "P1 · Parent sign-in",
+      "radius": 28,
+      "page": "parent"
+    },
+    "P2-Dashboard.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 900,
+      "title": "P2 · Dashboard",
+      "radius": 28,
+      "page": "parent"
+    },
+    "P3-Student.dc.html": {
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 1180,
+      "title": "P3 · One student",
+      "radius": 28,
+      "page": "parent"
+    },
+    "P4-StudentSettings.dc.html": {
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 1060,
+      "title": "P4 · Student settings",
+      "radius": 28,
+      "page": "parent"
+    },
+    "P5-Household.dc.html": {
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 1060,
+      "title": "P5 · Household settings",
+      "radius": 28,
+      "page": "parent"
+    },
+    "P6-Notifications.dc.html": {
+      "x": 2350,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "P6 · Notifications",
+      "radius": 28,
+      "page": "parent"
     }
   },
   "order": [
@@ -56,7 +267,29 @@
     "A-Practice.dc.html",
     "A-Tablet-Home.dc.html",
     "A-Tablet-Practice.dc.html",
-    "A-Desktop-Home.dc.html"
+    "A-Desktop-Home.dc.html",
+    "S01-Who.dc.html",
+    "S02-Pin.dc.html",
+    "S04-DiagnosticIntro.dc.html",
+    "S05-DiagnosticQuestion.dc.html",
+    "S06-LessonExplain.dc.html",
+    "S08a-FeedbackRight.dc.html",
+    "S08b-FeedbackWrong.dc.html",
+    "S09-Complete.dc.html",
+    "S10-Paused.dc.html",
+    "S11-QuizResults.dc.html",
+    "S12-Tower.dc.html",
+    "S13-DrillBuilder.dc.html",
+    "S14-Drill.dc.html",
+    "S15-DrillResults.dc.html",
+    "S16-Worksheet.dc.html",
+    "S03-HomeDark.dc.html",
+    "P1-SignIn.dc.html",
+    "P2-Dashboard.dc.html",
+    "P3-Student.dc.html",
+    "P4-StudentSettings.dc.html",
+    "P5-Household.dc.html",
+    "P6-Notifications.dc.html"
   ],
   "notes": {
     "titleA": {

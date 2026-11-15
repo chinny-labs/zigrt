@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Zigrt, placement check introduction</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+body{margin:0}
+a{color:#1B2559}a:hover{color:#2F5BEA}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F2F6FF; color: #1B2559; font-family: 'Nunito', system-ui, sans-serif; display: flex; flex-direction: column; padding: 28px 20px 28px; gap: 22px">
+<div aria-hidden="true" style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding-top: 12px">
+<div style="width: 64px; height: 30px; border-radius: 9px; box-sizing: border-box; border: 3px dashed #4A5480"></div>
+<div style="width: 112px; height: 30px; border-radius: 9px; box-sizing: border-box; border: 3px dashed #4A5480"></div>
+<div style="width: 160px; height: 30px; border-radius: 9px; background: #FFC533"></div>
+<div style="width: 208px; height: 30px; border-radius: 9px; background: #2F5BEA"></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h1 style="margin: 0; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 30px; line-height: 1.15">Let's find where your tower starts.</h1>
+<p style="margin: 0; font-size: 18px; line-height: 1.45; font-weight: 700; color: #4A5480">I'll ask some questions. Then I'll know which blocks you already have.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="background: #FFFFFF; border-radius: 20px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; font-size: 17px; font-weight: 800">
+<svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2F5BEA" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+<span>About 20 minutes. You can stop and come back.</span>
+</div>
+<div style="background: #FFFFFF; border-radius: 20px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; font-size: 17px; font-weight: 800">
+<svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2F5BEA" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>
+<span>It's not a test. Nothing here is marked.</span>
+</div>
+<div style="background: #FFFFFF; border-radius: 20px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; font-size: 17px; font-weight: 800">
+<svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2F5BEA" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9a3 3 0 1 1 4.5 2.6c-.9.5-1.5 1.2-1.5 2.4M12 18v.5"/></svg>
+<span>Not learned it yet? Just say so. That helps.</span>
+</div>
+</div>
+<div style="flex-grow: 1"></div>
+<a href="S05-DiagnosticQuestion.dc.html" style="text-decoration: none; height: 64px; border-radius: 22px; background: #2F5BEA; color: #FFFFFF; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 22px; box-shadow: 0 5px 0 #1D3FB3; display: flex; align-items: center; justify-content: center">Start</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

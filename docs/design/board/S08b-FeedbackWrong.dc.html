@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Zigrt, not quite, here is how</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+body{margin:0}
+a{color:#1B2559}a:hover{color:#2F5BEA}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F2F6FF; color: #1B2559; font-family: 'Nunito', system-ui, sans-serif; display: flex; flex-direction: column; padding: 20px; gap: 14px">
+<div style="display: flex; align-items: center; gap: 12px; height: 44px">
+<a href="Main.dc.html" aria-label="Stop and go home" style="width: 44px; height: 44px; border-radius: 14px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; color: #1B2559"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></a>
+<div role="img" aria-label="Step 2 of 3" style="flex-grow: 1; display: flex; gap: 6px">
+<div style="flex-grow: 1; height: 12px; border-radius: 999px; background: #2F5BEA"></div>
+<div style="flex-grow: 1; height: 12px; border-radius: 999px; background: #FFC533"></div>
+<div style="flex-grow: 1; height: 12px; border-radius: 999px; background: #DCE4FA"></div>
+</div>
+<span style="font-weight: 800; font-size: 15px">12 XP</span>
+</div>
+<div role="status" style="background: #FFF3CC; box-shadow: inset 0 0 0 3px #FFC533; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 4px">
+<span style="font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 24px; line-height: 1.15">Not quite. Let's look together.</span>
+<span style="font-size: 16px; font-weight: 700">You wrote 75. The answer is 85.</span>
+</div>
+<div style="background: #FFFFFF; border-radius: 24px; padding: 16px; display: flex; align-items: center; justify-content: center">
+<div role="img" aria-label="47 plus 38 equals 85, with a 1 carried above the tens" style="display: flex; flex-direction: column; align-items: flex-end; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 48px; line-height: 1.1; letter-spacing: 0.08em">
+<span style="font-size: 22px; color: #B87400; background: #FFF3CC; border-radius: 8px; padding: 0 8px; letter-spacing: 0; margin-right: 37px">1</span>
+<span>47</span>
+<span><span style="color: #2F5BEA; margin-right: 16px">+</span>38</span>
+<div style="align-self: stretch; height: 5px; border-radius: 999px; background: #1B2559; margin: 6px 0 8px"></div>
+<span style="color: #2F5BEA">85</span>
+</div>
+</div>
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px">
+<div style="background: #FFFFFF; border-radius: 18px; padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start; font-size: 16px; font-weight: 700; line-height: 1.35">
+<span style="flex-shrink: 0; width: 28px; height: 28px; border-radius: 999px; background: #2F5BEA; color: #FFFFFF; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center">1</span>
+<span>Add the ones. 7 + 8 = 15. Write 5. Carry the 1.</span>
+</div>
+<div style="background: #FFF3CC; box-shadow: inset 0 0 0 3px #FFC533; border-radius: 18px; padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start; font-size: 16px; font-weight: 800; line-height: 1.35">
+<span style="flex-shrink: 0; width: 28px; height: 28px; border-radius: 999px; background: #FFC533; color: #1B2559; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center">2</span>
+<span>Add the tens, and the 1 you carried. 4 + 3 + 1 = 8. This is the step to watch.</span>
+</div>
+<div style="background: #FFFFFF; border-radius: 18px; padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start; font-size: 16px; font-weight: 700; line-height: 1.35">
+<span style="flex-shrink: 0; width: 28px; height: 28px; border-radius: 999px; background: #2F5BEA; color: #FFFFFF; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center">3</span>
+<span>So 47 + 38 = 85.</span>
+</div>
+</div>
+<a href="A-Practice.dc.html" style="text-decoration: none; height: 64px; border-radius: 22px; background: #2F5BEA; color: #FFFFFF; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 22px; box-shadow: 0 5px 0 #1D3FB3; display: flex; align-items: center; justify-content: center; margin-bottom: 5px">Try another one</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
