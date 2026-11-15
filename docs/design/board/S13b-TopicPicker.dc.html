@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Zigrt, make a drill from my blocks</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+body{margin:0}
+a{color:#1B2559}a:hover{color:#2F5BEA}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F2F6FF; color: #1B2559; font-family: 'Nunito', system-ui, sans-serif; display: flex; flex-direction: column; padding: 20px 20px 28px; gap: 14px">
+<div style="display: flex; align-items: center; gap: 12px; height: 44px">
+<a href="S13-DrillBuilder.dc.html" aria-label="Back to the drill builder" style="width: 44px; height: 44px; border-radius: 14px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; color: #1B2559"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+<h1 style="margin: 0; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 24px; line-height: 1.15">Pick your blocks</h1>
+</div>
+<p style="margin: 0; font-size: 16px; font-weight: 700; color: #4A5480">Choose blocks you have placed. The drill mixes them.</p>
+<div style="display: flex; gap: 6px; overflow: hidden">
+<button type="button" aria-pressed="true" style="height: 44px; padding: 0 16px; border: 0; border-radius: 999px; background: #1B2559; color: #FFFFFF; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px; white-space: nowrap; cursor: pointer">Adding</button>
+<button type="button" aria-pressed="false" style="height: 44px; padding: 0 16px; border: 0; border-radius: 999px; background: #FFFFFF; color: #1B2559; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px; white-space: nowrap; cursor: pointer">Taking away</button>
+<button type="button" aria-pressed="false" style="height: 44px; padding: 0 16px; border: 0; border-radius: 999px; background: #FFFFFF; color: #1B2559; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px; white-space: nowrap; cursor: pointer">Place value</button>
+</div>
+<div style="background: #FFFFFF; border-radius: 24px; padding: 14px; display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{blocks}}" as="b" hint-placeholder-count="5">
+<button type="button" aria-pressed="{{b.pressed}}" style="min-height: 60px; padding: 0 14px; border: 0; border-radius: 14px; background: {{b.bg}}; color: {{b.ink}}; display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 16px; cursor: pointer">
+<span style="display: flex; flex-direction: column"><span>{{b.name}}</span><span style="font-size: 13px; font-weight: 700; color: {{b.sub}}">{{b.note}}</span></span>
+<span aria-hidden="true" style="flex-shrink: 0; width: 28px; height: 28px; border-radius: 8px; background: {{b.tick}}; box-shadow: {{b.ring}}; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{b.tickInk}}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l5 5 9-10"/></svg></span>
+</button>
+</sc-for>
+</div>
+<p style="margin: 0; font-size: 14px; font-weight: 700; color: #4A5480">Blocks you are still building or have not reached are not listed.</p>
+<div style="flex-grow: 1"></div>
+<fieldset style="margin: 0; padding: 0; border: 0">
+<legend style="padding: 0 0 8px; font-weight: 800; font-size: 16px">How many?</legend>
+<div style="background: #FFFFFF; border-radius: 18px; padding: 6px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px">
+<button type="button" aria-pressed="true" style="height: 44px; border: 0; border-radius: 13px; background: #2F5BEA; color: #FFFFFF; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 20px; cursor: pointer">10</button>
+<button type="button" aria-pressed="false" style="height: 44px; border: 0; border-radius: 13px; background: transparent; color: #1B2559; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 20px; cursor: pointer">20</button>
+<button type="button" aria-pressed="false" style="height: 44px; border: 0; border-radius: 13px; background: transparent; color: #1B2559; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 20px; cursor: pointer">30</button>
+<button type="button" aria-pressed="false" style="height: 44px; border: 0; border-radius: 13px; background: transparent; color: #1B2559; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 20px; cursor: pointer">50</button>
+</div>
+</fieldset>
+<a href="S14-Drill.dc.html" style="text-decoration: none; height: 64px; border-radius: 22px; background: #2F5BEA; color: #FFFFFF; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 22px; box-shadow: 0 5px 0 #1D3FB3; display: flex; align-items: center; justify-content: center; margin-bottom: 5px">Start with 3 blocks</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+const data = [
+['Sums to 10', 'Placed 2 months ago', true],
+['Doubles', 'Placed 7 weeks ago', false],
+['Sums to 20', 'Needs mending', true],
+['Add tens', 'Placed 3 weeks ago', false],
+['2-digit + 1-digit', 'Placed last week', true]
+];
+return { blocks: data.map((d) => ({
+name: d[0], note: d[1], pressed: String(d[2]),
+bg: d[2] ? '#2F5BEA' : '#F2F6FF', ink: d[2] ? '#FFFFFF' : '#1B2559',
+sub: d[2] ? '#DCE4FA' : '#4A5480',
+tick: d[2] ? '#FFC533' : '#FFFFFF', tickInk: d[2] ? '#1B2559' : '#FFFFFF',
+ring: d[2] ? 'none' : 'inset 0 0 0 2px #4A5480'
+})) };
+}
+}
+</script>
+</body>
+</html>

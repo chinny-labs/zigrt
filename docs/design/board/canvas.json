@@ -20,6 +20,14 @@
     {
       "id": "parent",
       "name": "A · Parent screens"
+    },
+    {
+      "id": "wide",
+      "name": "A · Tablet and desktop"
+    },
+    {
+      "id": "dark",
+      "name": "A · Dark theme"
     }
   ],
   "boards": {
@@ -41,27 +49,30 @@
     },
     "A-Tablet-Home.dc.html": {
       "x": 0,
-      "y": 2400,
+      "y": 0,
       "w": 1024,
       "h": 768,
-      "title": "A · Tablet home",
-      "radius": 20
+      "title": "Tablet · Home",
+      "radius": 20,
+      "page": "wide"
     },
     "A-Tablet-Practice.dc.html": {
       "x": 1104,
-      "y": 2400,
+      "y": 0,
       "w": 1024,
       "h": 768,
-      "title": "A · Tablet practice",
-      "radius": 20
+      "title": "Tablet · Practice",
+      "radius": 20,
+      "page": "wide"
     },
     "A-Desktop-Home.dc.html": {
       "x": 2208,
-      "y": 2400,
+      "y": 0,
       "w": 1280,
       "h": 800,
-      "title": "A · Desktop home",
-      "expand": "fill"
+      "title": "Desktop · Home",
+      "expand": "fill",
+      "page": "wide"
     },
     "S01-Who.dc.html": {
       "x": 0,
@@ -199,13 +210,13 @@
       "page": "student"
     },
     "S03-HomeDark.dc.html": {
-      "x": 3290,
-      "y": 1100,
+      "x": 0,
+      "y": 0,
       "w": 390,
       "h": 844,
-      "title": "S3 · Home, dark theme",
+      "title": "Dark · Home",
       "radius": 28,
-      "page": "student"
+      "page": "dark"
     },
     "P1-SignIn.dc.html": {
       "x": 0,
@@ -260,6 +271,168 @@
       "title": "P6 · Notifications",
       "radius": 28,
       "page": "parent"
+    },
+    "S07b-Fraction.dc.html": {
+      "x": 0,
+      "y": 2300,
+      "w": 390,
+      "h": 844,
+      "title": "S7 · Answer: fraction",
+      "radius": 28,
+      "page": "student"
+    },
+    "S07c-Decimal.dc.html": {
+      "x": 470,
+      "y": 2300,
+      "w": 390,
+      "h": 844,
+      "title": "S7 · Answer: decimal",
+      "radius": 28,
+      "page": "student"
+    },
+    "S07d-Remainder.dc.html": {
+      "x": 940,
+      "y": 2300,
+      "w": 390,
+      "h": 844,
+      "title": "S7 · Answer: quotient and remainder",
+      "radius": 28,
+      "page": "student"
+    },
+    "S07e-Choice.dc.html": {
+      "x": 1410,
+      "y": 2300,
+      "w": 390,
+      "h": 844,
+      "title": "S7 · Answer: multiple choice",
+      "radius": 28,
+      "page": "student"
+    },
+    "S13b-TopicPicker.dc.html": {
+      "x": 1880,
+      "y": 2300,
+      "w": 390,
+      "h": 844,
+      "title": "S13 · Drill from my blocks",
+      "radius": 28,
+      "page": "student"
+    },
+    "S12b-Milestones.dc.html": {
+      "x": 2350,
+      "y": 2300,
+      "w": 390,
+      "h": 844,
+      "title": "S12 · Tower milestone states",
+      "radius": 28,
+      "page": "student"
+    },
+    "S09b-Milestone.dc.html": {
+      "x": 2820,
+      "y": 2300,
+      "w": 390,
+      "h": 844,
+      "title": "S9 · Milestone earned",
+      "radius": 28,
+      "page": "student"
+    },
+    "P0-Setup.dc.html": {
+      "x": 0,
+      "y": 1300,
+      "w": 390,
+      "h": 900,
+      "title": "P0 · First-run setup",
+      "radius": 28,
+      "page": "parent"
+    },
+    "P7-ApiTokens.dc.html": {
+      "x": 470,
+      "y": 1300,
+      "w": 390,
+      "h": 980,
+      "title": "P7 · API tokens",
+      "radius": 28,
+      "page": "parent"
+    },
+    "A-Tablet-Tower.dc.html": {
+      "x": 0,
+      "y": 1000,
+      "w": 1024,
+      "h": 768,
+      "title": "Tablet · Tower",
+      "radius": 20,
+      "page": "wide"
+    },
+    "A-Tablet-Feedback.dc.html": {
+      "x": 1104,
+      "y": 1000,
+      "w": 1024,
+      "h": 768,
+      "title": "Tablet · Feedback, not yet",
+      "radius": 20,
+      "page": "wide"
+    },
+    "A-Tablet-Column.dc.html": {
+      "x": 2208,
+      "y": 1000,
+      "w": 1024,
+      "h": 768,
+      "title": "Tablet · Every other screen (centred column)",
+      "radius": 20,
+      "page": "wide"
+    },
+    "A-Desktop-Dashboard.dc.html": {
+      "x": 0,
+      "y": 2000,
+      "w": 1280,
+      "h": 760,
+      "title": "Desktop · Parent dashboard",
+      "expand": "fill",
+      "page": "wide"
+    },
+    "A-Desktop-Student.dc.html": {
+      "x": 1360,
+      "y": 2000,
+      "w": 1280,
+      "h": 900,
+      "title": "Desktop · One student",
+      "expand": "fill",
+      "page": "wide"
+    },
+    "D-Practice.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Dark · Practice",
+      "radius": 28,
+      "page": "dark"
+    },
+    "D-FeedbackWrong.dc.html": {
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Dark · Feedback, not yet",
+      "radius": 28,
+      "page": "dark"
+    },
+    "D-Tower.dc.html": {
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 1040,
+      "title": "Dark · Tower",
+      "radius": 28,
+      "page": "dark"
+    },
+    "D-Dashboard.dc.html": {
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 900,
+      "title": "Dark · Parent dashboard",
+      "radius": 28,
+      "page": "dark"
     }
   },
   "order": [
@@ -289,7 +462,25 @@
     "P3-Student.dc.html",
     "P4-StudentSettings.dc.html",
     "P5-Household.dc.html",
-    "P6-Notifications.dc.html"
+    "P6-Notifications.dc.html",
+    "S07b-Fraction.dc.html",
+    "S07c-Decimal.dc.html",
+    "S07d-Remainder.dc.html",
+    "S07e-Choice.dc.html",
+    "S13b-TopicPicker.dc.html",
+    "S12b-Milestones.dc.html",
+    "S09b-Milestone.dc.html",
+    "P0-Setup.dc.html",
+    "P7-ApiTokens.dc.html",
+    "A-Tablet-Tower.dc.html",
+    "A-Tablet-Feedback.dc.html",
+    "A-Tablet-Column.dc.html",
+    "A-Desktop-Dashboard.dc.html",
+    "A-Desktop-Student.dc.html",
+    "D-Practice.dc.html",
+    "D-FeedbackWrong.dc.html",
+    "D-Tower.dc.html",
+    "D-Dashboard.dc.html"
   ],
   "notes": {
     "titleA": {
@@ -305,13 +496,6 @@
       "w": 860,
       "text": "Bright and toy-like. White ground, one strong blue, a sunny yellow for what is in progress. Rounded type, chunky blocks, wordmark letters that step upward. Aimed at the youngest climbers.",
       "color": "blue"
-    },
-    "titleAWide": {
-      "x": 0,
-      "y": 2100,
-      "text": "A · Building blocks on tablet and desktop",
-      "kind": "title1",
-      "maxW": 3488
     }
   },
   "designSystems": []
