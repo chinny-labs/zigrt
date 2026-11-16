@@ -1,0 +1,24 @@
+{{define "main"}}
+<div class="column">
+  <h1>Hi {{.User.DisplayName}}. Ready to climb?</h1>
+  {{template "flash" .}}
+  <section class="card stack-sm" aria-labelledby="tower-h">
+    <div class="row-between">
+      <h2 id="tower-h">Your tower</h2>
+      <span class="muted">0 blocks placed</span>
+    </div>
+    <div class="tower" role="img" aria-label="An empty tower with six tiers still to come">
+      <div class="tier tier-idle tier-w1">5</div>
+      <div class="tier tier-idle tier-w2">Grade 4</div>
+      <div class="tier tier-idle tier-w3">Grade 3</div>
+      <div class="tier tier-idle tier-w4">Grade 2</div>
+      <div class="tier tier-idle tier-w5">Grade 1</div>
+      <div class="tier tier-idle tier-w6">Kindergarten</div>
+    </div>
+  </section>
+  <div class="alert alert-warn stack-sm">
+    <strong>Nothing to climb yet.</strong>
+    <span>Lessons are not part of this version of Zigrt. They are coming.</span>
+  </div>
+</div>
+{{end}}

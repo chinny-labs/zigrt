@@ -1,0 +1,24 @@
+{{define "main"}}
+<div class="column column-center">
+  <span class="wordmark wordmark-lg" role="img" aria-label="Zigrt">{{template "wordmark"}}</span>
+  <h1>Who's climbing today?</h1>
+  {{template "flash" .}}
+  {{if .D}}
+  <div class="tiles">
+    {{range .D}}
+    <a class="tile" href="/pin/{{.ID}}">
+      {{template "avatar" .}}
+      <span class="tile-name">{{.DisplayName}}</span>
+    </a>
+    {{end}}
+  </div>
+  {{else}}
+  <div class="card stack-sm">
+    <strong>No students yet</strong>
+    <span class="muted">A parent can sign in and add the first one.</span>
+  </div>
+  {{end}}
+  <div class="grow"></div>
+  <a class="quiet-link" href="/parent/login">Parent sign-in</a>
+</div>
+{{end}}

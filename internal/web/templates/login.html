@@ -1,0 +1,27 @@
+{{define "main"}}
+<div class="column">
+  <span class="wordmark" role="img" aria-label="Zigrt">{{template "wordmark"}}</span>
+  <div class="stack-sm">
+    <h1>Parent sign-in</h1>
+    <p class="muted">See how everyone is climbing and change settings.</p>
+  </div>
+  {{template "flash" .}}
+  <form method="post" action="/parent/login" class="stack">
+    {{template "csrf" .}}
+    <input type="hidden" name="next" value="{{.D}}">
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" value="{{.Val "email"}}" required autofocus autocomplete="username" autocapitalize="none" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" required autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" type="submit">Sign in</button>
+  </form>
+  <div class="card stack-sm">
+    <strong>Forgot your password?</strong>
+    <span class="muted">Whoever runs the server can set a new one with <code>zigrt reset-password</code>.</span>
+  </div>
+</div>
+{{end}}

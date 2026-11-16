@@ -1,0 +1,37 @@
+{{define "main"}}
+<div class="column">
+  <span class="wordmark" role="img" aria-label="Zigrt">{{template "wordmark"}}</span>
+  <div class="stack-sm">
+    <h1>Welcome. Let's set up.</h1>
+    <p class="muted">This makes the first parent account. You add students next.</p>
+  </div>
+  {{template "flash" .}}
+  <form method="post" action="/setup" class="stack" autocomplete="off">
+    {{template "csrf" .}}
+    <div class="field">
+      <label for="setup_token">Setup token</label>
+      <input id="setup_token" name="setup_token" required autocomplete="off" spellcheck="false" autocapitalize="none" placeholder="From the server log">
+      <span class="hint">Zigrt printed it once when it first started. Search the log for "setup token".</span>
+    </div>
+    <div class="field">
+      <label for="display_name">Your name</label>
+      <input id="display_name" name="display_name" value="{{.Val "display_name"}}" required maxlength="40" autocomplete="name">
+    </div>
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" value="{{.Val "email"}}" required autocomplete="username" autocapitalize="none" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" required minlength="12" autocomplete="new-password">
+      <span class="hint">At least 12 characters.</span>
+    </div>
+    <div class="field">
+      <label for="timezone">Time zone</label>
+      <input id="timezone" name="timezone" value="{{.Val "timezone"}}" required spellcheck="false" autocapitalize="none">
+      <span class="hint">A name like America/New_York. Days and streaks roll over at midnight here.</span>
+    </div>
+    <button class="btn btn-primary" type="submit">Create my account</button>
+  </form>
+</div>
+{{end}}

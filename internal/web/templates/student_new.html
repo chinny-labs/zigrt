@@ -1,0 +1,19 @@
+{{define "main"}}
+<div class="column">
+  <h1>Add a student</h1>
+  {{template "flash" .}}
+  <form method="post" action="/parent/students" class="stack" autocomplete="off">
+    {{template "csrf" .}}
+    <div class="field">
+      <label for="display_name">Name</label>
+      <input id="display_name" name="display_name" value="{{.Val "display_name"}}" required maxlength="40" autofocus>
+    </div>
+    <div class="field">
+      <label for="pin">PIN</label>
+      <input id="pin" name="pin" inputmode="numeric" pattern="[0-9]*" minlength="4" maxlength="6" required autocomplete="off">
+      <span class="hint">4 to 6 digits. They type it on a big number pad to sign in.</span>
+    </div>
+    <button class="btn btn-primary" type="submit">Add student</button>
+  </form>
+</div>
+{{end}}

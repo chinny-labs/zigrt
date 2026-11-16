@@ -1,0 +1,23 @@
+{{define "main"}}
+<div class="column column-wide">
+  <h1>Everyone</h1>
+  {{template "flash" .}}
+  {{range .D}}
+  <a class="card person" href="/parent/students/{{.ID}}">
+    {{template "avatar" .User}}
+    <span class="person-text">
+      <span class="person-name">{{.DisplayName}}</span>
+      <span class="muted">Daily goal {{.Settings.DailyXPGoal}} XP</span>
+    </span>
+    {{if .Locked}}<span class="pill pill-warn">Locked</span>{{end}}
+    {{template "i-next"}}
+  </a>
+  {{else}}
+  <div class="card stack-sm">
+    <strong>No students yet</strong>
+    <span class="muted">Add one to get started. Each student signs in with their own PIN.</span>
+  </div>
+  {{end}}
+  <a class="btn btn-secondary" href="/parent/students/new">Add a student</a>
+</div>
+{{end}}
