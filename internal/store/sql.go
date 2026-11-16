@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -288,7 +289,12 @@ func (x queries) UpdateUser(ctx context.Context, u User) error {
 func (x queries) DeleteUser(ctx context.Context, id string) error {
 	// Spelled out rather than left to ON DELETE CASCADE, so it also holds on a
 	// connection where SQLite's foreign keys happen to be off.
+	if _, err := x.exec(ctx, `DELETE FROM drill_results WHERE student_id = ?
+		OR drill_id IN (SELECT id FROM drills WHERE owner_id = ?)`, id, id); err != nil {
+		return err
+	}
 	for _, q := range []string{
+		`DELETE FROM drills WHERE owner_id = ?`,
 		`DELETE FROM sessions WHERE user_id = ?`,
 		`DELETE FROM auth_attempts WHERE user_id = ?`,
 		`DELETE FROM student_settings WHERE user_id = ?`,
@@ -383,6 +389,76 @@ func (x queries) PutStudentSettings(ctx context.Context, s StudentSettings) erro
 			rest_days = excluded.rest_days, fluency_enabled = excluded.fluency_enabled`,
 		s.UserID, nul(s.CourseID), s.DailyXPGoal, s.RestDays, s.FluencyEnabled)
 	return err
+}
+
+// --- drills -----------------------------------------------------------------
+
+const drillCols = `id, owner_id, kind, title, settings, seed, problems, created_at`
+
+func scanDrill(sc interface{ Scan(...any) error }) (Drill, error) {
+	var d Drill
+	var settings, seed, problems string
+	if err := sc.Scan(&d.ID, &d.OwnerID, &d.Kind, &d.Title, &settings, &seed, &problems, rtime{&d.CreatedAt}); err != nil {
+		return d, err
+	}
+	n, err := strconv.ParseUint(seed, 10, 64)
+	if err != nil {
+		return d, fmt.Errorf("drill %s: bad seed %q", d.ID, seed)
+	}
+	d.Settings, d.Seed, d.Problems = []byte(settings), n, []byte(problems)
+	return d, nil
+}
+
+func (x queries) GetDrill(ctx context.Context, id string) (Drill, error) {
+	d, err := scanDrill(x.row(ctx, `SELECT `+drillCols+` FROM drills WHERE id = ?`, id))
+	return d, notFound(err)
+}
+
+func (x queries) ListDrills(ctx context.Context, ownerID string, limit int) ([]Drill, error) {
+	q := `SELECT ` + drillCols + ` FROM drills WHERE owner_id = ? ORDER BY created_at DESC, id DESC`
+	if limit > 0 {
+		q += fmt.Sprintf(` LIMIT %d`, limit)
+	}
+	rows, err := x.rows(ctx, q, ownerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []Drill
+	for rows.Next() {
+		d, err := scanDrill(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, d)
+	}
+	return out, rows.Err()
+}
+
+func (x queries) CreateDrill(ctx context.Context, d Drill) error {
+	_, err := x.exec(ctx, `INSERT INTO drills (`+drillCols+`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+		d.ID, d.OwnerID, d.Kind, d.Title, string(d.Settings), strconv.FormatUint(d.Seed, 10), string(d.Problems), x.t(d.CreatedAt))
+	return err
+}
+
+func (x queries) GetDrillResult(ctx context.Context, drillID string) (DrillResult, error) {
+	r := DrillResult{DrillID: drillID}
+	var answers string
+	err := x.row(ctx, `SELECT student_id, correct, total, duration_ms, answers, finished_at FROM drill_results WHERE drill_id = ?`, drillID).
+		Scan(&r.StudentID, &r.Correct, &r.Total, &r.DurationMS, &answers, rtime{&r.FinishedAt})
+	r.Answers = []byte(answers)
+	return r, notFound(err)
+}
+
+func (x queries) InsertDrillResult(ctx context.Context, r DrillResult) (bool, error) {
+	res, err := x.exec(ctx, `INSERT INTO drill_results (drill_id, student_id, correct, total, duration_ms, answers, finished_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (drill_id) DO NOTHING`,
+		r.DrillID, r.StudentID, r.Correct, r.Total, r.DurationMS, string(r.Answers), x.t(r.FinishedAt))
+	if err != nil {
+		return false, err
+	}
+	n, err := res.RowsAffected()
+	return n == 1, err
 }
 
 // --- audit ------------------------------------------------------------------

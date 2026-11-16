@@ -54,6 +54,11 @@ type Reader interface {
 
 	GetStudentSettings(ctx context.Context, userID string) (StudentSettings, error)
 
+	GetDrill(ctx context.Context, id string) (Drill, error)
+	// ListDrills lists an owner's sets, newest first.
+	ListDrills(ctx context.Context, ownerID string, limit int) ([]Drill, error)
+	GetDrillResult(ctx context.Context, drillID string) (DrillResult, error)
+
 	// ListAudit lists entries newest first; targetID "" matches every target.
 	ListAudit(ctx context.Context, targetID string, limit int) ([]AuditEntry, error)
 }
@@ -80,6 +85,11 @@ type Writer interface {
 	ClearAuthAttempts(ctx context.Context, userID string) error
 
 	PutStudentSettings(ctx context.Context, s StudentSettings) error
+
+	CreateDrill(ctx context.Context, d Drill) error
+	// InsertDrillResult reports false, with no error, when the drill already
+	// has a result: the first one wins.
+	InsertDrillResult(ctx context.Context, r DrillResult) (bool, error)
 
 	InsertAudit(ctx context.Context, a AuditEntry) error
 }

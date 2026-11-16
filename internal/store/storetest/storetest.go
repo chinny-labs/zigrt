@@ -6,11 +6,14 @@ package storetest
 import (
 	"context"
 	"errors"
+	"reflect"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/chinny-labs/zigrt/internal/auth"
+	"github.com/chinny-labs/zigrt/internal/drill"
 	"github.com/chinny-labs/zigrt/internal/service"
 	"github.com/chinny-labs/zigrt/internal/store"
 )
@@ -83,6 +86,8 @@ func Run(t *testing.T, open Opener) {
 		"DeleteUser":     testDeleteUser,
 		"SettingsUpsert": testSettingsUpsert,
 		"TimeRoundTrip":  testTimeRoundTrip,
+		"Drills":         testDrills,
+		"DrillAccess":    testDrillAccess,
 	} {
 		t.Run(name, func(t *testing.T) { fn(t, open) })
 	}
@@ -407,5 +412,174 @@ func testTimeRoundTrip(t *testing.T, open Opener) {
 	got, err := f.Store.GetStudentSettings(ctx, f.Mika.ID)
 	if err != nil || got != s {
 		t.Fatalf("settings %+v, %v", got, err)
+	}
+}
+
+// rightAnswers answers every problem correctly, except the indexes in wrong.
+func rightAnswers(ps []drill.Problem, wrong ...int) []service.Answer {
+	out := make([]service.Answer, len(ps))
+	for i, p := range ps {
+		out[i] = service.Answer{Main: strconv.Itoa(p.Answer()), MS: 1500}
+		if p.AsksRemainder() {
+			out[i].Rem = strconv.Itoa(p.Rem)
+		}
+	}
+	for _, i := range wrong {
+		out[i].Main = strconv.Itoa(ps[i].Answer() + 1)
+	}
+	return out
+}
+
+func testDrills(t *testing.T, open Opener) {
+	ctx := context.Background()
+	f := NewFixture(t, open)
+	f.Svc.Seed = func() uint64 { return 1<<63 + 12345 } // a seed too big for a signed column
+	set := drill.Default()
+	div := set.Ops[drill.Div]
+	div.On, div.Remainders = true, true
+	set.Ops[drill.Div] = div
+	set.Count = 10
+
+	var ue *service.UserError
+	if _, err := f.Svc.CreateDrill(ctx, f.Mika, store.KindDrill, drill.Settings{}, ""); !errors.As(err, &ue) {
+		t.Fatalf("empty settings: %v", err)
+	}
+	d, err := f.Svc.CreateDrill(ctx, f.Mika, store.KindDrill, set, "")
+	must(t, err)
+	if len(d.Problems) != 10 || d.Title != service.DefaultDrillTitle || d.Result != nil {
+		t.Fatalf("new drill %+v", d)
+	}
+	// It reads back exactly as written, big seed included.
+	got, err := f.Svc.Drill(ctx, f.Mika, d.ID)
+	must(t, err)
+	if got.Seed != 1<<63+12345 || !reflect.DeepEqual(got.Problems, d.Problems) || !reflect.DeepEqual(got.Settings, d.Settings) {
+		t.Fatalf("round trip: %+v", got)
+	}
+	if !got.CreatedAt.Equal(f.Clock.Now()) {
+		t.Fatalf("created_at %v", got.CreatedAt)
+	}
+
+	// The server marks the answers itself: two wrong, and the last two not reached.
+	answers := rightAnswers(d.Problems, 1, 4)[:8]
+	f.Clock.Advance(3 * time.Minute)
+	done, err := f.Svc.FinishDrill(ctx, f.Mika, d.ID, answers, 95*time.Second)
+	must(t, err)
+	r := done.Result
+	if r == nil || r.Correct != 6 || r.Total != 10 || r.DurationMS != 95000 || len(r.Answers) != 8 || !r.FinishedAt.Equal(f.Clock.Now()) {
+		t.Fatalf("result %+v", r)
+	}
+	if r.Answers[1].Correct || !r.Answers[0].Correct {
+		t.Fatalf("marking %+v", r.Answers)
+	}
+	misses := done.Misses()
+	if len(misses) != 4 || misses[0].Problem != d.Problems[1] || misses[0].Given == "" || misses[3].Given != "" {
+		t.Fatalf("misses %+v", misses)
+	}
+	// Finishing again changes nothing.
+	again, err := f.Svc.FinishDrill(ctx, f.Mika, d.ID, rightAnswers(d.Problems), time.Second)
+	must(t, err)
+	if again.Result.Correct != 6 || again.Result.DurationMS != 95000 {
+		t.Fatalf("second finish overwrote the first: %+v", again.Result)
+	}
+
+	// "Drill just these" is a new drill holding exactly the misses.
+	retry, err := f.Svc.RetryMisses(ctx, f.Mika, d.ID)
+	must(t, err)
+	if len(retry.Problems) != 4 || retry.Problems[0] != d.Problems[1] || retry.ID == d.ID || retry.Result != nil {
+		t.Fatalf("retry %+v", retry)
+	}
+	perfect, err := f.Svc.FinishDrill(ctx, f.Mika, retry.ID, rightAnswers(retry.Problems), time.Second)
+	must(t, err)
+	if perfect.Result.Correct != 4 {
+		t.Fatalf("retry result %+v", perfect.Result)
+	}
+	if _, err := f.Svc.RetryMisses(ctx, f.Mika, retry.ID); !errors.Is(err, service.ErrNoMisses) {
+		t.Fatalf("retry with no misses: %v", err)
+	}
+
+	// A new version keeps the settings and changes the problems.
+	f.Svc.Seed = func() uint64 { return 99 }
+	v2, err := f.Svc.NewVersion(ctx, f.Mika, d.ID)
+	must(t, err)
+	if !reflect.DeepEqual(v2.Settings, d.Settings) || reflect.DeepEqual(v2.Problems, d.Problems) || v2.Kind != store.KindDrill {
+		t.Fatalf("new version %+v", v2)
+	}
+
+	// History is newest first, and the builder starts from the last settings.
+	recent, err := f.Svc.RecentDrills(ctx, f.Mika, 10)
+	must(t, err)
+	if len(recent) != 3 {
+		t.Fatalf("recent %+v", recent)
+	}
+	byID := map[string]service.DrillSummary{}
+	for _, s := range recent {
+		byID[s.ID] = s
+	}
+	if s := byID[d.ID]; !s.Finished || s.Correct != 6 || s.Total != 10 || s.About == "" {
+		t.Fatalf("summary %+v", s)
+	}
+	if byID[v2.ID].Finished {
+		t.Fatal("an unfinished drill is listed as finished")
+	}
+	last, err := f.Svc.LastDrillSettings(ctx, f.Mika)
+	must(t, err)
+	if !last.Ops[drill.Div].On || !last.Ops[drill.Div].Remainders {
+		t.Fatalf("last settings %+v", last)
+	}
+	if def, err := f.Svc.LastDrillSettings(ctx, f.Theo); err != nil || !reflect.DeepEqual(def, drill.Default()) {
+		t.Fatalf("first-time settings %+v, %v", def, err)
+	}
+}
+
+func testDrillAccess(t *testing.T, open Opener) {
+	ctx := context.Background()
+	f := NewFixture(t, open)
+	set := drill.Default()
+	d, err := f.Svc.CreateDrill(ctx, f.Mika, store.KindDrill, set, "Mine")
+	must(t, err)
+	// Another student can't see or finish it; a parent can see it.
+	if _, err := f.Svc.Drill(ctx, f.Theo, d.ID); !errors.Is(err, service.ErrNotFound) {
+		t.Fatalf("another student read it: %v", err)
+	}
+	if _, err := f.Svc.FinishDrill(ctx, f.Theo, d.ID, nil, 0); !errors.Is(err, service.ErrNotFound) {
+		t.Fatalf("another student finished it: %v", err)
+	}
+	if _, err := f.Svc.Drill(ctx, f.Sam, d.ID); err != nil {
+		t.Fatalf("parent can't read it: %v", err)
+	}
+	// A parent can look but not answer for the student.
+	if _, err := f.Svc.FinishDrill(ctx, f.Sam, d.ID, nil, 0); !errors.Is(err, service.ErrForbidden) {
+		t.Fatalf("parent finished a student's drill: %v", err)
+	}
+	if _, err := f.Svc.Drill(ctx, f.Mika, "no-such-id"); !errors.Is(err, service.ErrNotFound) {
+		t.Fatalf("unknown drill: %v", err)
+	}
+	// Parents make worksheets, not on-screen drills; a worksheet can't be finished.
+	var ue *service.UserError
+	if _, err := f.Svc.CreateDrill(ctx, f.Sam, store.KindDrill, set, ""); !errors.As(err, &ue) {
+		t.Fatalf("parent made a drill: %v", err)
+	}
+	ws, err := f.Svc.CreateDrill(ctx, f.Sam, store.KindWorksheet, set, "  Friday sheet ")
+	must(t, err)
+	if ws.Title != "Friday sheet" || ws.Kind != store.KindWorksheet {
+		t.Fatalf("worksheet %+v", ws)
+	}
+	mine, err := f.Svc.CreateDrill(ctx, f.Mika, store.KindWorksheet, set, "")
+	must(t, err)
+	if _, err := f.Svc.FinishDrill(ctx, f.Mika, mine.ID, nil, 0); !errors.Is(err, service.ErrForbidden) {
+		t.Fatalf("finished a worksheet: %v", err)
+	}
+	// Deleting a student takes their drills and results with them.
+	_, err = f.Svc.FinishDrill(ctx, f.Mika, d.ID, rightAnswers(d.Problems), time.Second)
+	must(t, err)
+	must(t, f.Store.Tx(ctx, "", func(tx store.Tx) error { return tx.DeleteUser(ctx, f.Mika.ID) }))
+	if _, err := f.Store.GetDrill(ctx, d.ID); !errors.Is(err, store.ErrNotFound) {
+		t.Fatalf("drill outlived its owner: %v", err)
+	}
+	if _, err := f.Store.GetDrillResult(ctx, d.ID); !errors.Is(err, store.ErrNotFound) {
+		t.Fatalf("result outlived its owner: %v", err)
+	}
+	if _, err := f.Store.GetDrill(ctx, ws.ID); err != nil {
+		t.Fatalf("the parent's worksheet was deleted too: %v", err)
 	}
 }

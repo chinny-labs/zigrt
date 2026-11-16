@@ -36,3 +36,23 @@
   });
   draw();
 })();
+
+// Worksheet page: a Print button, and options that apply as soon as they
+// are ticked. Without this script the Update button and the browser's own
+// Print command do the same jobs.
+(function () {
+  "use strict";
+  var print = document.querySelector("[data-print]");
+  if (print) {
+    print.hidden = false;
+    var hint = document.querySelector("[data-print-hint]");
+    if (hint) hint.hidden = true;
+    print.addEventListener("click", function () { window.print(); });
+  }
+  var form = document.querySelector("form[data-autosubmit]");
+  if (form) {
+    var button = form.querySelector("[data-autosubmit-button]");
+    if (button) button.hidden = true;
+    form.addEventListener("change", function () { form.submit(); });
+  }
+})();

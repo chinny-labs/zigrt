@@ -8,7 +8,8 @@
 <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/static/app.css">
 <script src="/static/app.js" defer></script>
-</head>
+{{if .Script}}<script src="/static/{{.Script}}" defer></script>
+{{end}}</head>
 <body class="shell-{{if .Shell}}{{.Shell}}{{else}}bare{{end}}">
 <div class="page">
 {{if eq .Shell "parent"}}
@@ -26,6 +27,12 @@
 <main id="main">
 {{template "main" .}}
 </main>
+{{if eq .Shell "student"}}
+<nav class="tabbar" aria-label="Main">
+  <a href="/"{{if eq .Nav "home"}} aria-current="page"{{end}}>{{template "i-home"}}Home</a>
+  <a href="/drills"{{if eq .Nav "drills"}} aria-current="page"{{end}}>{{template "i-drills"}}Drills</a>
+</nav>
+{{end}}
 <footer class="foot"><a href="{{.SourceURL}}">Zigrt {{.Version}}</a> · AGPL-3.0</footer>
 </div>
 </body>

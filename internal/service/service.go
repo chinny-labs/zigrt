@@ -21,6 +21,8 @@ type Service struct {
 	Store store.Store
 	Now   func() time.Time
 	Log   *slog.Logger
+	// Seed supplies the seed for a new problem set; nil means random.
+	Seed func() uint64
 }
 
 // New wires a service to a store. A nil logger discards.
