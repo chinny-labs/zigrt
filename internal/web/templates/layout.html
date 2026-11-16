@@ -1,0 +1,33 @@
+{{define "layout"}}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{.Title}} · Zigrt</title>
+<meta name="theme-color" content="#2F5BEA">
+<link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/app.css">
+<script src="/static/app.js" defer></script>
+</head>
+<body class="shell-{{if .Shell}}{{.Shell}}{{else}}bare{{end}}">
+<div class="page">
+{{if eq .Shell "parent"}}
+  <header class="topbar">
+    <a class="wordmark wordmark-sm" href="/parent" aria-label="Zigrt, everyone">{{template "wordmark"}}</a>
+    <form method="post" action="/logout">{{template "csrf" .}}<button class="chip" type="submit">Sign out</button></form>
+  </header>
+{{else if eq .Shell "student"}}
+  <header class="topbar">
+    <span class="wordmark wordmark-sm" role="img" aria-label="Zigrt">{{template "wordmark"}}</span>
+    <form method="post" action="/logout">{{template "csrf" .}}<button class="chip" type="submit">I'm done</button></form>
+  </header>
+{{end}}
+{{if .Back}}<div class="backrow"><a class="chip chip-back" href="{{.Back}}">{{template "i-back"}}{{.BackLabel}}</a></div>{{end}}
+<main id="main">
+{{template "main" .}}
+</main>
+<footer class="foot"><a href="{{.SourceURL}}">Zigrt {{.Version}}</a> · AGPL-3.0</footer>
+</div>
+</body>
+</html>
+{{end}}

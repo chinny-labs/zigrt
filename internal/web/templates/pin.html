@@ -1,0 +1,34 @@
+{{define "main"}}
+<div class="column column-center">
+  <div class="grow pin-head">
+    <span class="avatar avatar-lg {{tone .D.Student.Avatar}}" aria-hidden="true">{{.D.Student.Initial}}</span>
+    {{if .D.Locked}}
+    <h1>This is locked, {{.D.Student.DisplayName}}.</h1>
+    <p class="muted">Too many wrong tries. Ask a parent to unlock it.</p>
+    {{else}}
+    <h1>Hi {{.D.Student.DisplayName}}. What's your PIN?</h1>
+    <div class="dots" data-pin-dots aria-hidden="true" hidden>
+      {{range seq .D.MaxLen}}<span></span>{{end}}
+    </div>
+    {{end}}
+    {{template "flash" .}}
+  </div>
+  {{if not .D.Locked}}
+  <form method="post" action="/pin/{{.D.Student.ID}}" class="stack pin-form" data-pin-form autocomplete="off">
+    {{template "csrf" .}}
+    <div class="field" data-pin-field>
+      <label for="pin">PIN</label>
+      <input id="pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]*" minlength="4" maxlength="{{.D.MaxLen}}" required autofocus autocomplete="off">
+    </div>
+    <div class="pad" data-pin-pad hidden>
+      {{range digits}}<button type="button" class="key" data-key="{{.}}">{{.}}</button>{{end}}
+      <span></span>
+      <button type="button" class="key" data-key="0">0</button>
+      <button type="button" class="key key-word" data-key="del" aria-label="Delete last digit">Del</button>
+    </div>
+    <button class="btn btn-primary" type="submit">Go</button>
+  </form>
+  <p class="muted center">Forgot it? Ask a parent to set a new one.</p>
+  {{end}}
+</div>
+{{end}}

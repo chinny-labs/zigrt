@@ -1,0 +1,14 @@
+{{define "wordmark"}}<span aria-hidden="true">z</span><span aria-hidden="true">i</span><span aria-hidden="true">g</span><span aria-hidden="true">r</span><span aria-hidden="true">t</span>{{end}}
+
+{{define "csrf"}}<input type="hidden" name="_csrf" value="{{.CSRF}}">{{end}}
+
+{{define "flash"}}
+{{if .Flash}}<div class="alert {{if eq .FlashKind "err"}}alert-warn{{else}}alert-ok{{end}}" role="status">{{.Flash}}</div>{{end}}
+{{if .Err}}<div class="alert alert-warn" role="alert">{{.Err}}</div>{{end}}
+{{end}}
+
+{{define "i-back"}}<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>{{end}}
+
+{{define "i-next"}}<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>{{end}}
+
+{{define "avatar"}}<span class="avatar {{tone .Avatar}}" aria-hidden="true">{{.Initial}}</span>{{end}}
