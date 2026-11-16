@@ -1,0 +1,31 @@
+# Zigrt with Docker Compose. Quickstart:
+#   openssl rand -base64 32 > zigrt_key.txt
+#   docker compose up -d
+#   docker compose logs zigrt | grep -i "setup token"
+#   open https://<your host>/setup
+# To build from a checkout of the repo instead: docker build -t ghcr.io/chinny-labs/zigrt:0 ../..
+services:
+  zigrt:
+    image: ghcr.io/chinny-labs/zigrt:0
+    restart: unless-stopped
+    ports: ["8080:8080"]            # or put it behind Caddy/Traefik for TLS
+    environment:
+      ZIGRT_SECRET_KEY_FILE: /run/secrets/zigrt_key
+      ZIGRT_BASE_URL: https://zigrt.home.example.com
+      TZ: America/New_York
+      # Use an existing Postgres instead of the SQLite file on the volume:
+      # ZIGRT_DATABASE_URL_FILE: /run/secrets/zigrt_db_url
+      # Plain-HTTP testing only (no TLS proxy in front). Remove for real use.
+      # ZIGRT_INSECURE_COOKIES: "true"
+    volumes:
+      # A named volume is created owned by the image's nonroot user (65532).
+      # To use a host folder instead (./data:/data), first: sudo chown 65532:65532 data
+      - zigrt-data:/data
+    secrets: [zigrt_key]
+
+volumes:
+  zigrt-data:
+
+secrets:
+  zigrt_key:
+    file: ./zigrt_key.txt           # openssl rand -base64 32 > zigrt_key.txt

@@ -4,6 +4,7 @@ import (
 	"crypto/subtle"
 	"errors"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/chinny-labs/zigrt/internal/auth"
@@ -240,24 +241,24 @@ func (s *Server) studentPage(w http.ResponseWriter, r *http.Request, _ *reqCtx) 
 
 func (s *Server) studentResetPIN(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 	id := r.PathValue("id")
-	back := "/parent/students/" + id
+	back := "/parent/students/" + url.PathEscape(id)
 	if err := s.svc.ResetPIN(r.Context(), *c.User, id, strings.TrimSpace(r.PostFormValue("pin"))); err != nil {
 		s.fail(w, r, back, err)
 		return
 	}
 	s.flash(w, "ok", "The new PIN is set.")
-	http.Redirect(w, r, back, http.StatusSeeOther)
+	http.Redirect(w, r, back, http.StatusSeeOther) //nolint:gosec // a same-site path built from one escaped URL segment
 }
 
 func (s *Server) studentUnlock(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 	id := r.PathValue("id")
-	back := "/parent/students/" + id
+	back := "/parent/students/" + url.PathEscape(id)
 	if err := s.svc.Unlock(r.Context(), *c.User, id); err != nil {
 		s.fail(w, r, back, err)
 		return
 	}
 	s.flash(w, "ok", "Unlocked. They can sign in again.")
-	http.Redirect(w, r, back, http.StatusSeeOther)
+	http.Redirect(w, r, back, http.StatusSeeOther) //nolint:gosec // a same-site path built from one escaped URL segment
 }
 
 // deviceLabel is a rough name for the browser, kept with the session.

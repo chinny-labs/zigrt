@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# The release image (ADR 0012): built multi-arch with buildx. A static
+# The release image: built multi-arch with buildx (ADR 0001). A static
 # CGO_ENABLED=0 binary on distroless, /data owned by the nonroot user, the
 # volume declared and Docker's HEALTHCHECK wired to `zigrt healthcheck`.
 FROM --platform=$BUILDPLATFORM golang:1.27 AS build

@@ -19,7 +19,7 @@ linters:
       - std-error-handling
     rules:
       - path: _test\.go
-        linters: [gosec, errcheck]
+        linters: [gosec, errcheck, bodyclose] # the test helpers close every body they read
 formatters:
   enable:
     - gofmt

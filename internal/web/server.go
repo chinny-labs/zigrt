@@ -249,6 +249,7 @@ func isOpenPath(p string) bool {
 }
 
 func (s *Server) cookie(name, value string, maxAge time.Duration) *http.Cookie {
+	//nolint:gosec // Secure is on unless the operator set ZIGRT_INSECURE_COOKIES for plain-HTTP testing
 	c := &http.Cookie{Name: name, Value: value, Path: "/", HttpOnly: true, Secure: !s.cfg.InsecureCookies, SameSite: http.SameSiteLaxMode}
 	if maxAge > 0 {
 		c.MaxAge = int(maxAge / time.Second)
@@ -257,7 +258,7 @@ func (s *Server) cookie(name, value string, maxAge time.Duration) *http.Cookie {
 }
 
 func (s *Server) clearCookie(w http.ResponseWriter, name string) {
-	c := s.cookie(name, "", 0)
+	c := s.cookie(name, "", 0) //nolint:gosec // see cookie
 	c.MaxAge = -1
 	http.SetCookie(w, c)
 }
@@ -366,7 +367,7 @@ func (s *Server) notFound(w http.ResponseWriter, r *http.Request) {
 func (s *Server) fail(w http.ResponseWriter, r *http.Request, back string, err error) {
 	if msg := userMessage(err); msg != "" {
 		s.flash(w, "err", msg)
-		http.Redirect(w, r, back, http.StatusSeeOther)
+		http.Redirect(w, r, back, http.StatusSeeOther) //nolint:gosec // callers pass a same-site path
 		return
 	}
 	if errors.Is(err, store.ErrNotFound) {
