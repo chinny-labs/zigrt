@@ -1,0 +1,22 @@
+{{define "main"}}
+<div class="column">
+  <h1>Choose a new password</h1>
+  {{template "flash" .}}
+  {{if .D.OK}}
+  <form method="post" action="/parent/reset/{{.D.Token}}" class="stack" autocomplete="off">
+    {{template "csrf" .}}
+    <div class="field">
+      <label for="password">New password</label>
+      <input id="password" name="password" type="password" minlength="12" required autofocus autocomplete="new-password">
+      <span class="hint">At least 12 characters. You'll be signed out everywhere, then sign in with it.</span>
+    </div>
+    <button class="btn btn-primary" type="submit">Set password</button>
+  </form>
+  {{else}}
+  <section class="card stack">
+    <p>That link has expired or was already used. Links work once, for an hour.</p>
+    <a class="btn btn-secondary" href="/parent/forgot">Ask for a new one</a>
+  </section>
+  {{end}}
+</div>
+{{end}}

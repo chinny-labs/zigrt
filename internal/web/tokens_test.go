@@ -4,8 +4,10 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/chinny-labs/zigrt/internal/api"
 	"github.com/chinny-labs/zigrt/internal/store"
@@ -87,4 +89,18 @@ func (a *app) parent() store.User {
 		a.t.Fatal("no parent", err)
 	}
 	return ps[0]
+}
+
+// TestObserve checks the metrics hook hears the matched route.
+func TestObserve(t *testing.T) {
+	a := newApp(t)
+	var routes []string
+	a.srv.Observe(func(route string, code int, _ time.Duration) { routes = append(routes, route+" "+strconv.Itoa(code)) })
+	a.get(a.client(), "/healthz")
+	a.get(a.client(), "/setup")
+	a.get(a.client(), "/nowhere")
+	// Before setup, everything else is sent to /setup before any route matches.
+	if got := strings.Join(routes, ", "); got != "GET /healthz 200, GET /setup 200,  303" {
+		t.Fatalf("routes heard: %s", got)
+	}
 }

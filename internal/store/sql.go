@@ -298,6 +298,7 @@ func (x queries) DeleteUser(ctx context.Context, id string) error {
 	}
 	for _, q := range []string{
 		`DELETE FROM api_tokens WHERE user_id = ?`,
+		`DELETE FROM password_resets WHERE user_id = ?`,
 		`DELETE FROM drill_assignments WHERE student_id = ?`,
 		`DELETE FROM attempts WHERE student_id = ?`,
 		`DELETE FROM mastery_events WHERE student_id = ?`,

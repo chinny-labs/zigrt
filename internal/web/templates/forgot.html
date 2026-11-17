@@ -1,0 +1,28 @@
+{{define "main"}}
+<div class="column">
+  {{if .D.Sent}}
+  <h1>Check your email</h1>
+  <section class="card stack">
+    <p>If that address belongs to a parent here, a link to choose a new password is on its way. It works for an hour.</p>
+    <p class="muted">Nothing after a few minutes? Check the spam folder, or ask again.</p>
+    <a class="btn btn-secondary" href="/parent/login">Back to sign-in</a>
+  </section>
+  {{else if .D.Mail}}
+  <h1>Forgot your password?</h1>
+  <form method="post" action="/parent/forgot" class="stack">
+    {{template "csrf" .}}
+    <div class="field">
+      <label for="email">Your email</label>
+      <input id="email" name="email" type="email" required autofocus autocomplete="username" autocapitalize="none" spellcheck="false">
+      <span class="hint">We'll email you a link to choose a new one.</span>
+    </div>
+    <button class="btn btn-primary" type="submit">Send the link</button>
+  </form>
+  {{else}}
+  <h1>Forgot your password?</h1>
+  <section class="card stack-sm">
+    <p>This server can't send email. Whoever runs it can set a new password with <code>zigrt reset-password</code>.</p>
+  </section>
+  {{end}}
+</div>
+{{end}}

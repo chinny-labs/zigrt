@@ -156,9 +156,14 @@ func (s *Server) parentLoginPage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/parent", http.StatusSeeOther)
 		return
 	}
-	v := s.newView(w, r, "Parent sign-in", safeNext(r.URL.Query().Get("next"), ""))
+	v := s.newView(w, r, "Parent sign-in", loginData{Next: safeNext(r.URL.Query().Get("next"), ""), Mail: s.svc.MailOn()})
 	v.Back, v.BackLabel = "/", "Back"
 	s.render(w, r, http.StatusOK, "login", v)
+}
+
+type loginData struct {
+	Next string
+	Mail bool // email is set up, so a reset link can be sent
 }
 
 func (s *Server) parentLoginSubmit(w http.ResponseWriter, r *http.Request) {
@@ -170,7 +175,7 @@ func (s *Server) parentLoginSubmit(w http.ResponseWriter, r *http.Request) {
 			s.serverError(w, r, err)
 			return
 		}
-		v := s.newView(w, r, "Parent sign-in", next)
+		v := s.newView(w, r, "Parent sign-in", loginData{Next: next, Mail: s.svc.MailOn()})
 		v.Back, v.BackLabel, v.Err = "/", "Back", msg
 		v.Form.Set("email", r.PostFormValue("email"))
 		s.render(w, r, http.StatusUnauthorized, "login", v)

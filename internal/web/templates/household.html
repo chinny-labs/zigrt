@@ -19,6 +19,19 @@
       <button class="btn btn-secondary" type="submit">Change password</button>
     </form>
   </section>
+  <section class="card stack" aria-labelledby="email-h">
+    <h2 id="email-h">Weekly email</h2>
+    {{if $.D.Mail}}
+    <form method="post" action="/parent/email" class="stack">
+      {{template "csrf" .}}
+      <label class="check"><input type="checkbox" name="weekly" value="1"{{if $.D.Weekly}} checked{{end}}> Send me each child's week on Sunday evening</label>
+      <span class="hint">To {{$.D.Me.Email}}. Each parent chooses for themselves.</span>
+      <button class="btn btn-secondary" type="submit">Save</button>
+    </form>
+    {{else}}
+    <p class="muted">This server can't send email yet. Whoever runs it can add SMTP settings; then a weekly summary and password reset links work.</p>
+    {{end}}
+  </section>
   <section class="card stack" aria-labelledby="time-h">
     <h2 id="time-h">Household and time</h2>
     <form method="post" action="/parent/household" class="stack">

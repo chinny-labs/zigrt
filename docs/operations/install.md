@@ -94,6 +94,8 @@ Every setting is an environment variable. Any of them can be read from a file in
 | `ZIGRT_LOG_FORMAT` | `json` | `json` or `text` |
 | `ZIGRT_CONTENT_DIR` | `/data/content` | Folder of content packs newer than the embedded one ([Content packs](content.md)) |
 | `ZIGRT_MCP_ENABLED` | `false` | Serve the MCP server at `/mcp` ([API and MCP](api.md)); `mcp.enabled` in the chart |
+| `ZIGRT_SMTP_HOST`, `_PORT`, `_SECURITY`, `_USERNAME`, `_PASSWORD`, `_FROM` | none | Email for password resets and the weekly summary ([Email](email.md)) |
+| `ZIGRT_METRICS_LISTEN` | none | Address for Prometheus metrics, like `:9090`; off when unset ([Metrics](#metrics)) |
 
 ## Backups
 
@@ -108,12 +110,28 @@ Run these inside the container, for example `docker compose exec zigrt zigrt ver
 | `zigrt serve` | Runs the server (the default) |
 | `zigrt migrate` | Applies migrations and exits |
 | `zigrt healthcheck` | Exits 0 if the local server is healthy |
-| `zigrt reset-password <email>` | Sets a new password for a parent and prints it. `--password-stdin` reads one instead |
+| `zigrt reset-password <email>` | Sets a new password for a parent and prints it. `--password-stdin` reads one instead. With email set up, parents can use "Forgot your password?" instead |
 | `zigrt backup` | Takes a SQLite backup now |
 | `zigrt rebuild` | Recomputes every student's progress from the history |
 | `zigrt demo` | Fills an empty database with a demo household, to try Zigrt without a placement |
 | `zigrt export [-o file]` and `zigrt import <file>` | Write the household as JSON Lines, or load such a file into an empty database ([Backups](backup.md)) |
 | `zigrt version` | Prints the version |
+
+## Metrics
+
+Set `ZIGRT_METRICS_LISTEN=:9090` (chart: `metrics.enabled: true`) and Zigrt serves Prometheus metrics at `/metrics` on that port. It is a separate port, so an ingress that routes to the app's port never exposes them. With the Prometheus Operator, `metrics.serviceMonitor.enabled: true` adds a ServiceMonitor; give it the labels your Prometheus selects, for example `release: kube-prometheus-stack`.
+
+| Metric | Is |
+| --- | --- |
+| `zigrt_http_requests_total{route,code}` | Requests by route pattern and status |
+| `zigrt_http_request_duration_seconds{route}` | Latency by route |
+| `zigrt_job_runs_total{job,result}` | Background job checks, `ok` or `error` (each job is checked every minute) |
+| `zigrt_emails_total{result}` | Email delivery attempts, `sent` or `failed` |
+| `zigrt_email_outbox{state}` | Email not sent yet: `pending` (being retried) or `failed` (given up) |
+| `zigrt_students`, `zigrt_active_students` | Students, and those who practised in the last seven days |
+| `zigrt_content_pack_info{pack,version}`, `zigrt_build_info{version}` | What is running |
+
+Worth an alert: `increase(zigrt_job_runs_total{result="error"}[1h]) > 0` and `zigrt_email_outbox{state="failed"} > 0`.
 
 ## Health
 

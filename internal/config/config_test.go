@@ -73,3 +73,31 @@ func TestEnvFile(t *testing.T) {
 		t.Fatalf("got %v", vals)
 	}
 }
+
+func TestSMTPAndMetrics(t *testing.T) {
+	c, err := Parse(lookupMap(nil))
+	if err != nil || c.MailOn() || c.MetricsListen != "" || c.MCPEnabled {
+		t.Fatalf("email, metrics or MCP on by default: %+v %v", c, err)
+	}
+	pw := filepath.Join(t.TempDir(), "pw")
+	if err := os.WriteFile(pw, []byte("s3cret\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	c, err = Parse(lookupMap(map[string]string{
+		"ZIGRT_SMTP_HOST": "smtp.example.com", "ZIGRT_SMTP_FROM": "Zigrt <zigrt@example.com>",
+		"ZIGRT_SMTP_USERNAME": "zigrt", "ZIGRT_SMTP_PASSWORD_FILE": pw, "ZIGRT_SMTP_SECURITY": "TLS",
+		"ZIGRT_BASE_URL": "https://zigrt.example.com", "ZIGRT_METRICS_LISTEN": ":9090", "ZIGRT_MCP_ENABLED": "true",
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !c.MailOn() || c.SMTP.Port != 465 || c.SMTP.Password != "s3cret" || c.SMTP.Security != "tls" || c.MetricsListen != ":9090" || !c.MCPEnabled {
+		t.Fatalf("got %+v", c)
+	}
+	_, err = Parse(lookupMap(map[string]string{"ZIGRT_SMTP_HOST": "smtp.example.com", "ZIGRT_SMTP_PORT": "x", "ZIGRT_MCP_ENABLED": "maybe"}))
+	for _, want := range []string{"ZIGRT_SMTP_PORT", "from address", "ZIGRT_BASE_URL", "ZIGRT_MCP_ENABLED"} {
+		if err == nil || !strings.Contains(err.Error(), want) {
+			t.Errorf("error %v missing %s", err, want)
+		}
+	}
+}

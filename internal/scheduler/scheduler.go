@@ -20,6 +20,8 @@ type Scheduler struct {
 	Interval time.Duration
 	Jobs     []Job
 	Log      *slog.Logger
+	// OnRun, if set, hears each job's result (for metrics).
+	OnRun func(job string, err error)
 }
 
 // Run blocks until ctx is cancelled. It runs every job once at start, so
@@ -51,8 +53,12 @@ func (s *Scheduler) tick(ctx context.Context) {
 					s.Log.Error("job panicked", "job", j.Name, "panic", r)
 				}
 			}()
-			if err := j.Run(ctx); err != nil && ctx.Err() == nil {
+			err := j.Run(ctx)
+			if err != nil && ctx.Err() == nil {
 				s.Log.Error("job failed", "job", j.Name, "err", err)
+			}
+			if s.OnRun != nil && ctx.Err() == nil {
+				s.OnRun(j.Name, err)
 			}
 		}()
 	}

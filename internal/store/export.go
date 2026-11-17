@@ -80,8 +80,10 @@ var exportTables = []exportTable{
 	{"api_tokens", "id", cols("id user_id label token_hash scopes created_at:t last_used_at:t revoked_at:t")},
 }
 
-// NotExported lists the tables an export leaves out on purpose.
-var NotExported = []string{"sessions", "auth_attempts", "goose_db_version"}
+// NotExported lists the tables an export leaves out on purpose: sign-in
+// state, mail waiting to go, and one-hour reset links are of no use in
+// another install.
+var NotExported = []string{"sessions", "auth_attempts", "goose_db_version", "email_outbox", "password_resets"}
 
 // ExportedColumns lists each exported table's columns, for the schema test.
 func ExportedColumns() map[string][]string {

@@ -277,6 +277,8 @@ type householdData struct {
 	Tokens    []store.APIToken
 	BaseURL   string
 	MCP       bool // the MCP server is on
+	Mail      bool // email is set up
+	Weekly    bool // this parent gets the weekly email
 }
 
 func (s *Server) householdPage(w http.ResponseWriter, r *http.Request, c *reqCtx) {
@@ -290,8 +292,13 @@ func (s *Server) householdPage(w http.ResponseWriter, r *http.Request, c *reqCtx
 		s.parentFail(w, r, err)
 		return
 	}
+	weekly, err := s.svc.WeeklyEmailOn(r.Context(), *c.User)
+	if err != nil {
+		s.parentFail(w, r, err)
+		return
+	}
 	v := s.newView(w, r, "Household", householdData{H: h, Me: *c.User, Timezones: commonZones(h.Household.Timezone),
-		Tokens: tokens, BaseURL: s.baseURL(r), MCP: s.mcp != nil})
+		Tokens: tokens, BaseURL: s.baseURL(r), MCP: s.mcp != nil, Mail: s.svc.MailOn(), Weekly: weekly})
 	v.Shell, v.Back, v.BackLabel = "parent", "/parent", "Everyone"
 	s.render(w, r, http.StatusOK, "household", v)
 }

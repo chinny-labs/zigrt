@@ -198,10 +198,7 @@ func (s *Service) ResetPassword(ctx context.Context, actor *store.User, email, p
 		}
 		actorID = actor.ID
 	}
-	if err := auth.CheckPassword(password); err != nil {
-		return invalid("password", "%s.", capitalize(err.Error()))
-	}
-	hash, err := auth.Hash(password)
+	hash, err := newPasswordHash(password)
 	if err != nil {
 		return err
 	}
@@ -210,18 +207,31 @@ func (s *Service) ResetPassword(ctx context.Context, actor *store.User, email, p
 		if err != nil {
 			return err
 		}
-		u.PasswordHash = hash
-		if err := tx.UpdateUser(ctx, u); err != nil {
-			return err
-		}
-		if err := tx.ClearAuthAttempts(ctx, u.ID); err != nil {
-			return err
-		}
-		if err := tx.RevokeUserSessions(ctx, u.ID, s.now()); err != nil {
-			return err
-		}
-		return s.audit(ctx, tx, actorID, "user.reset_password", u.ID, nil)
+		return s.setPassword(ctx, tx, u, hash, actorID, nil)
 	})
+}
+
+func newPasswordHash(password string) (string, error) {
+	if err := auth.CheckPassword(password); err != nil {
+		return "", invalid("password", "%s.", capitalize(err.Error()))
+	}
+	return auth.Hash(password)
+}
+
+// setPassword stores a new password hash, clears failed sign-ins and ends
+// every session.
+func (s *Service) setPassword(ctx context.Context, tx store.Tx, u store.User, hash, actorID string, detail map[string]any) error {
+	u.PasswordHash = hash
+	if err := tx.UpdateUser(ctx, u); err != nil {
+		return err
+	}
+	if err := tx.ClearAuthAttempts(ctx, u.ID); err != nil {
+		return err
+	}
+	if err := tx.RevokeUserSessions(ctx, u.ID, s.now()); err != nil {
+		return err
+	}
+	return s.audit(ctx, tx, actorID, "user.reset_password", u.ID, detail)
 }
 
 // Unlock clears a student's failed-PIN lock.

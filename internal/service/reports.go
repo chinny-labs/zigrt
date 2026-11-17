@@ -330,6 +330,10 @@ func (s *Service) Struggles(ctx context.Context, parent store.User, studentID st
 	if err := requireParent(parent); err != nil {
 		return nil, err
 	}
+	return s.struggles(ctx, studentID, days)
+}
+
+func (s *Service) struggles(ctx context.Context, studentID string, days int) ([]Struggle, error) {
 	if _, err := getStudent(ctx, s.Store, studentID); err != nil {
 		return nil, err
 	}
@@ -371,4 +375,31 @@ func (s *Service) Struggles(ctx context.Context, parent store.User, studentID st
 	}
 	slices.SortFunc(out, func(a, b Struggle) int { return b.Last.Compare(a.Last) })
 	return out, nil
+}
+
+// Counts are household totals for metrics: students, and those who
+// practised in the last seven days.
+type Counts struct {
+	Students, Active int
+}
+
+// Counts counts students and active students.
+func (s *Service) Counts(ctx context.Context) (Counts, error) {
+	var c Counts
+	users, err := s.Store.ListUsers(ctx, store.RoleStudent)
+	if err != nil {
+		return c, err
+	}
+	c.Students = len(users)
+	week := s.now().Add(-7 * 24 * time.Hour)
+	for _, u := range users {
+		last, err := s.lastActive(ctx, u.ID)
+		if err != nil {
+			return c, err
+		}
+		if last != nil && last.After(week) {
+			c.Active++
+		}
+	}
+	return c, nil
 }
