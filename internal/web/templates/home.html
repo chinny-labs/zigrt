@@ -1,25 +1,69 @@
 {{define "main"}}
+{{$h := .D.H}}
 <div class="column">
-  <h1>Hi {{.User.DisplayName}}. Ready to climb?</h1>
+  <div class="row-between home-head">
+    <h1>Hi {{.User.DisplayName}}. Ready to climb?</h1>
+    {{if $h.Today.Streak}}<span class="streak">{{template "i-stairs"}}{{$h.Today.Streak}} day streak</span>{{end}}
+  </div>
   {{template "flash" .}}
+  {{if .D.Tower}}
   <section class="card stack-sm" aria-labelledby="tower-h">
     <div class="row-between">
       <h2 id="tower-h">Your tower</h2>
-      <span class="muted">0 blocks placed</span>
+      <span class="muted">{{$h.Placed}} {{if eq $h.Placed 1}}block{{else}}blocks{{end}} placed</span>
     </div>
-    <div class="tower" role="img" aria-label="An empty tower with six tiers still to come">
-      <div class="tier tier-idle tier-w1">5</div>
-      <div class="tier tier-idle tier-w2">Grade 4</div>
-      <div class="tier tier-idle tier-w3">Grade 3</div>
-      <div class="tier tier-idle tier-w4">Grade 2</div>
-      <div class="tier tier-idle tier-w5">Grade 1</div>
-      <div class="tier tier-idle tier-w6">Kindergarten</div>
-    </div>
+    <ol class="tower">
+      {{range .D.Tower}}<li class="tier tier-{{.State}} tier-w{{.Width}}">{{.Label}}{{if eq .State "done"}} · done{{else if eq .State "here"}} · {{.Placed}} of {{.Total}}{{end}}</li>{{end}}
+    </ol>
   </section>
+  {{end}}
+  <section class="stack-sm" aria-labelledby="climb-h">
+    <div class="row-between">
+      <h2 id="climb-h">Today's climb</h2>
+      <span class="climb-num">{{$h.Today.XP}} of {{$h.Today.Goal}} XP</span>
+    </div>
+    <progress max="{{$h.Today.Goal}}" value="{{$h.Today.XP}}" aria-label="Today's XP">{{$h.Today.XP}} of {{$h.Today.Goal}}</progress>
+    {{if $h.Today.GoalMet}}<p class="muted">Today's goal is met. Anything more is extra climbing.</p>{{end}}
+  </section>
+
+  {{if $h.NoContent}}
   <div class="alert alert-warn stack-sm">
     <strong>No lessons yet.</strong>
-    <span>Lessons are not part of this version of Zigrt. They are coming. You can practise with drills now.</span>
+    <span>A grown-up needs to add lessons. You can practise with drills now.</span>
   </div>
-  <a class="btn btn-primary" href="/drills">Make a drill</a>
+  {{else if .D.First}}
+  {{with .D.First}}
+  {{if .TaskID}}
+  <a class="taskbtn" href="/tasks/{{.TaskID}}">
+    <span class="taskbtn-text"><span class="eyebrow-on">Keep going · {{.Label}}</span><span class="taskbtn-title">{{.Title}}</span></span>
+    <span class="xp-badge">{{.XP}} XP</span>
+  </a>
+  {{else}}
+  <form method="post" action="/tasks">
+    {{template "csrf" $}}
+    <input type="hidden" name="kind" value="{{.Kind}}"><input type="hidden" name="topic" value="{{.Topic}}">
+    <button class="taskbtn" type="submit">
+      <span class="taskbtn-text"><span class="eyebrow-on">{{if $.D.Early}}All placed{{else}}Next step{{end}} · {{.Label}}</span><span class="taskbtn-title">{{.Title}}</span></span>
+      <span class="xp-badge">{{.XP}} XP</span>
+    </button>
+  </form>
+  {{end}}
+  {{end}}
+  {{if .D.Early}}<p class="muted">You've placed every block in your course. Mend some early, or make a drill.</p>{{end}}
+  {{range .D.Others}}
+  <form method="post" action="/tasks">
+    {{template "csrf" $}}
+    <input type="hidden" name="kind" value="{{.Kind}}"><input type="hidden" name="topic" value="{{.Topic}}">
+    <button class="taskrow" type="submit"><span>{{.Label}}: {{.Title}}</span><span class="muted nowrap">{{.XP}} XP</span></button>
+  </form>
+  {{end}}
+  {{else}}
+  <div class="alert alert-ok stack-sm">
+    <strong>Nothing to do right now.</strong>
+    <span>Your course has no lessons ready. Make a drill instead.</span>
+  </div>
+  {{end}}
+  <div class="grow"></div>
+  <a class="btn btn-secondary" href="/drills">Make a drill</a>
 </div>
 {{end}}

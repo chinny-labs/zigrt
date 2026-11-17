@@ -28,6 +28,12 @@ func (s *Server) routes() http.Handler {
 	mux.HandleFunc("POST /pin/{id}", s.pinSubmit)
 	mux.HandleFunc("POST /logout", s.signedIn(s.logout))
 
+	// Lessons and reviews: the engine offers them, only students do them.
+	mux.HandleFunc("POST /tasks", s.studentOnly(s.taskStart))
+	mux.HandleFunc("GET /tasks/{id}", s.studentOnly(s.taskPage))
+	mux.HandleFunc("POST /tasks/{id}/next", s.studentOnly(s.taskNext))
+	mux.HandleFunc("POST /tasks/{id}/answer", s.studentOnly(s.taskAnswer))
+
 	// Free practice: both roles build sets; only students answer on screen.
 	mux.HandleFunc("GET /drills", s.signedIn(s.drillBuilder))
 	mux.HandleFunc("POST /drills", s.signedIn(s.drillCreate))

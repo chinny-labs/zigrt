@@ -5,6 +5,8 @@ package problem
 import (
 	"strings"
 	"testing"
+
+	"github.com/chinny-labs/zigrt/figure"
 )
 
 func mustParse(t *testing.T, src string) *Template {
@@ -528,5 +530,37 @@ func TestStates(t *testing.T) {
 		if got := states(c.line, c.ans); got != c.want {
 			t.Errorf("states(%q, %q) = %v", c.line, c.ans, got)
 		}
+	}
+}
+
+// The figures templates may name are the ones package figure draws.
+func TestFiguresMatchCatalogue(t *testing.T) {
+	if len(figure.Catalogue) != len(Figures) {
+		t.Fatalf("figure draws %d figures, problem allows %d", len(figure.Catalogue), len(Figures))
+	}
+	for name, args := range Figures {
+		if strings.Join(figure.Catalogue[name], ",") != strings.Join(args, ",") {
+			t.Errorf("%s: figure takes %v, problem %v", name, figure.Catalogue[name], args)
+		}
+	}
+}
+
+// A figure the template computes but cannot be drawn fails the gate.
+func TestGateDrawsFigures(t *testing.T) {
+	tpl := mustParse(t, `
+id: too-many-parts
+vars:
+  d: {int: [20, 30]}
+prompt: "What is shaded?"
+layout: figure
+figure: fraction-bar
+figure_args: {parts: d, shaded: 1}
+answer: {type: fraction, value: 1 / d, simplest: false}
+min_variety: 5
+solution: ["1/{d}"]
+`)
+	errs := tpl.Gate(200)
+	if len(errs) == 0 || !strings.Contains(errs[0].Error(), "figures") {
+		t.Fatalf("gate: %v", errs)
 	}
 }

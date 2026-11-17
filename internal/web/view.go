@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/chinny-labs/zigrt/internal/buildinfo"
+	"github.com/chinny-labs/zigrt/problem"
 )
 
 // view is what every template receives.
@@ -44,6 +45,16 @@ var funcs = template.FuncMap{
 	// wclass sizes an answer box by digit count, without an inline style.
 	"wclass": func(n int) string { return "w" + strconv.Itoa(min(max(n, 2), 8)) },
 	"add":    func(a, b int) int { return a + b },
+	"list":   func(xs ...string) []string { return xs },
+	"math":   mathHTML,
+	// pair passes two values to a sub-template, as .A and .B.
+	"pair": func(a, b any) struct{ A, B any } { return struct{ A, B any }{a, b} },
+	// showPrompt says whether a problem's words are worth showing above its
+	// drawing: a word problem or a figure's question, not "47 + 38" again.
+	"showPrompt": func(p *problem.Problem) bool {
+		return p != nil && p.Answer.Type != problem.Comparison &&
+			(p.Layout == problem.LayoutText || p.Layout == problem.LayoutFigure || p.Layout == "")
+	},
 	// tone turns a stored avatar name into a CSS class, never trusting it.
 	"tone": func(avatar string) string {
 		switch avatar {

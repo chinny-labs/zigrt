@@ -625,3 +625,112 @@ progress::-moz-progress-bar { background: var(--zg-blue); border-radius: 999px; 
   .answer-key { break-before: page; margin-top: 0; }
   .key-list { columns: 5; }
 }
+
+/* --- home (S3) ---------------------------------------------------------------- */
+
+.home-head { align-items: flex-start; }
+.streak { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; min-height: 44px; padding: 0 14px; border-radius: 999px; background: var(--zg-surface); font-weight: 800; font-size: 15px; }
+.streak svg { color: var(--zg-sun-mark); }
+.climb-num { font-weight: 800; }
+ol.tower { list-style: none; margin: 0; padding: 0; }
+.tier-done { background: var(--zg-blue); color: var(--zg-on-blue); }
+.tier-here { background: var(--zg-sun); color: var(--zg-on-sun); box-shadow: inset 0 0 0 3px var(--zg-sun-mark); }
+
+/* The recommended task: one big blue block with its XP on a sun badge. */
+.taskbtn {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 84px; padding: 14px 18px; margin-bottom: 6px; border: 0; border-radius: 26px;
+  background: var(--zg-blue); color: var(--zg-on-blue); box-shadow: 0 6px 0 var(--zg-blue-edge);
+  text-align: left; text-decoration: none; font: inherit; cursor: pointer;
+}
+.taskbtn:active { transform: translateY(3px); box-shadow: 0 3px 0 var(--zg-blue-edge); }
+.taskbtn-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.eyebrow-on { font-size: 13px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; opacity: 0.85; }
+.taskbtn-title { font-family: var(--zg-display); font-weight: 600; font-size: 22px; line-height: 1.15; }
+.xp-badge { flex-shrink: 0; padding: 8px 14px; border-radius: 999px; background: var(--zg-sun); color: var(--zg-on-sun); font-family: var(--zg-display); font-weight: 600; font-size: 18px; }
+.taskrow {
+  width: 100%; min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 18px; border: 0; border-radius: 20px; background: var(--zg-surface); color: var(--zg-ink);
+  text-align: left; font: inherit; cursor: pointer;
+}
+
+/* --- a task: explanation, problem, feedback (S6 to S11) ----------------------- */
+
+.task form { margin: 0; }
+.task form > .btn, .task form > .taskbtn { width: 100%; }
+.column-inner { flex-grow: 1; display: flex; flex-direction: column; gap: 16px; }
+.taskbar { display: flex; align-items: center; gap: 12px; font-weight: 800; }
+.segs { flex-grow: 1; display: flex; gap: 6px; }
+.seg { flex: 1; height: 12px; border-radius: 999px; background: var(--zg-track); }
+.seg-done { background: var(--zg-blue); }
+.seg-now { background: var(--zg-sun); }
+.lead { color: var(--zg-ink-muted); font-size: 18px; }
+.prompt { font-size: 18px; text-align: center; }
+.probcard { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 160px; padding: 24px 16px; text-align: center; }
+.big { font-family: var(--zg-display); font-weight: 600; font-size: 22px; }
+
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.step { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 20px; background: var(--zg-surface); }
+.step-n { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--zg-blue); color: var(--zg-on-blue); font-size: 15px; }
+.step-more { background: var(--zg-block-idle); color: var(--zg-ink-muted); }
+.step-more .step-n { background: transparent; color: var(--zg-ink-muted); box-shadow: inset 0 0 0 2px currentColor; }
+
+/* Feedback is never red or green: blue for right, sun for "not yet". */
+.sheet-right, .sheet-notyet { border-radius: 24px; padding: 18px 20px; display: flex; flex-direction: column; gap: 4px; }
+.sheet-right { background: var(--zg-blue); color: var(--zg-on-blue); }
+.sheet-notyet { background: var(--zg-sun-wash); color: var(--zg-on-sun); box-shadow: inset 0 0 0 3px var(--zg-sun); }
+.saved { align-self: center; padding: 8px 18px; border-radius: 12px; background: var(--zg-sun-wash); color: var(--zg-on-sun); border: 3px dashed var(--zg-sun-ink); font-weight: 800; }
+.placed { align-self: center; padding: 14px 22px; border-radius: 16px; background: var(--zg-blue); color: var(--zg-on-blue); box-shadow: 0 0 0 4px var(--zg-sun); font-weight: 800; text-align: center; }
+.stats-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+/* Lesson problems use the drill's layouts, larger. */
+.lp { font-size: 46px; }
+.lp-answer { color: var(--zg-blue); }
+.qbox { display: inline-block; width: 1.2em; height: 1.1em; border-radius: 0.2em; box-shadow: inset 0 0 0 3px var(--zg-blue); vertical-align: middle; }
+.qcmp { display: inline-flex; width: 1.1em; height: 1.1em; border-radius: 0.22em; border: 3px dashed var(--zg-blue); color: transparent; overflow: hidden; vertical-align: middle; }
+.qans { color: var(--zg-blue); }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; line-height: 1; font-size: 0.8em; }
+.frac > span:first-child { border-bottom: 0.08em solid currentColor; padding: 0 0.1em 0.05em; }
+.frac > span:last-child { padding-top: 0.05em; }
+.mixed { display: inline-flex; align-items: center; gap: 0.08em; }
+.toggle .frac { font-size: 0.85em; }
+
+/* Answer inputs: real fields, large enough for small fingers. */
+.answer-row { display: flex; align-items: flex-end; justify-content: center; gap: 12px; }
+.answer-row-frac { align-items: center; }
+.answer-field { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--zg-ink-muted); font-weight: 800; font-size: 15px; }
+.answer-field input {
+  width: 4.2ch; min-height: 64px; padding: 4px 8px; border: 0; border-radius: 18px;
+  background: var(--zg-surface); color: var(--zg-ink); box-shadow: inset 0 0 0 3px var(--zg-ink-muted);
+  font-family: var(--zg-display); font-weight: 600; font-size: 34px; text-align: center;
+}
+.answer-field input:focus { outline: none; background: var(--zg-sun-wash); color: var(--zg-on-sun); box-shadow: inset 0 0 0 3px var(--zg-sun); }
+.answer-wide input { width: 7ch; }
+.answer-whole input { width: 3ch; }
+.answer-frac { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.frac-bar { width: 100%; height: 5px; border-radius: 999px; background: var(--zg-ink); }
+.rem-r { font-family: var(--zg-display); font-weight: 600; font-size: 30px; color: var(--zg-ink-muted); padding-bottom: 14px; }
+.choices-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.toggle-sign > span:not(.visually-hidden) { height: 84px; border-radius: 22px; font-family: var(--zg-display); font-weight: 600; font-size: 40px; }
+.toggle-choice > span:not(.visually-hidden) { min-height: 84px; padding: 10px; border-radius: 22px; font-family: var(--zg-display); font-weight: 600; font-size: 22px; text-align: center; }
+.toggle-sign input:checked + span, .toggle-choice input:checked + span { background: var(--zg-sun-wash); color: var(--zg-on-sun); box-shadow: inset 0 0 0 3px var(--zg-sun), 0 4px 0 var(--zg-track); }
+
+/* Figures are drawn by the server with classes only; colours come from here. */
+.figure { width: 100%; display: flex; justify-content: center; }
+.fig { width: 100%; max-width: 360px; height: auto; }
+.fig-line, .fig-tick, .fig-grid, .fig-hand { stroke: var(--zg-ink); stroke-linecap: round; fill: none; }
+.fig-line { stroke-width: 3; }
+.fig-tick { stroke-width: 2; }
+.fig-grid { stroke: var(--zg-track); stroke-width: 2; }
+.fig-hand-hour { stroke-width: 7; }
+.fig-hand-minute { stroke-width: 4; stroke: var(--zg-blue); }
+.fig-face { fill: var(--zg-surface); stroke: var(--zg-ink); stroke-width: 4; }
+.fig-pin, .fig-dot { fill: var(--zg-ink); }
+.fig-mark { fill: var(--zg-sun); stroke: var(--zg-ink); stroke-width: 3; }
+.fig-fill { fill: var(--zg-blue); }
+.fig-empty { fill: var(--zg-block-idle); stroke: var(--zg-ink-muted); stroke-width: 2; }
+.fig-shape { fill: var(--zg-block-idle); stroke: var(--zg-ink); stroke-width: 3; stroke-linejoin: round; }
+.fig-top { fill: var(--zg-track); }
+.fig-side { fill: var(--zg-sun-tint); }
+.fig-text { fill: var(--zg-ink); font-family: var(--zg-body); font-weight: 800; font-size: 20px; }
+.fig-small { font-size: 16px; }

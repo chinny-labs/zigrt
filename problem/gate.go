@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/chinny-labs/zigrt/figure"
 	"github.com/chinny-labs/zigrt/problem/expr"
 )
 
@@ -60,6 +61,15 @@ func (t *Template) Gate(n int) []error {
 			if msg := p.solutionProblem(); msg != "" {
 				if fail("solutions", seed, "%s", msg) {
 					return errs
+				}
+			}
+			// A catalogue figure must be drawable with the arguments this
+			// seed gave it (a bar of 30 parts, a mark off the line).
+			if _, ok := figure.Catalogue[p.Figure]; ok {
+				if _, err := figure.Draw(p.Figure, figure.Args(p.FigArgs)); err != nil {
+					if fail("figures", seed, "%v", err) {
+						return errs
+					}
 				}
 			}
 		}
