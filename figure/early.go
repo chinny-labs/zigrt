@@ -27,6 +27,18 @@ func choice(a Args, key string, options ...string) (string, error) {
 	return s, nil
 }
 
+// widen centres a small picture in a wider one, so a few dots don't grow
+// huge when the figure fills the screen's width.
+func (d *drawer) widen(min float64) {
+	if d.w >= min {
+		return
+	}
+	inner := d.shapes.String()
+	d.shapes.Reset()
+	d.add(`<g transform="translate(%s 0)">%s</g>`, num((min-d.w)/2), inner)
+	d.w = min
+}
+
 func (d *drawer) dot(x, y float64, class string) {
 	d.add(`<circle class="%s" cx="%s" cy="%s" r="11"/>`, class, num(x), num(y))
 }
@@ -84,6 +96,7 @@ func (d *drawer) dots(a Args) error {
 		return err
 	}
 	d.label = fmt.Sprintf("%d %s", n, plural(n, "dot", "dots"))
+	defer d.widen(160)
 	switch arr {
 	case "dice":
 		if n < 1 || n > 6 {
@@ -131,6 +144,7 @@ func (d *drawer) dotGroups(a Args) error {
 		return err
 	}
 	const gap = 34.0
+	defer d.widen(160)
 	switch style {
 	case "apart":
 		// Each group in rows of five, side by side with a clear space.
@@ -142,7 +156,7 @@ func (d *drawer) dotGroups(a Args) error {
 		}
 		w1 := group(x, 25)
 		w2 := group(y, 25+w1+40)
-		d.w, d.h = w1+w2+56, 2*gap+24
+		d.w, d.h = w1+w2+56, float64(max((x+4)/5, (y+4)/5, 1))*gap+16
 		d.label = fmt.Sprintf("a group of %d %s and a group of %d %s", x, plural(x, "dot", "dots"), y, plural(y, "dot", "dots"))
 	case "rows":
 		for i := range x {
@@ -391,14 +405,17 @@ func (d *drawer) compare(a Args) error {
 			d.add(`<rect class="%s" x="40" y="%s" width="%s" height="34" rx="17"/>`, classes[i], num(y), num(float64(n)*32))
 		}
 	case "height":
-		d.w, d.h = float64(len(sizes))*90+30, 380
+		// Wide enough that the picture doesn't grow tall when it fills a
+		// phone's width, with the towers centred.
+		d.w, d.h = 360, 268
 		d.label = fmt.Sprintf("%d towers of different heights, named A to %s", len(sizes), names[len(sizes)-1])
-		d.add(`<line class="fig-line" x1="6" y1="340" x2="%s" y2="340"/>`, num(d.w-6))
+		d.add(`<line class="fig-line" x1="6" y1="234" x2="354" y2="234"/>`)
+		x0 := (360 - float64(len(sizes))*90 + 36) / 2
 		for i, n := range sizes {
-			x := 30 + float64(i)*90
-			hgt := float64(n) * 31
-			d.add(`<rect class="%s" x="%s" y="%s" width="54" height="%s" rx="8"/>`, classes[i], num(x), num(340-hgt), num(hgt))
-			d.text(x+27, 368, "", names[i])
+			x := x0 + float64(i)*90
+			hgt := float64(n) * 22
+			d.add(`<rect class="%s" x="%s" y="%s" width="54" height="%s" rx="8"/>`, classes[i], num(x), num(234-hgt), num(hgt))
+			d.text(x+27, 260, "", names[i])
 		}
 	}
 	return nil
