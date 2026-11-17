@@ -61,6 +61,29 @@ type Reader interface {
 
 	// ListAudit lists entries newest first; targetID "" matches every target.
 	ListAudit(ctx context.Context, targetID string, limit int) ([]AuditEntry, error)
+
+	GetTask(ctx context.Context, id string) (Task, error)
+	// GetActiveTask returns the student's one active task, or ErrNotFound.
+	GetActiveTask(ctx context.Context, studentID string) (Task, error)
+	// ListOpenTasks lists active and paused tasks, oldest first.
+	ListOpenTasks(ctx context.Context, studentID string) ([]Task, error)
+	// ListFinishedTasks lists finished tasks, most recently finished first.
+	ListFinishedTasks(ctx context.Context, studentID string, limit int) ([]Task, error)
+	GetAttempt(ctx context.Context, id string) (Attempt, error)
+	// ListAttempts lists a task's attempts, oldest first.
+	ListAttempts(ctx context.Context, taskID string) ([]Attempt, error)
+
+	// ListMasteryEvents lists a student's events in the order they happened.
+	ListMasteryEvents(ctx context.Context, studentID string) ([]MasteryEvent, error)
+	ListTopicStates(ctx context.Context, studentID string) ([]TopicState, error)
+
+	// ListXPEvents lists a student's XP in the order it was earned.
+	ListXPEvents(ctx context.Context, studentID string) ([]XPEvent, error)
+	// SumXP totals one kind of XP on one household-local day.
+	SumXP(ctx context.Context, studentID, sourceKind, localDate string) (int, error)
+	GetDailyTotal(ctx context.Context, studentID, localDate string) (DailyTotal, error)
+	// ListDailyTotals lists days from from to to (YYYY-MM-DD, inclusive).
+	ListDailyTotals(ctx context.Context, studentID, from, to string) ([]DailyTotal, error)
 }
 
 // Writer holds every write.
@@ -92,4 +115,26 @@ type Writer interface {
 	InsertDrillResult(ctx context.Context, r DrillResult) (bool, error)
 
 	InsertAudit(ctx context.Context, a AuditEntry) error
+
+	// CreateTask returns ErrConflict when the student already has an active
+	// task.
+	CreateTask(ctx context.Context, t Task) error
+	// UpdateTask writes a task's status, state, XP and times.
+	UpdateTask(ctx context.Context, t Task) error
+	// InsertAttempt reports false, with no error, when the attempt ID was
+	// already answered: the first answer stands.
+	InsertAttempt(ctx context.Context, a Attempt) (bool, error)
+
+	InsertMasteryEvent(ctx context.Context, e MasteryEvent) error
+	PutTopicState(ctx context.Context, s TopicState) error
+	DeleteTopicState(ctx context.Context, studentID, topicID string) error
+	// ReplaceTopicStates rewrites a student's whole projection (a rebuild).
+	ReplaceTopicStates(ctx context.Context, studentID string, states []TopicState) error
+
+	// InsertXPEvent reports false, with no error, when the source already
+	// paid: a task or drill earns XP once.
+	InsertXPEvent(ctx context.Context, e XPEvent) (bool, error)
+	PutDailyTotal(ctx context.Context, d DailyTotal) error
+	// ReplaceDailyTotals rewrites a student's whole projection (a rebuild).
+	ReplaceDailyTotals(ctx context.Context, studentID string, days []DailyTotal) error
 }

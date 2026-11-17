@@ -14,3 +14,4 @@ One short record per significant choice. Add the next number; do not edit an acc
 | [8](0008-drills-store-their-problems.md) | A drill stores its problems, not just its seed |
 | [9](0009-purpose-built-expression-evaluator.md) | Templates use a purpose-built expression language over exact fractions |
 | [10](0010-authoring-tool-in-the-app-module.md) | The authoring tool is built from the app's module |
+| [11](0011-mastery-events-and-review-days.md) | Mastery history records what happened; a rebuild works out the rest |

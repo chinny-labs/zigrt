@@ -10,9 +10,11 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
+	"sync/atomic"
 	"time"
 	"unicode/utf8"
 
+	"github.com/chinny-labs/zigrt/internal/learning"
 	"github.com/chinny-labs/zigrt/internal/store"
 )
 
@@ -23,6 +25,10 @@ type Service struct {
 	Log   *slog.Logger
 	// Seed supplies the seed for a new problem set; nil means random.
 	Seed func() uint64
+	// Learn is the mastery tuning (plan section 3).
+	Learn learning.Config
+
+	lib atomic.Pointer[library]
 }
 
 // New wires a service to a store. A nil logger discards.
@@ -30,7 +36,7 @@ func New(st store.Store, log *slog.Logger) *Service {
 	if log == nil {
 		log = slog.New(slog.DiscardHandler)
 	}
-	return &Service{Store: st, Now: time.Now, Log: log}
+	return &Service{Store: st, Now: time.Now, Log: log, Learn: learning.Default()}
 }
 
 func (s *Service) now() time.Time { return s.Now().UTC() }
