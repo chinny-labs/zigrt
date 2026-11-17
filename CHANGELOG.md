@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.0](https://github.com/chinny-labs/zigrt/compare/v0.1.1...v0.2.0) (2026-11-17)
+
+
+### Features
+
+* phase 3a, the learning rules, mastery tables and lesson service ([#8](https://github.com/chinny-labs/zigrt/issues/8)) ([a0636ab](https://github.com/chinny-labs/zigrt/commit/a0636ab409e3661baa1b9e0dfcc03548bba3a7d4))
+* phase 3b, lesson pages, answer inputs and figures ([#10](https://github.com/chinny-labs/zigrt/issues/10)) ([c6099d8](https://github.com/chinny-labs/zigrt/commit/c6099d8c24bc2f4231113b4e27d317f57341bb71))
+* phase 3c, the embedded pack, preview, demo and rebuild ([#11](https://github.com/chinny-labs/zigrt/issues/11)) ([87246cb](https://github.com/chinny-labs/zigrt/commit/87246cbb7569bb89556c368bc38adb54575a6850))
+
 ## [0.1.1](https://github.com/chinny-labs/zigrt/compare/v0.1.0...v0.1.1) (2026-11-17)
 
 
