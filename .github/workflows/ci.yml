@@ -57,7 +57,7 @@ jobs:
         if: matrix.db == 'postgres'
         env:
           ZIGRT_TEST_POSTGRES_URL: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
-        run: go test -race -v -run 'TestContract|TestRebind' ./internal/store/postgres/...
+        run: go test -race -v -run 'TestContract|TestRebind|TestCrossEngine' ./internal/store/postgres/...
 
   image:
     needs: [lint, test]

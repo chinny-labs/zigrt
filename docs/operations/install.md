@@ -96,9 +96,7 @@ Every setting is an environment variable. Any of them can be read from a file in
 
 ## Backups
 
-With SQLite, Zigrt writes a snapshot to `/data/backups` each night and keeps the newest 14. Copy that folder off the machine: a backup on the same disk is not a backup. `zigrt backup` takes one now. To restore, stop the container and copy a snapshot over `/data/zigrt.db`.
-
-With Postgres, back up the database with your own tools.
+With SQLite, Zigrt writes a snapshot to `/data/backups` each night, keeps the newest 14, and takes another before every upgrade that changes the database. Copy that folder off the machine. With Postgres, back up with your own tools. [Backups, export and restore](backup.md) has the details.
 
 ## Commands
 
@@ -113,6 +111,7 @@ Run these inside the container, for example `docker compose exec zigrt zigrt ver
 | `zigrt backup` | Takes a SQLite backup now |
 | `zigrt rebuild` | Recomputes every student's progress from the history |
 | `zigrt demo` | Fills an empty database with a demo household, to try Zigrt without a placement |
+| `zigrt export [-o file]` and `zigrt import <file>` | Write the household as JSON Lines, or load such a file into an empty database ([Backups](backup.md)) |
 | `zigrt version` | Prints the version |
 
 ## Health

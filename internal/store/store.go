@@ -7,6 +7,7 @@ package store
 import (
 	"context"
 	"errors"
+	"io"
 	"time"
 )
 
@@ -25,6 +26,11 @@ type Store interface {
 	// BEGIN IMMEDIATE on a single-connection write pool; Postgres:
 	// SELECT … FOR UPDATE on the users row), so check-then-write is safe.
 	Tx(ctx context.Context, lockUser string, fn func(Tx) error) error
+
+	// Export writes every row as JSON Lines; Import loads such a dump into
+	// an empty database (plan 9.1).
+	Export(ctx context.Context, w io.Writer, h ExportHeader) error
+	Import(ctx context.Context, r io.Reader) (int, error)
 
 	Dialect() string // "sqlite" or "postgres"
 	Ping(ctx context.Context) error

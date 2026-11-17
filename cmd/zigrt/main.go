@@ -9,6 +9,8 @@
 //	zigrt demo [-days n]           fill an empty database with a demo household
 //	zigrt preview [-pack dir] [topic...]  render a pack's lessons to static pages
 //	zigrt simulate [-profile p] [-days n]  play a scripted student through a pack
+//	zigrt export [-o file]         write the household as JSON Lines
+//	zigrt import <file>            load an export into an empty database
 //	zigrt version                  print the version
 package main
 
@@ -70,6 +72,10 @@ func main() {
 		err = preview(args)
 	case "simulate":
 		err = simulate(args)
+	case "export":
+		err = export(args)
+	case "import":
+		err = importDump(args)
 	case "version", "--version", "-v":
 		fmt.Printf("zigrt %s (%s)\n", buildinfo.Version, buildinfo.ShortCommit())
 	case "help", "-h", "--help":
@@ -98,6 +104,8 @@ func usage(w io.Writer) {
                                  render a content pack's lessons to static pages, for authors
   simulate [-pack file] [-profile forgetful] [-days 60] [-seed 1]
                                  play a scripted student through a pack on a throwaway database
+  export [-o file]               write the whole household as JSON Lines (stdout by default)
+  import <file>                  load an export into an empty database, on either engine
   version                        print the version
 `)
 }
@@ -149,6 +157,10 @@ func serve() error {
 	}
 	defer st.Close()
 	svc := service.New(st, log)
+	svc.AppVersion, svc.ContentDir = buildinfo.Version, cfg.ContentDir
+	if path, err := sqlite.PathFromURL(cfg.DatabaseURL); err == nil {
+		svc.Backups = &backup.OnDemand{Store: st, Dir: backup.Dir(path)}
+	}
 	contentErr := loadContent(svc, cfg, log)
 	if contentErr == nil {
 		if err := svc.NotePack(ctx); err != nil {
@@ -236,6 +248,7 @@ func loadContent(svc *service.Service, cfg config.Config, log *slog.Logger) erro
 		return err
 	}
 	svc.SetPack(found.Pack)
+	svc.PackSource = found.Source
 	log.Info("content loaded", "pack", found.Pack.Manifest.ID, "version", found.Pack.Manifest.Version,
 		"from", found.Source, "topics", len(found.Pack.Topics))
 	return nil

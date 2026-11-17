@@ -92,6 +92,8 @@ func Run(t *testing.T, open Opener) {
 		"HouseholdStore": testHouseholdStore,
 		"ParentControls": testParentControls,
 		"Notifications":  testNotifications,
+		"ExportImport":   testExportImport,
+		"HouseholdPage":  testHouseholdPage,
 		"LessonFlow":     testLessonFlow,
 		"LessonPauses":   testLessonPauses,
 		"ReviewsAndXP":   testReviewsAndXP,

@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 	"time"
 
@@ -141,6 +142,29 @@ func TestMigration4KeepsHistory(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer st.Close()
+	// The upgrade took a snapshot of version 3 first, with the history in it.
+	snaps, _ := filepath.Glob(filepath.Join(filepath.Dir(path), "backups", sqlite.PreMigratePrefix+"v3-*.db"))
+	if len(snaps) != 1 {
+		t.Fatalf("pre-migration snapshots: %v", snaps)
+	}
+	snap, err := sql.Open("sqlite", "file:"+snaps[0]+"?mode=ro")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var n int
+	if err := snap.QueryRowContext(ctx, `SELECT COUNT(*) FROM mastery_events`).Scan(&n); err != nil || n != 1 {
+		t.Fatalf("snapshot has %d events, %v", n, err)
+	}
+	snap.Close()
+	// Opening again with nothing pending takes none.
+	st2, err := sqlite.Open(ctx, path, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	st2.Close()
+	if snaps, _ = filepath.Glob(filepath.Join(filepath.Dir(path), "backups", "*.db")); len(snaps) != 1 {
+		t.Fatalf("snapshots after a second open: %v", snaps)
+	}
 	evs, err := st.ListMasteryEvents(ctx, "u1")
 	if err != nil || len(evs) != 1 || evs[0].Kind != "lesson_passed" || string(evs[0].Detail) != `{"on":"2026-03-07","stage":0}` {
 		t.Fatalf("after migrating: %+v %v", evs, err)
@@ -151,4 +175,56 @@ func TestMigration4KeepsHistory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("quiz_missed: %v", err)
 	}
+}
+
+// Every column of every table is in the export, except the tables left out
+// on purpose: a migration that adds a column must add it there too.
+func TestExportCoversSchema(t *testing.T) {
+	ctx := context.Background()
+	st, err := sqlite.Open(ctx, filepath.Join(t.TempDir(), "zigrt.db"), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	db := st.WriteDB()
+	tables := names(t, db, `SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name`)
+	want := store.ExportedColumns()
+	for _, table := range tables {
+		if slices.Contains(store.NotExported, table) {
+			continue
+		}
+		cols, ok := want[table]
+		if !ok {
+			t.Errorf("table %s is not exported", table)
+			continue
+		}
+		have := names(t, db, `SELECT name FROM pragma_table_info(?)`, table)
+		slices.Sort(have)
+		w := slices.Sorted(slices.Values(cols))
+		if !slices.Equal(have, w) {
+			t.Errorf("%s: columns %v, export has %v", table, have, w)
+		}
+	}
+}
+
+// names runs a query of one text column and returns its values.
+func names(t *testing.T, db *sql.DB, q string, args ...any) []string {
+	t.Helper()
+	rows, err := db.QueryContext(context.Background(), q, args...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rows.Close()
+	var out []string
+	for rows.Next() {
+		var n string
+		if err := rows.Scan(&n); err != nil {
+			t.Fatal(err)
+		}
+		out = append(out, n)
+	}
+	if err := rows.Err(); err != nil {
+		t.Fatal(err)
+	}
+	return out
 }

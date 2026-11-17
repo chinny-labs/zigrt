@@ -11,6 +11,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/chinny-labs/zigrt/internal/store"
@@ -54,4 +55,46 @@ func (n *Nightly) Run(ctx context.Context) error {
 	removed, err := sqlite.Prune(n.Dir, n.Retain)
 	n.Log.Info("backup written", "path", path, "dur_ms", time.Since(start).Milliseconds(), "pruned", len(removed))
 	return err
+}
+
+// OnDemand is "back up now" and the latest-backup line on the household
+// page, for SQLite.
+type OnDemand struct {
+	Store *store.SQL
+	Dir   string
+}
+
+// Now writes a snapshot named for this moment.
+func (o *OnDemand) Now(ctx context.Context) (string, error) {
+	path := filepath.Join(o.Dir, sqlite.OnDemandName(time.Now().UTC()))
+	return path, sqlite.Backup(ctx, o.Store, path)
+}
+
+// Latest reports when the newest snapshot was written and how many there
+// are.
+func (o *OnDemand) Latest() (*time.Time, int, error) {
+	entries, err := os.ReadDir(o.Dir)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, 0, nil
+	}
+	if err != nil {
+		return nil, 0, err
+	}
+	var latest *time.Time
+	n := 0
+	for _, e := range entries {
+		name := e.Name()
+		if e.IsDir() || !strings.HasPrefix(name, sqlite.BackupPrefix) || !strings.HasSuffix(name, ".db") {
+			continue
+		}
+		info, err := e.Info()
+		if err != nil {
+			return nil, 0, err
+		}
+		n++
+		if t := info.ModTime(); latest == nil || t.After(*latest) {
+			latest = &t
+		}
+	}
+	return latest, n, nil
 }
