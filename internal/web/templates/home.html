@@ -49,6 +49,12 @@
   </form>
   {{end}}
   {{end}}
+  {{range $h.Assigned}}
+  <form method="post" action="/assignments/{{.ID}}/start">
+    {{template "csrf" $}}
+    <button class="taskrow taskrow-from" type="submit"><span>{{if .From}}From {{.From}}: {{end}}{{.Title}}</span><span class="muted nowrap">{{if eq (print .Kind) "worksheet"}}Worksheet{{else}}Drill{{end}}</span></button>
+  </form>
+  {{end}}
   {{if .D.Placement}}
   <form method="post" action="/placement/skip">{{template "csrf" .}}<button class="btn btn-quiet" type="submit">Start from the bottom instead</button></form>
   {{end}}

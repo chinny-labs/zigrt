@@ -2,7 +2,7 @@
 {{$d := .D}}
 <div class="column">
   <div class="row-between">
-    <h1>My tower</h1>
+    <h1>{{.Title}}</h1>
     <span class="muted">{{$d.T.Placed}} {{if eq $d.T.Placed 1}}block{{else}}blocks{{end}} placed</span>
   </div>
   {{template "flash" .}}

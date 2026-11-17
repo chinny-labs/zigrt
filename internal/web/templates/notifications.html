@@ -1,0 +1,22 @@
+{{define "main"}}
+<div class="column">
+  <div class="row-between">
+    <h1>Notifications</h1>
+    {{if .D.Unread}}<form method="post" action="/parent/notifications/read">{{template "csrf" .}}<button class="linkbtn" type="submit">Mark all read</button></form>{{end}}
+  </div>
+  {{template "flash" .}}
+  {{range .D.Notes}}
+  <article class="card note{{if not .ReadAt}} note-new{{end}}">
+    <div class="row-between"><strong>{{.Title}}</strong><span class="muted nowrap">{{.When}}</span></div>
+    <p class="muted">{{.Body}}</p>
+    {{if .ActionURL}}
+    {{if eq .Kind "locked"}}
+    <form method="post" action="{{.ActionURL}}/unlock">{{template "csrf" $}}<button class="btn btn-primary btn-sm" type="submit">{{.Action}}</button></form>
+    {{else}}<a class="btn btn-primary btn-sm" href="{{.ActionURL}}">{{.Action}}</a>{{end}}
+    {{end}}
+  </article>
+  {{else}}
+  <div class="card"><p class="muted">Nothing yet. Goals met, lessons that need help and locked PINs show up here.</p></div>
+  {{end}}
+</div>
+{{end}}

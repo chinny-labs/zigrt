@@ -1,0 +1,26 @@
+{{define "main"}}
+{{$s := .D.S}}
+<div class="column">
+  <div class="stack-sm">
+    <h1>Mark blocks for {{$s.DisplayName}}</h1>
+    <p class="muted">Placing a block counts it as known; it comes up for review within a week. Taking one away puts it back to be learned.</p>
+  </div>
+  {{template "flash" .}}
+  {{range .D.Tiers}}
+  <section class="card stack-sm" aria-label="{{gradeOf .Grade}}">
+    <h2>{{gradeOf .Grade}} · {{.Placed}} of {{.Total}}</h2>
+    {{range .Faces}}{{range .Blocks}}
+    <form method="post" action="/parent/students/{{$s.ID}}/blocks/{{.Topic.ID}}" class="mark">
+      {{template "csrf" $}}
+      <span class="mark-text"><strong>{{.Topic.Title.In "en"}}</strong><span class="muted">{{stateWord .State}}</span></span>
+      {{if or (eq .State "placed") (eq .State "mend")}}
+      <button class="chip" type="submit" name="placed" value="0">Take away</button>
+      {{else}}
+      <button class="chip chip-on" type="submit" name="placed" value="1">Place</button>
+      {{end}}
+    </form>
+    {{end}}{{end}}
+  </section>
+  {{end}}
+</div>
+{{end}}

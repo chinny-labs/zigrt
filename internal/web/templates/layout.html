@@ -15,7 +15,11 @@
 {{if eq .Shell "parent"}}
   <header class="topbar">
     <a class="wordmark wordmark-sm" href="/parent" aria-label="Zigrt, everyone">{{template "wordmark"}}</a>
-    <form method="post" action="/logout">{{template "csrf" .}}<button class="chip" type="submit">Sign out</button></form>
+    <span class="topbar-actions">
+      <a class="iconbtn bell" href="/parent/notifications" aria-label="Notifications{{if .Unread}}, {{.Unread}} unread{{end}}">{{template "i-bell"}}{{if .Unread}}<span class="badge" aria-hidden="true">{{.Unread}}</span>{{end}}</a>
+      <a class="iconbtn" href="/parent/household" aria-label="Household settings">{{template "i-gear"}}</a>
+      <form method="post" action="/logout">{{template "csrf" .}}<button class="chip" type="submit">Sign out</button></form>
+    </span>
   </header>
 {{else if eq .Shell "student"}}
   <header class="topbar">

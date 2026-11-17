@@ -1,0 +1,61 @@
+{{define "main"}}
+{{$h := .D.H}}
+<div class="column">
+  <h1>Household</h1>
+  {{template "flash" .}}
+  <section class="card stack-sm" aria-labelledby="parents-h">
+    <h2 id="parents-h">Parents</h2>
+    {{range $h.Parents}}
+    <div class="person-row"><span class="person-text"><strong>{{.DisplayName}}{{if eq .ID $.D.Me.ID}} (you){{end}}</strong><span class="muted">{{.Email}}</span></span></div>
+    {{end}}
+    <a href="/parent/parents/new">Add another parent</a>
+  </section>
+  <section class="card stack" aria-labelledby="pw-h">
+    <h2 id="pw-h">Your password</h2>
+    <form method="post" action="/parent/password" class="stack" autocomplete="off">
+      {{template "csrf" .}}
+      <div class="field"><label for="current">Current password</label><input id="current" name="current" type="password" required autocomplete="current-password"></div>
+      <div class="field"><label for="password">New password</label><input id="password" name="password" type="password" minlength="12" required autocomplete="new-password"><span class="hint">At least 12 characters. You'll sign in again after.</span></div>
+      <button class="btn btn-secondary" type="submit">Change password</button>
+    </form>
+  </section>
+  <section class="card stack" aria-labelledby="time-h">
+    <h2 id="time-h">Household and time</h2>
+    <form method="post" action="/parent/household" class="stack">
+      {{template "csrf" .}}
+      <div class="field"><label for="name">Name</label><input id="name" name="name" value="{{$h.Household.Name}}" maxlength="60" required></div>
+      <div class="field">
+        <label for="timezone">Time zone</label>
+        <select id="timezone" name="timezone">{{range $.D.Timezones}}<option{{if eq . $h.Household.Timezone}} selected{{end}}>{{.}}</option>{{end}}</select>
+        <span class="hint">Days, goals and streaks follow this time zone.</span>
+      </div>
+      <button class="btn btn-secondary" type="submit">Save</button>
+    </form>
+  </section>
+  <section class="card stack" aria-labelledby="lessons-h">
+    <h2 id="lessons-h">Lessons</h2>
+    <div class="stack-sm">
+      <strong>{{$h.Pack.Title}}</strong>
+      <span class="muted">Content pack {{$h.Pack.Version}} · {{$h.Pack.Topics}} topics · {{if eq $h.Pack.Source "embedded"}}came with this version of Zigrt{{else if eq $h.Pack.Source "uploaded"}}uploaded{{else}}from the content folder{{end}}</span>
+    </div>
+    <form method="post" action="/parent/pack" enctype="multipart/form-data" class="stack">
+      {{template "csrf" .}}
+      <div class="field"><label for="pack">Upload a newer content pack</label><input id="pack" name="pack" type="file" accept=".zip,application/zip" required><span class="hint">A .zip from the curriculum's releases. It is checked first and runs at once.</span></div>
+      <button class="btn btn-secondary" type="submit">Upload</button>
+    </form>
+  </section>
+  <section class="card stack" aria-labelledby="backup-h">
+    <h2 id="backup-h">Backups</h2>
+    {{if $h.Backups}}
+    <p class="muted">{{if $h.LastBackup}}Last backup {{since $h.LastBackup}}. {{end}}{{$h.BackupsKept}} kept. A copy is also taken before every upgrade.</p>
+    {{else}}
+    <p class="muted">This Zigrt keeps its data in Postgres: back it up with your own tools.</p>
+    {{end}}
+    <div class="pair">
+      {{if $h.Backups}}<form method="post" action="/parent/backup">{{template "csrf" .}}<button class="btn btn-secondary" type="submit">Back up now</button></form>{{end}}
+      <a class="btn btn-secondary" href="/parent/export">Export everything</a>
+    </div>
+  </section>
+  <p class="muted center">Zigrt {{$h.AppVersion}} · {{if eq $h.Engine "sqlite"}}SQLite{{else}}Postgres{{end}}</p>
+</div>
+{{end}}
