@@ -3,7 +3,9 @@ package web
 import (
 	"bytes"
 	"context"
+	"errors"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"path/filepath"
 	"regexp"
@@ -250,5 +252,28 @@ func TestMathHTML(t *testing.T) {
 		if got := string(mathHTML(in)); got != want {
 			t.Errorf("mathHTML(%q) =\n%s\nwant\n%s", in, got, want)
 		}
+	}
+}
+
+// /readyz fails while no content pack can run (plan 4.7).
+func TestReadyzContent(t *testing.T) {
+	a := newApp(t)
+	if resp, _ := a.get(a.c, "/readyz"); resp.StatusCode != http.StatusOK {
+		t.Fatalf("with a pack: %d", resp.StatusCode)
+	}
+	a.svc.SetPack(nil)
+	if resp, body := a.get(a.c, "/readyz"); resp.StatusCode != http.StatusServiceUnavailable || !strings.Contains(body, "no content pack") {
+		t.Fatalf("without a pack: %d %s", resp.StatusCode, body)
+	}
+	srv, err := New(context.Background(), a.svc, config.Config{InsecureCookies: true}, nil, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	a.svc.SetPack(hardestPack(t))
+	srv.SetContentError(errors.New("content pack 2099.01.1 needs Zigrt 9.0.0 or later"))
+	rec := httptest.NewRecorder()
+	srv.ServeHTTP(rec, httptest.NewRequest("GET", "/readyz", nil))
+	if rec.Code != http.StatusServiceUnavailable || !strings.Contains(rec.Body.String(), "needs Zigrt 9.0.0") {
+		t.Fatalf("too new a pack: %d %s", rec.Code, rec.Body.String())
 	}
 }

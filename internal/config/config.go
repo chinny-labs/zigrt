@@ -28,6 +28,7 @@ type Config struct {
 	BackupRetain    int
 	LogFormat       string // json | text
 	Timezone        string // default household timezone at setup
+	ContentDir      string // folder scanned for content packs newer than the embedded one
 }
 
 // DefaultEnvFile is read when present, before the process environment.
@@ -82,6 +83,7 @@ func parse(lookup func(string) (string, bool)) (Config, error) {
 		BackupSchedule: str("ZIGRT_BACKUP_SCHEDULE", "03:15"),
 		LogFormat:      str("ZIGRT_LOG_FORMAT", "json"),
 		Timezone:       str("TZ", "UTC"),
+		ContentDir:     str("ZIGRT_CONTENT_DIR", "/data/content"),
 	}
 
 	if c.LogFormat != "json" && c.LogFormat != "text" {

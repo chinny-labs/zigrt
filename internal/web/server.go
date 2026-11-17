@@ -51,6 +51,15 @@ type Server struct {
 	csrfKey    []byte
 	pages      map[string]*template.Template
 	handler    http.Handler
+	contentErr atomic.Value // error: why no content pack could be loaded
+}
+
+// SetContentError records why the content pack could not be loaded, which
+// /readyz reports until the process restarts with a pack it can run.
+func (s *Server) SetContentError(err error) {
+	if err != nil {
+		s.contentErr.Store(err)
+	}
 }
 
 // New builds the server. setupToken is the one-time first-run token, or ""

@@ -30,9 +30,9 @@ func packFiles(name string, d fs.DirEntry) bool {
 	return strings.HasSuffix(name, ".yaml") || base == "released-ids.json" || strings.HasPrefix(base, "LICENSE") || base == "README.md"
 }
 
-// Build writes a pack file: a zip archive of the pack, byte-for-byte the same
-// for the same input, so its checksum can be pinned. It returns the SHA-256
-// of what it wrote.
+// Build writes a pack file: a zip archive of the pack, byte-for-byte the
+// same for the same input on any Go version, so its checksum can be pinned.
+// It returns the SHA-256 of what it wrote.
 func Build(fsys fs.FS, w io.Writer) (string, error) {
 	h := sha256.New()
 	zw := zip.NewWriter(io.MultiWriter(w, h))
@@ -54,7 +54,9 @@ func Build(fsys fs.FS, w io.Writer) (string, error) {
 		if err != nil {
 			return err
 		}
-		f, err := zw.CreateHeader(&zip.FileHeader{Name: name, Method: zip.Deflate, Modified: epoch})
+		// Stored, not deflated: compressed output can change between Go
+		// releases, and the checksum must not (a pack is a few hundred KB).
+		f, err := zw.CreateHeader(&zip.FileHeader{Name: name, Method: zip.Store, Modified: epoch})
 		if err != nil {
 			return err
 		}

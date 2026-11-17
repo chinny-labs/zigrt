@@ -39,6 +39,9 @@ func newApp(t *testing.T) *app {
 	}
 	t.Cleanup(func() { st.Close() })
 	svc := service.New(st, nil)
+	// A real server always has a pack (the embedded one); tests use the
+	// prototype.
+	svc.SetPack(hardestPack(t))
 	srv, err := New(ctx, svc, config.Config{InsecureCookies: true, Timezone: "UTC"}, nil, setupToken)
 	if err != nil {
 		t.Fatal(err)

@@ -15,3 +15,5 @@ One short record per significant choice. Add the next number; do not edit an acc
 | [9](0009-purpose-built-expression-evaluator.md) | Templates use a purpose-built expression language over exact fractions |
 | [10](0010-authoring-tool-in-the-app-module.md) | The authoring tool is built from the app's module |
 | [11](0011-mastery-events-and-review-days.md) | Mastery history records what happened; a rebuild works out the rest |
+| [12](0012-embedded-pack-committed-with-a-lock.md) | The embedded content pack is committed with a lock file |
+| [13](0013-preview-in-the-app-binary.md) | Lesson preview is a command of the app, not of the authoring tool |
