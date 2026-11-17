@@ -1,34 +1,54 @@
 {{define "main"}}
-<div class="column">
-  <div class="person person-head">
-    <span class="avatar avatar-lg {{tone .D.Avatar}}" aria-hidden="true">{{.D.Initial}}</span>
-    <span class="person-text">
-      <h1>{{.D.DisplayName}}</h1>
-      <span class="muted">Daily goal {{.D.Settings.DailyXPGoal}} XP</span>
-    </span>
+{{$r := .D.R}}{{$s := $r.Student}}
+<div class="column column-wide">
+  <div class="row-between">
+    <div class="person person-head">
+      <span class="avatar avatar-lg {{tone $s.Avatar}}" aria-hidden="true">{{$s.Initial}}</span>
+      <span class="person-text">
+        <h1>{{$s.DisplayName}}</h1>
+        <span class="muted">{{if $r.Course}}{{$r.Course}} · {{end}}{{$r.Placed}} {{if eq $r.Placed 1}}block{{else}}blocks{{end}} placed{{if $r.Today.Streak}} · {{$r.Today.Streak}} day streak{{end}}</span>
+      </span>
+    </div>
+    <a class="chip" href="/parent/students/{{$s.ID}}/settings">Settings</a>
   </div>
   {{template "flash" .}}
   {{if .D.Locked}}
   <div class="alert alert-warn stack-sm">
-    <strong>{{.D.DisplayName}} is locked out</strong>
+    <strong>{{$s.DisplayName}} is locked out</strong>
     <span>Ten wrong PINs in a row. They stay locked until you unlock them.</span>
-    <form method="post" action="/parent/students/{{.D.ID}}/unlock">
+    <form method="post" action="/parent/students/{{$s.ID}}/unlock">
       {{template "csrf" .}}
-      <button class="btn btn-primary btn-sm" type="submit">Unlock {{.D.DisplayName}}</button>
+      <button class="btn btn-primary btn-sm" type="submit">Unlock {{$s.DisplayName}}</button>
     </form>
   </div>
   {{end}}
-  <section class="card stack" aria-labelledby="pin-h">
-    <h2 id="pin-h">PIN</h2>
-    <form method="post" action="/parent/students/{{.D.ID}}/pin" class="stack" autocomplete="off">
-      {{template "csrf" .}}
-      <div class="field">
-        <label for="pin">New PIN</label>
-        <input id="pin" name="pin" inputmode="numeric" pattern="[0-9]*" minlength="4" maxlength="6" required autocomplete="off">
-        <span class="hint">4 to 6 digits. Setting a new PIN signs {{.D.DisplayName}} out everywhere.</span>
-      </div>
-      <button class="btn btn-secondary" type="submit">Set a new PIN</button>
-    </form>
+  {{with $r.Stuck}}
+  <div class="alert alert-warn stack-sm">
+    <strong>Stuck on {{.Title.In "en"}}</strong>
+    <span>The lesson stopped twice{{if $r.StuckStep}} at step {{$r.StuckStep}}{{end}}.{{if $r.StuckMending}} Zigrt has gone back to mend {{range $i, $t := $r.StuckMending}}{{if $i}} and {{end}}"{{$t.Title.In "en"}}"{{end}} first.{{end}}</span>
+  </div>
+  {{end}}
+  <section class="card stack-sm" aria-labelledby="xp-h">
+    <div class="row-between"><h2 id="xp-h">XP each day</h2><span class="muted">{{$r.WeekXP}} of {{$r.WeekGoal}} this week</span></div>
+    {{.D.Chart}}
+    <p class="muted">Dashed line: daily goal of {{$r.Today.Goal}} XP.{{range $r.Week}}{{if .Rest}} {{.Weekday}} is a rest day.{{end}}{{end}}</p>
   </section>
+  <section class="card stack-sm" aria-labelledby="did-h">
+    <h2 id="did-h">What {{$s.DisplayName}} did</h2>
+    {{range $r.Activity}}
+    <div class="activity">
+      <span class="muted activity-day">{{.At.Format "Mon"}}</span>
+      <span class="activity-text"><strong>{{.Title}}</strong><span class="muted">{{kindWord .Kind}}</span></span>
+      <span class="nowrap activity-score">{{.Detail}}</span>
+    </div>
+    {{else}}
+    <p class="muted">Nothing yet.</p>
+    {{end}}
+  </section>
+  <div class="grow"></div>
+  <div class="pair">
+    <a class="btn btn-secondary" href="/parent/students/{{$s.ID}}/tower">{{$s.DisplayName}}'s tower</a>
+    <a class="btn btn-primary" href="/drills?for={{$s.ID}}">Assign a drill</a>
+  </div>
 </div>
 {{end}}

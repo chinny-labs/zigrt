@@ -164,6 +164,16 @@ func (s *Server) taskStart(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 	http.Redirect(w, r, taskPath(t.ID), http.StatusSeeOther) //nolint:gosec // same-site: a fixed prefix and an escaped ID
 }
 
+// assignmentStart opens a drill or worksheet a parent assigned.
+func (s *Server) assignmentStart(w http.ResponseWriter, r *http.Request, c *reqCtx) {
+	d, err := s.svc.StartAssignment(r.Context(), *c.User, r.PathValue("id"))
+	if err != nil {
+		s.taskFail(w, r, err)
+		return
+	}
+	s.toDrill(w, r, d, "")
+}
+
 // placementSkip starts a new student from the bottom of the tower.
 func (s *Server) placementSkip(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 	if err := s.svc.SkipPlacement(r.Context(), *c.User); err != nil {

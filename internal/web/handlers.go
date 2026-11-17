@@ -181,18 +181,7 @@ func (s *Server) parentLoginSubmit(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, safeNext(next, "/parent"), http.StatusSeeOther) //nolint:gosec // safeNext allows same-site paths only
 }
 
-// --- parent pages (P2, P4) --------------------------------------------------
-
-func (s *Server) dashboard(w http.ResponseWriter, r *http.Request, _ *reqCtx) {
-	students, err := s.svc.Students(r.Context())
-	if err != nil {
-		s.serverError(w, r, err)
-		return
-	}
-	v := s.newView(w, r, "Everyone", students)
-	v.Shell = "parent"
-	s.render(w, r, http.StatusOK, "dashboard", v)
-}
+// --- parent pages: adding a student, PIN and lock (P4) --------------------------
 
 func (s *Server) studentNewPage(w http.ResponseWriter, r *http.Request, _ *reqCtx) {
 	v := s.newView(w, r, "Add a student", nil)
@@ -220,21 +209,6 @@ func (s *Server) studentCreate(w http.ResponseWriter, r *http.Request, c *reqCtx
 	}
 	s.flash(w, "ok", st.DisplayName+" is added. They can sign in with their PIN.")
 	http.Redirect(w, r, "/parent", http.StatusSeeOther)
-}
-
-func (s *Server) studentPage(w http.ResponseWriter, r *http.Request, _ *reqCtx) {
-	st, err := s.svc.Student(r.Context(), r.PathValue("id"))
-	if err != nil {
-		if errors.Is(err, store.ErrNotFound) {
-			s.notFound(w, r)
-			return
-		}
-		s.serverError(w, r, err)
-		return
-	}
-	v := s.newView(w, r, st.DisplayName, st)
-	v.Shell, v.Back, v.BackLabel = "parent", "/parent", "Everyone"
-	s.render(w, r, http.StatusOK, "student", v)
 }
 
 func (s *Server) studentResetPIN(w http.ResponseWriter, r *http.Request, c *reqCtx) {

@@ -24,6 +24,7 @@ type opRow struct {
 }
 
 type builderData struct {
+	For      *service.StudentView // a parent assigning to this student
 	Ops      []opRow
 	Formats  []formatChoice
 	Counts   []int
@@ -71,16 +72,35 @@ func (s *Server) drillBuilder(w http.ResponseWriter, r *http.Request, c *reqCtx)
 	s.renderBuilder(w, r, c, http.StatusOK, set, "", "")
 }
 
+// assignTarget is the student a parent is building a drill for, from ?for=
+// or the form's for field.
+func (s *Server) assignTarget(r *http.Request, c *reqCtx) *service.StudentView {
+	id := r.FormValue("for")
+	if id == "" || !c.User.IsParent() {
+		return nil
+	}
+	st, err := s.svc.Student(r.Context(), id)
+	if err != nil {
+		return nil
+	}
+	return &st
+}
+
 func (s *Server) renderBuilder(w http.ResponseWriter, r *http.Request, c *reqCtx, status int, set drill.Settings, title, msg string) {
 	d, err := s.builderData(r, c, set, title)
 	if err != nil {
 		s.serverError(w, r, err)
 		return
 	}
+	d.For = s.assignTarget(r, c)
 	v := s.newView(w, r, "Make a drill", d)
 	if !d.CanDrill {
 		v.Title = "Make a worksheet"
 		v.Back, v.BackLabel = "/parent", "Everyone"
+	}
+	if d.For != nil {
+		v.Title = "Assign to " + d.For.DisplayName
+		v.Back, v.BackLabel = studentPath(d.For.ID), d.For.DisplayName
 	}
 	v.Shell, v.Nav, v.Err = s.shell(c), "drills", msg
 	s.render(w, r, status, "drills", v)
@@ -112,6 +132,19 @@ func parseDrillForm(f url.Values) drill.Settings {
 func (s *Server) drillCreate(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 	set := parseDrillForm(r.PostForm)
 	kind := store.DrillKind(r.PostFormValue("kind"))
+	if to := s.assignTarget(r, c); to != nil {
+		if _, err := s.svc.AssignDrill(r.Context(), *c.User, to.ID, kind, set, r.PostFormValue("title")); err != nil {
+			if msg := userMessage(err); msg != "" {
+				s.renderBuilder(w, r, c, http.StatusUnprocessableEntity, set, r.PostFormValue("title"), msg)
+				return
+			}
+			s.serverError(w, r, err)
+			return
+		}
+		s.flash(w, "ok", "Assigned. It's on "+to.DisplayName+"'s home until done.")
+		http.Redirect(w, r, studentPath(to.ID), http.StatusSeeOther) //nolint:gosec // a same-site path built from one escaped segment
+		return
+	}
 	d, err := s.svc.CreateDrill(r.Context(), *c.User, kind, set, r.PostFormValue("title"))
 	if err != nil {
 		msg := userMessage(err)

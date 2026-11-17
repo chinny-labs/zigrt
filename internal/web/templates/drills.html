@@ -3,6 +3,7 @@
   <h1>{{.Title}}</h1>
   {{template "flash" .}}
   <form method="post" action="/drills" class="stack">
+    {{with .D.For}}<input type="hidden" name="for" value="{{.ID}}">{{end}}
     {{template "csrf" .}}
     <fieldset class="group">
       <legend>What kind?</legend>
@@ -64,8 +65,13 @@
       <label for="title">Title for a worksheet</label>
       <input id="title" name="title" value="{{.D.Title}}" maxlength="80" placeholder="Maths practice">
     </div>
+    {{if .D.For}}
+    <button class="btn btn-primary" type="submit" name="kind" value="drill">Assign as a drill</button>
+    <button class="btn btn-secondary" type="submit" name="kind" value="worksheet">Assign a worksheet to print</button>
+    {{else}}
     {{if .D.CanDrill}}<button class="btn btn-primary" type="submit" name="kind" value="drill">Start the drill</button>{{end}}
     <button class="btn {{if .D.CanDrill}}btn-secondary{{else}}btn-primary{{end}}" type="submit" name="kind" value="worksheet">Print a worksheet</button>
+    {{end}}
   </form>
   {{if .D.Recent}}
   <section class="card stack-sm" aria-labelledby="recent-h">

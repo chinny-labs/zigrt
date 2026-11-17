@@ -1,0 +1,18 @@
+{{define "main"}}
+<div class="column">
+  <h1>Delete {{.D.DisplayName}}?</h1>
+  {{template "flash" .}}
+  <div class="alert alert-warn stack-sm">
+    <strong>This can't be undone.</strong>
+    <span>Every lesson, review, drill and day of {{.D.DisplayName}}'s history is removed. Export the household first if you might want it.</span>
+  </div>
+  <form method="post" action="/parent/students/{{.D.ID}}/delete" class="stack" autocomplete="off">
+    {{template "csrf" .}}
+    <div class="field">
+      <label for="confirm">Type {{.D.DisplayName}} to confirm</label>
+      <input id="confirm" name="confirm" required autocomplete="off">
+    </div>
+    <button class="btn btn-secondary" type="submit">Delete {{.D.DisplayName}}</button>
+  </form>
+</div>
+{{end}}

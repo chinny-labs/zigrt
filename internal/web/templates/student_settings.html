@@ -1,0 +1,63 @@
+{{define "main"}}
+{{$d := .D}}{{$s := .D.S}}
+<div class="column">
+  <h1>{{.Title}}</h1>
+  {{template "flash" .}}
+  <form method="post" action="/parent/students/{{$s.ID}}/settings" class="stack">
+    {{template "csrf" .}}
+    <section class="card stack" aria-labelledby="profile-h">
+      <h2 id="profile-h">Profile</h2>
+      <div class="field"><label for="display_name">Name</label><input id="display_name" name="display_name" value="{{$s.DisplayName}}" maxlength="40" required></div>
+      <fieldset class="group">
+        <legend>Colour</legend>
+        <div class="choices choices-3">
+          {{range $a := (list "sun" "blue" "sky")}}<label class="toggle toggle-tone"><input type="radio" name="avatar" value="{{$a}}"{{if eq $a $s.Avatar}} checked{{end}}><span><span class="avatar {{tone $a}}">{{$s.Initial}}</span></span></label>{{end}}
+        </div>
+      </fieldset>
+    </section>
+    <section class="card stack" aria-labelledby="learn-h">
+      <h2 id="learn-h">Learning</h2>
+      <div class="field">
+        <label for="course">Course</label>
+        <select id="course" name="course">
+          {{range $d.Courses}}<option value="{{.ID}}"{{if eq .ID $d.CourseID}} selected{{end}}>{{.Title.In "en"}}</option>{{end}}
+        </select>
+        <span class="hint">The placement check and lessons cover this course and everything it builds on.</span>
+      </div>
+      <div class="field">
+        <label for="goal">Daily goal (XP)</label>
+        <input id="goal" name="daily_xp_goal" type="number" min="1" max="120" value="{{$d.Goal}}" inputmode="numeric" required>
+        <span class="hint">One XP is about a minute of focused work.</span>
+      </div>
+      <fieldset class="group">
+        <legend>Rest days</legend>
+        <span class="hint">A rest day never breaks a streak.</span>
+        <div class="days">
+          {{range $d.Days}}<label class="toggle toggle-day"><input type="checkbox" name="rest" value="{{.Digit}}"{{if .On}} checked{{end}}><span aria-label="{{.Name}}">{{.Letter}}</span></label>{{end}}
+        </div>
+      </fieldset>
+      <label class="check"><input type="checkbox" name="fluency" value="1"{{if $d.Fluency}} checked{{end}}><span>Count speed on number facts<br><span class="muted">{{$s.DisplayName}} never sees a timer.</span></span></label>
+    </section>
+    <button class="btn btn-primary" type="submit">Save changes</button>
+  </form>
+  <section class="card stack-sm" aria-labelledby="more-h">
+    <h2 id="more-h" class="visually-hidden">More</h2>
+    <form method="post" action="/parent/students/{{$s.ID}}/placement">{{template "csrf" .}}<button class="rowlink rowbtn" type="submit"><span>Run the placement check again</span>{{template "i-next"}}</button></form>
+    <a class="rowlink" href="/parent/students/{{$s.ID}}/blocks"><span>Mark a block as placed or not</span>{{template "i-next"}}</a>
+    <a class="rowlink" href="/drills?for={{$s.ID}}"><span>Assign a drill or worksheet</span>{{template "i-next"}}</a>
+  </section>
+  <section class="card stack" aria-labelledby="pin-h">
+    <h2 id="pin-h">PIN</h2>
+    <form method="post" action="/parent/students/{{$s.ID}}/pin" class="stack" autocomplete="off">
+      {{template "csrf" .}}
+      <div class="field">
+        <label for="pin">New PIN</label>
+        <input id="pin" name="pin" inputmode="numeric" pattern="[0-9]*" minlength="4" maxlength="6" required autocomplete="off">
+        <span class="hint">4 to 6 digits. Setting a new PIN signs {{$s.DisplayName}} out everywhere.</span>
+      </div>
+      <button class="btn btn-secondary" type="submit">Set a new PIN</button>
+    </form>
+  </section>
+  <a class="quiet-link" href="/parent/students/{{$s.ID}}/delete">Delete {{$s.DisplayName}} and all their history</a>
+</div>
+{{end}}

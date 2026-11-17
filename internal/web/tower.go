@@ -59,6 +59,14 @@ func (s *Server) towerPage(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 		s.taskFail(w, r, err)
 		return
 	}
+	v := s.newView(w, r, "My tower", s.towerData(r, tv, "/tower"))
+	v.Shell, v.Nav = "student", "tower"
+	s.render(w, r, http.StatusOK, "tower", v)
+}
+
+// towerData lays out a tower page whose links start with base (a student's
+// own tower, or a parent's read-only view of one).
+func (s *Server) towerData(r *http.Request, tv service.TowerView, base string) towerData {
 	q := r.URL.Query()
 	d := towerData{T: tv, Grade: q.Get("grade")}
 
@@ -87,7 +95,7 @@ func (s *Server) towerPage(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 			label = t.Grade // the narrow top tier has room for the number only
 		}
 		v := towerTierView{Label: label, Width: max(6-i, 1), Placed: t.Placed, Total: t.Total,
-			Finished: t.Finished, Selected: i == sel, Href: "/tower?grade=" + url.QueryEscape(t.Grade), State: "idle"}
+			Finished: t.Finished, Selected: i == sel, Href: base + "?grade=" + url.QueryEscape(t.Grade), State: "idle"}
 		switch {
 		case t.Finished || t.Placed == t.Total:
 			v.State = "done"
@@ -97,10 +105,7 @@ func (s *Server) towerPage(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 		d.Tiers = append([]towerTierView{v}, d.Tiers...)
 	}
 	if sel < 0 {
-		v := s.newView(w, r, "My tower", d)
-		v.Shell, v.Nav = "student", "tower"
-		s.render(w, r, http.StatusOK, "tower", v)
-		return
+		return d
 	}
 	tier := tv.Tiers[sel]
 	d.Grade = tier.Grade
@@ -112,13 +117,13 @@ func (s *Server) towerPage(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 			face = i
 		}
 	}
-	base := "/tower?grade=" + url.QueryEscape(tier.Grade)
+	tbase := base + "?grade=" + url.QueryEscape(tier.Grade)
 	for i, f := range tier.Faces {
 		d.Faces = append(d.Faces, faceChip{Title: f.Strand.Title.In(service.Locale), Selected: i == face, Finished: f.Finished,
-			Href: base + "&strand=" + url.QueryEscape(f.Strand.ID)})
+			Href: tbase + "&strand=" + url.QueryEscape(f.Strand.ID)})
 	}
 	topic := q.Get("topic")
-	fbase := base + "&strand=" + url.QueryEscape(tier.Faces[face].Strand.ID)
+	fbase := tbase + "&strand=" + url.QueryEscape(tier.Faces[face].Strand.ID)
 	for _, b := range tier.Faces[face].Blocks {
 		bv := blockView{Title: b.Topic.Title.In(service.Locale), State: b.State, Selected: b.Topic.ID == topic,
 			Href: fbase + "&topic=" + url.QueryEscape(b.Topic.ID)}
@@ -127,9 +132,7 @@ func (s *Server) towerPage(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 			d.Detail = s.blockDetail(b, tv.Next, s.svc.Now())
 		}
 	}
-	v := s.newView(w, r, "My tower", d)
-	v.Shell, v.Nav = "student", "tower"
-	s.render(w, r, http.StatusOK, "tower", v)
+	return d
 }
 
 func (s *Server) blockDetail(b service.Block, next []service.NextTask, now time.Time) *blockDetail {
@@ -157,9 +160,15 @@ func (s *Server) blockDetail(b service.Block, next []service.NextTask, now time.
 }
 
 // ago says how long ago, the way a child would: today, yesterday, 3 days
-// ago, 2 weeks ago, 4 months ago.
+// ago, 2 weeks ago, 4 months ago. Days are calendar days in the server's
+// time zone (TZ, the household's in the image), so last night is
+// "yesterday" even if it was ten hours ago.
 func ago(d time.Duration) string {
-	days := int(d.Hours() / 24)
+	now := time.Now()
+	then := now.Add(-d)
+	y1, m1, d1 := now.Date()
+	y2, m2, d2 := then.Date()
+	days := int(time.Date(y1, m1, d1, 0, 0, 0, 0, time.UTC).Sub(time.Date(y2, m2, d2, 0, 0, 0, 0, time.UTC)).Hours() / 24)
 	switch {
 	case days < 1:
 		return "today"

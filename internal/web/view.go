@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/chinny-labs/zigrt/internal/buildinfo"
 	"github.com/chinny-labs/zigrt/problem"
@@ -27,6 +28,7 @@ type view struct {
 	Form      url.Values
 	Version   string
 	SourceURL string
+	Unread    int // a parent's unread notifications, for the bell
 	D         any
 }
 
@@ -50,6 +52,17 @@ var funcs = template.FuncMap{
 	"math":      mathHTML,
 	"gradeOf":   gradeName,
 	"stateWord": func(state string) string { return stateWords[state] },
+	// since says how long ago a time was, the way the parent pages put it.
+	"since": func(t *time.Time) string {
+		if t == nil {
+			return ""
+		}
+		return ago(time.Since(*t))
+	},
+	"kindWord": func(kind string) string {
+		return map[string]string{"lesson": "Lesson", "review": "Review", "quiz": "Quiz", "placement": "Placement check",
+			"paused": "Lesson, stopped for the day", "drill": "Drill", "worksheet": "Worksheet"}[kind]
+	},
 	// pair passes two values to a sub-template, as .A and .B.
 	"pair": func(a, b any) struct{ A, B any } { return struct{ A, B any }{a, b} },
 	// showPrompt says whether a problem's words are worth showing above its
@@ -71,6 +84,9 @@ var funcs = template.FuncMap{
 func (s *Server) newView(w http.ResponseWriter, r *http.Request, title string, d any) *view {
 	v := &view{reqCtx: rc(r), Title: title, D: d, Version: buildinfo.Version, SourceURL: buildinfo.SourceURL(), Form: url.Values{}}
 	v.FlashKind, v.Flash = s.takeFlash(w, r)
+	if c := v.reqCtx; c.User != nil && c.User.IsParent() {
+		v.Unread, _ = s.svc.UnreadNotifications(r.Context(), *c.User)
+	}
 	return v
 }
 

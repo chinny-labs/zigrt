@@ -65,6 +65,9 @@ func (s *Service) Household(ctx context.Context, parent store.User) (HouseholdVi
 	}
 	if p := s.Pack(); p != nil {
 		v.Pack = PackInfo{Title: p.Manifest.Title.In(Locale), Version: p.Manifest.Version, Topics: len(p.Topics), Source: s.PackSource}
+		if v.Pack.Source == "" {
+			v.Pack.Source = "embedded"
+		}
 	}
 	if v.Pack.Uploaded, err = s.Store.ListContentPacks(ctx); err != nil {
 		return v, err
