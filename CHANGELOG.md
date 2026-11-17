@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.0](https://github.com/chinny-labs/zigrt/compare/v0.5.0...v0.6.0) (2026-11-17)
+
+
+### Features
+
+* phase 6a, the JSON API, API tokens and MCP ([#20](https://github.com/chinny-labs/zigrt/issues/20)) ([6828562](https://github.com/chinny-labs/zigrt/commit/68285624bfd2dc561f5c438ea604cef6aec6ba9e))
+* phase 6b, email and metrics ([#22](https://github.com/chinny-labs/zigrt/issues/22)) ([884dcd4](https://github.com/chinny-labs/zigrt/commit/884dcd4f6248fd706561a029aecb48051ba3fc0e))
+
 ## [0.5.0](https://github.com/chinny-labs/zigrt/compare/v0.4.0...v0.5.0) (2026-11-17)
 
 
