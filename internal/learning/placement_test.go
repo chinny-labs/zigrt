@@ -205,8 +205,9 @@ func TestCompressionAndOrder(t *testing.T) {
 	if len(tasks) == 0 || tasks[0].Kind != TaskPlacement || !tasks[0].Resume {
 		t.Errorf("open placement: %s", topics(tasks))
 	}
-	// Off by default.
+	// Switched off.
 	c = Default()
+	c.OfferPlacement, c.OfferQuizzes = false, false
 	tasks, _ = c.NextTasks(g, Situation{Today: day0, Course: course, States: States{}, NeedsPlacement: true, QuizDue: true})
 	if got := topics(tasks); got != "lesson:count lesson:shapes" {
 		t.Errorf("switched off: %s", got)

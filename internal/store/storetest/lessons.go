@@ -36,9 +36,11 @@ func (f *Fixture) withLessons(t *testing.T) *content.Pack {
 	return f.withPack(HardestPack(t))
 }
 
-// withPack loads a pack and makes problem seeds repeatable.
+// withPack loads a pack and makes problem seeds repeatable. Students start
+// from the bottom: the placement test is off unless a test turns it on.
 func (f *Fixture) withPack(p *content.Pack) *content.Pack {
 	f.Svc.SetPack(p)
+	f.Svc.Learn.OfferPlacement = false
 	var n uint64
 	f.Svc.Seed = func() uint64 { n++; return n * 0x9E3779B97F4A7C15 }
 	return p

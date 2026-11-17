@@ -42,6 +42,7 @@ func newApp(t *testing.T) *app {
 	// A real server always has a pack (the embedded one); tests use the
 	// prototype.
 	svc.SetPack(hardestPack(t))
+	svc.Learn.OfferPlacement = false // lesson tests start at the bottom; placement tests turn it on
 	srv, err := New(ctx, svc, config.Config{InsecureCookies: true, Timezone: "UTC"}, nil, setupToken)
 	if err != nil {
 		t.Fatal(err)

@@ -80,6 +80,12 @@ func Demo(ctx context.Context, svc *service.Service, timezone, password string, 
 			return login, fmt.Errorf("demo student: %w", err)
 		}
 		login.Students = append(login.Students, DemoStudent{Name: k.name, PIN: k.pin})
+		if svc.Learn.OfferPlacement {
+			// The demo's history starts at the bottom of the tower.
+			if err := svc.SkipPlacement(ctx, u); err != nil {
+				return login, fmt.Errorf("demo student: %w", err)
+			}
+		}
 		miss := k.miss
 		kids = append(kids, kid{weekends: k.weekends, s: &Student{
 			Svc: svc, User: u, Clock: clk,

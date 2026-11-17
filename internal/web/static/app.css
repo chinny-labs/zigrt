@@ -734,3 +734,73 @@ ol.tower { list-style: none; margin: 0; padding: 0; }
 .fig-side { fill: var(--zg-sun-tint); }
 .fig-text { fill: var(--zg-ink); font-family: var(--zg-body); font-weight: 800; font-size: 20px; }
 .fig-small { font-size: 16px; }
+
+/* --- placement (S4, S5) ---------------------------------------------------------- */
+
+.btn-quiet { width: 100%; min-height: 56px; border: 0; border-radius: 20px; background: var(--zg-block-idle); color: var(--zg-ink); font-family: var(--zg-display); font-weight: 600; font-size: 18px; cursor: pointer; }
+.intro-tower { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 0 4px; }
+.intro-tower > span { height: 30px; border-radius: 10px; }
+.tier-ghost { border: 3px dashed var(--zg-ink-muted); }
+.step-icon { flex-shrink: 0; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; color: var(--zg-blue); }
+.step-q { font-family: var(--zg-display); font-size: 22px; }
+.placed-list { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+
+/* --- quiz results (S11) ---------------------------------------------------------- */
+
+.quiz-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.quiz-item { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 16px; border-radius: 20px; background: var(--zg-surface); }
+.quiz-item > .muted { margin-left: auto; }
+.quiz-miss { background: var(--zg-sun-wash); color: var(--zg-on-sun); box-shadow: inset 0 0 0 3px var(--zg-sun); }
+.quiz-miss .step-n { background: var(--zg-sun); color: var(--zg-on-sun); }
+.quiz-eq { font-family: var(--zg-display); font-weight: 600; font-size: 20px; }
+.quiz-eq b { color: var(--zg-blue); }
+.quiz-miss .quiz-eq b { color: var(--zg-on-sun); }
+.quiz-how { flex-grow: 1; }
+.quiz-how summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; list-style: none; }
+.quiz-how summary::-webkit-details-marker { display: none; }
+.quiz-how ol { margin: 8px 0 0; padding-left: 20px; font-size: 16px; }
+.quiz-how p { margin-top: 8px; font-size: 16px; }
+
+/* --- the tower (S12) and milestones (S12b, S9b) ---------------------------------- */
+
+.plain-link { color: inherit; text-decoration: none; }
+.tower-big { gap: 8px; }
+.tower-big .tier { height: 48px; font-size: 16px; border-radius: 14px; text-decoration: none; gap: 6px; }
+.tier-li { list-style: none; display: flex; justify-content: center; }
+.tier-li > .tier { width: 100%; }
+.tier-selected { box-shadow: 0 0 0 3px var(--zg-ink); }
+.tier-finished { box-shadow: inset 0 6px 0 var(--zg-sun); }
+.tier-finished.tier-selected { box-shadow: inset 0 6px 0 var(--zg-sun), 0 0 0 3px var(--zg-ink); }
+.tier-finished svg, .face-done svg { color: var(--zg-sun); }
+.tier-ready { background: var(--zg-surface); color: var(--zg-ink); box-shadow: inset 0 0 0 3px var(--zg-blue); }
+.faces { display: flex; flex-wrap: wrap; gap: 8px; }
+.face { display: inline-flex; align-items: center; gap: 6px; min-height: 48px; padding: 0 18px; border-radius: 999px; background: var(--zg-surface); color: var(--zg-ink); font-family: var(--zg-display); font-weight: 600; font-size: 18px; text-decoration: none; }
+.face-on { background: var(--zg-ink); color: var(--zg-ground); }
+.face-done { box-shadow: inset 0 0 0 3px var(--zg-sun); }
+.face-done svg { color: var(--zg-sun-mark); }
+.blocks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 14px; }
+.block { min-height: 72px; padding: 8px; border-radius: 16px; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 800; font-size: 15px; line-height: 1.2; text-decoration: none; }
+.block-placed { background: var(--zg-blue); color: var(--zg-on-blue); }
+.block-mend { background: var(--zg-blue); color: var(--zg-on-blue); box-shadow: 0 0 0 4px var(--zg-sun-ink); }
+.block-building { background: var(--zg-sun); color: var(--zg-on-sun); }
+.block-ready { background: var(--zg-surface); color: var(--zg-ink); box-shadow: inset 0 0 0 3px var(--zg-blue); }
+.block-later { background: var(--zg-block-idle); color: var(--zg-ink-muted); }
+.block-on { outline: 3px solid var(--zg-ink); outline-offset: 3px; }
+.legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; font-weight: 800; font-size: 15px; }
+.legend li { display: inline-flex; align-items: center; gap: 6px; }
+.block-key { width: 20px; height: 20px; border-radius: 6px; }
+.block-key.block-mend { box-shadow: 0 0 0 3px var(--zg-sun-ink); }
+.detail { box-shadow: inset 0 0 0 3px var(--zg-ink); }
+.detail-state { color: var(--zg-sun-ink); font-weight: 800; }
+
+/* The one full-blue screen: a tier or face finished (S9b). */
+body.shell-milestone { background: var(--zg-blue); color: var(--zg-on-blue); }
+.shell-milestone .iconbtn { background: var(--zg-blue-edge); color: var(--zg-on-blue); }
+.shell-milestone progress, .shell-milestone .segs { opacity: 0.6; }
+.lead-on { font-size: 18px; opacity: 0.9; }
+.milestone-card { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px 16px; }
+.milestone-card .tower { width: 100%; }
+.flag { color: var(--zg-sun-ink); }
+.flag svg { width: 56px; height: 56px; }
+.stat-on { background: var(--zg-blue-edge); color: var(--zg-on-blue); }
+.btn-sun { background: var(--zg-sun); color: var(--zg-on-sun); box-shadow: 0 5px 0 var(--zg-sun-ink); }

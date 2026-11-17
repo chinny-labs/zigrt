@@ -128,12 +128,13 @@ type Feedback struct {
 
 // TaskResult is the end of a task: what it earned and what comes next.
 type TaskResult struct {
-	Passed  bool
-	XP      int
-	Rushed  bool
-	Today   DaySummary
-	Next    []NextTask
-	Promote string // the next recommended topic's title, if any
+	Passed    bool
+	XP        int
+	Rushed    bool
+	Today     DaySummary
+	Next      []NextTask
+	Promote   string     // the next recommended topic's title, if any
+	Milestone *Milestone // a tier or face this lesson finished (S9b)
 }
 
 // DaySummary is today's XP against the goal, and the streak.
@@ -909,6 +910,11 @@ func (s *Service) view(ctx context.Context, r store.Reader, l *library, t store.
 		}
 		if res.Next, _, err = s.nextTasks(ctx, r, l, t.StudentID, today); err != nil {
 			return v, err
+		}
+		if t.Kind == store.TaskLesson && t.Status == store.TaskPassed {
+			if res.Milestone, err = s.milestone(ctx, r, l, t.StudentID, t.TopicID, t.ID); err != nil {
+				return v, err
+			}
 		}
 		v.Result = res
 	}

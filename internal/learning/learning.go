@@ -78,6 +78,8 @@ func Default() Config {
 		DrillXPPer:         10,
 		DrillXPDailyCap:    5,
 
+		OfferPlacement:        true,
+		OfferQuizzes:          true,
 		PlacementEvidence:     2,
 		PlacementMaxQuestions: 35,
 		QuizEveryXP:           150,

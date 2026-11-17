@@ -1,0 +1,44 @@
+{{define "main"}}
+{{$d := .D}}
+<div class="column">
+  <div class="row-between">
+    <h1>My tower</h1>
+    <span class="muted">{{$d.T.Placed}} {{if eq $d.T.Placed 1}}block{{else}}blocks{{end}} placed</span>
+  </div>
+  {{template "flash" .}}
+  {{if $d.Tiers}}
+  <ol class="tower tower-big">
+    {{range $d.Tiers}}<li class="tier-li tier-w{{.Width}}"><a class="tier tier-{{.State}}{{if .Finished}} tier-finished{{end}}{{if .Selected}} tier-selected{{end}}" href="{{.Href}}"{{if .Selected}} aria-current="true"{{end}}>
+      {{if .Finished}}{{template "i-flag"}} {{end}}{{.Label}}{{if .Finished}} · complete{{else if eq .Placed .Total}} · all {{.Total}}{{else if or .Selected (eq .State "here")}} · {{.Placed}} of {{.Total}}{{end}}</a></li>{{end}}
+  </ol>
+  <nav class="faces" aria-label="Faces of {{gradeOf $d.Grade}}">
+    {{range $d.Faces}}<a class="face{{if .Selected}} face-on{{end}}{{if .Finished}} face-done{{end}}" href="{{.Href}}"{{if .Selected}} aria-current="true"{{end}}>{{if .Finished}}{{template "i-flag"}}{{end}}{{.Title}}</a>{{end}}
+  </nav>
+  <div class="card blocks">
+    {{range $d.Blocks}}<a class="block block-{{.State}}{{if .Selected}} block-on{{end}}" href="{{.Href}}"{{if .Selected}} aria-current="true"{{end}}><span>{{.Title}}</span><span class="visually-hidden"> ({{stateWord .State}})</span></a>{{end}}
+  </div>
+  <ul class="legend" aria-label="What the colours mean">
+    <li><span class="block-key block-placed"></span>Placed</li>
+    <li><span class="block-key block-mend"></span>Needs mending</li>
+    <li><span class="block-key block-building"></span>Building</li>
+    <li><span class="block-key block-ready"></span>Ready</li>
+    <li><span class="block-key block-later"></span>Later</li>
+  </ul>
+  {{with $d.Detail}}
+  <section class="card detail stack-sm" aria-labelledby="detail-h">
+    <div class="row-between"><h2 id="detail-h">{{.Title}}</h2><span class="detail-state">{{.State}}</span></div>
+    {{if or .Placed .Mended}}<div class="row-between muted">{{if .Placed}}<span>{{.Placed}}</span>{{end}}{{if .Mended}}<span>Mended {{.Mended}} {{if eq .Mended 1}}time{{else}}times{{end}}</span>{{end}}</div>{{end}}
+    {{with .Action}}
+    <form method="post" action="/tasks">
+      {{template "csrf" $}}
+      <input type="hidden" name="kind" value="{{.Kind}}"><input type="hidden" name="topic" value="{{.Topic}}">
+      <button class="btn btn-primary" type="submit">{{$d.Detail.ActionLabel}}</button>
+    </form>
+    {{end}}
+  </section>
+  {{end}}
+  {{else}}
+  <div class="alert alert-ok">Your tower appears here once there are lessons.</div>
+  {{end}}
+</div>
+{{end}}

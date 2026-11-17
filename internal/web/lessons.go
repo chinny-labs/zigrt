@@ -38,11 +38,12 @@ func (s *Server) studentOnly(h handler) http.HandlerFunc {
 // --- the home page (S3) -----------------------------------------------------
 
 type homeData struct {
-	H      service.HomeView
-	First  *taskCard
-	Others []taskCard
-	Early  bool
-	Tower  []tierView // top tier first
+	H         service.HomeView
+	First     *taskCard
+	Others    []taskCard
+	Early     bool
+	Tower     []tierView // top tier first
+	Placement bool       // the placement test is offered and not started: show "start from the bottom"
 }
 
 // tierView is one tier of the home tower: done (blue), where the student
@@ -94,6 +95,13 @@ func (s *Server) card(n service.NextTask) taskCard {
 		c.Topic, c.Title = n.Topic.ID, n.Topic.Title.In(service.Locale)
 	}
 	switch {
+	case n.Kind == store.TaskDiagnostic:
+		c.Label, c.Title, c.XP = "Find your start", "Where does your tower start?", 0
+		if n.Resume {
+			c.Label = "Keep going"
+		}
+	case n.Kind == store.TaskQuiz:
+		c.Label, c.Title, c.XP = "Quick check", "Are your new blocks firm?", s.svc.Learn.QuizBaseXP
 	case n.Kind == store.TaskReview:
 		c.Label, c.XP = "Mend a block", s.svc.Learn.ReviewBaseXP
 	case n.Resume:
@@ -133,6 +141,7 @@ func (s *Server) studentHome(w http.ResponseWriter, r *http.Request, c *reqCtx) 
 	}
 	if len(cards) > 0 {
 		d.First, d.Others = &cards[0], cards[1:]
+		d.Placement = cards[0].Kind == store.TaskDiagnostic && cards[0].TaskID == "" && !h.Tasks[0].Resume
 	}
 	v := s.newView(w, r, "Home", d)
 	v.Shell, v.Nav = "student", "home"
@@ -153,6 +162,29 @@ func (s *Server) taskStart(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 		return
 	}
 	http.Redirect(w, r, taskPath(t.ID), http.StatusSeeOther) //nolint:gosec // same-site: a fixed prefix and an escaped ID
+}
+
+// placementSkip starts a new student from the bottom of the tower.
+func (s *Server) placementSkip(w http.ResponseWriter, r *http.Request, c *reqCtx) {
+	if err := s.svc.SkipPlacement(r.Context(), *c.User); err != nil {
+		s.taskFail(w, r, err)
+		return
+	}
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+// taskNotLearned answers a placement question with "I haven't learned this".
+func (s *Server) taskNotLearned(w http.ResponseWriter, r *http.Request, c *reqCtx) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Bad form.", http.StatusBadRequest)
+		return
+	}
+	id := r.PathValue("id")
+	if _, err := s.svc.NotLearned(r.Context(), *c.User, id, r.PostForm.Get("attempt")); err != nil {
+		s.taskFail(w, r, err)
+		return
+	}
+	http.Redirect(w, r, taskPath(id), http.StatusSeeOther) //nolint:gosec // same-site: a fixed prefix and an escaped ID
 }
 
 func (s *Server) taskNext(w http.ResponseWriter, r *http.Request, c *reqCtx) {
@@ -239,6 +271,30 @@ type taskData struct {
 	// done and paused
 	BonusXP int
 	Next    *taskCard
+
+	// placement and quizzes
+	Kind       string // lesson, review, diagnostic or quiz
+	QuizItems  []quizItem
+	QuizMissed int
+	Placed     []string // placement: the topics placed
+	Milestone  *milestoneView
+}
+
+// quizItem is one line of quiz results (S11).
+type quizItem struct {
+	Prompt template.HTML
+	Answer template.HTML
+	Right  bool
+	Given  string
+	Steps  []string
+}
+
+// milestoneView is a finished tier or face (S9b).
+type milestoneView struct {
+	Title          string // "Grade 2", or "Fractions in Grade 3"
+	Tier           bool
+	Blocks, Placed int
+	Next           string // the tier above, if any
 }
 
 type choiceView struct {
@@ -256,18 +312,32 @@ func (s *Server) taskPage(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 	d := s.taskData(tv, step)
 	v := s.newView(w, r, d.Title, d)
 	v.Shell = "task"
+	if d.Milestone != nil {
+		v.Shell = "task shell-milestone" // the one full-blue screen (S9b)
+	}
 	s.render(w, r, http.StatusOK, "task", v)
 }
 
 func (s *Server) taskData(tv service.TaskView, step int) taskData {
 	pack := s.svc.Pack()
-	d := taskData{V: tv, Title: tv.Topic.Title.In(service.Locale)}
-	if tv.Task.Kind == store.TaskReview {
+	d := taskData{V: tv, Kind: string(tv.Task.Kind)}
+	if tv.Topic != nil {
+		d.Title = tv.Topic.Title.In(service.Locale)
+	}
+	switch tv.Task.Kind {
+	case store.TaskDiagnostic:
+		d.Title = "Finding your start"
+	case store.TaskQuiz:
+		d.Title, d.XP = "Quick check", s.svc.Learn.QuizBaseXP
+		for i := range tv.Total {
+			d.Segs = append(d.Segs, seg(i, tv.Asked))
+		}
+	case store.TaskReview:
 		d.XP = s.svc.Learn.ReviewBaseXP
 		for i := range tv.Total {
 			d.Segs = append(d.Segs, seg(i, tv.Asked))
 		}
-	} else {
+	default:
 		d.XP = lessonXP(tv.Topic, s.svc.Learn.DefaultLessonXP)
 		for i := range tv.KPCount {
 			d.Segs = append(d.Segs, seg(i, tv.KPIndex))
@@ -316,10 +386,41 @@ func (s *Server) taskData(tv service.TaskView, step int) taskData {
 		if tv.Task.Kind == store.TaskLesson && res.XP > d.XP {
 			d.BonusXP = res.XP - d.XP
 		}
+		if m := res.Milestone; m != nil {
+			mv := &milestoneView{Title: gradeName(m.Grade), Tier: m.Strand == nil, Blocks: m.Blocks, Placed: m.Placed}
+			if m.Strand != nil {
+				mv.Title = m.Strand.Title.In(service.Locale) + " in " + gradeName(m.Grade)
+			}
+			if m.TierNext != "" {
+				mv.Next = gradeName(m.TierNext)
+			}
+			d.Milestone = mv
+		}
 		if len(res.Next) > 0 {
 			c := s.card(res.Next[0])
 			d.Next = &c
 		}
+	}
+	for _, f := range tv.QuizResults {
+		it := quizItem{Prompt: mathHTML(f.Problem.Prompt), Answer: mathHTML(f.Answer), Right: f.Right, Given: given(&f), Steps: f.Problem.Solution}
+		switch {
+		case f.Problem.Answer.Type == problem.Comparison:
+			// 3/4 ○ 2/3 becomes 3/4 > 2/3, the sign in place of the box.
+			it.Prompt = template.HTML(strings.Replace(string(it.Prompt), circle, `<b>`+template.HTMLEscapeString(f.Answer)+`</b>`, 1)) //nolint:gosec // escaped pack text and fixed markup
+			it.Answer = ""
+		case f.Problem.Layout == problem.LayoutMissing && strings.Contains(f.Problem.Prompt, "?"):
+			it.Prompt = mathHTML(strings.Replace(f.Problem.Prompt, "?", f.Answer, 1))
+			it.Answer = ""
+		case f.Problem.Layout == problem.LayoutAcross || f.Problem.Layout == problem.LayoutStacked || f.Problem.Layout == problem.LayoutLongDivision:
+			it.Prompt += " ="
+		}
+		if !f.Right {
+			d.QuizMissed++
+		}
+		d.QuizItems = append(d.QuizItems, it)
+	}
+	for _, t := range tv.Placed {
+		d.Placed = append(d.Placed, t.Title.In(service.Locale))
 	}
 	return d
 }
