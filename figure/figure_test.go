@@ -4,6 +4,7 @@ package figure
 
 import (
 	"encoding/xml"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -17,6 +18,15 @@ func TestDraw(t *testing.T) {
 		"number-line":  {"from": "0", "to": "2", "step": "1/4", "mark": "5/4"},
 		"rectangle":    {"width": "9", "height": "3", "unit": "cm"},
 		"prism":        {"length": "5", "width": "2", "height": "3", "unit": "cubes"},
+		"dots":         {"count": "7", "arrange": "scatter"},
+		"dot-groups":   {"a": "4", "b": "3", "style": "apart"},
+		"ten-frame":    {"frames": "2", "filled": "13"},
+		"shape":        {"name": "hexagon", "turn": "30"},
+		"shape-mix":    {"circles": "3", "triangles": "2", "squares": "4"},
+		"solid":        {"name": "cylinder"},
+		"compare":      {"a": "4", "b": "7", "c": "0", "kind": "height"},
+		"balance":      {"tip": "left"},
+		"position":     {"place": "above"},
 	}
 	for _, name := range Names() {
 		svg, err := Draw(name, good[name])
@@ -101,6 +111,82 @@ func TestClean(t *testing.T) {
 	} {
 		if out, err := Clean([]byte(bad)); err == nil {
 			t.Errorf("%s: cleaned to %s", name, out)
+		}
+	}
+}
+
+func TestEarlyFigures(t *testing.T) {
+	count := func(name string, a Args, sub string) int {
+		t.Helper()
+		svg, err := Draw(name, a)
+		if err != nil {
+			t.Fatalf("%s %v: %v", name, a, err)
+		}
+		return strings.Count(svg, sub)
+	}
+	for _, arr := range []string{"line", "scatter"} {
+		for n := 0; n <= 20; n++ {
+			if got := count("dots", Args{"count": strconv.Itoa(n), "arrange": arr}, "<circle"); got != n {
+				t.Errorf("%d dots %s: drew %d", n, arr, got)
+			}
+		}
+	}
+	for n := 1; n <= 6; n++ {
+		if got := count("dots", Args{"count": strconv.Itoa(n), "arrange": "dice"}, `class="fig-dot"`); got != n {
+			t.Errorf("dice %d: %d", n, got)
+		}
+	}
+	if got := count("dot-groups", Args{"a": "8", "b": "3", "style": "crossed"}, `class="fig-cross"`); got != 6 {
+		t.Errorf("3 crossed out: %d strokes", got)
+	}
+	if got := count("dot-groups", Args{"a": "5", "b": "7", "style": "rows"}, "<circle"); got != 12 {
+		t.Errorf("rows: %d", got)
+	}
+	if got := count("ten-frame", Args{"frames": "2", "filled": "13"}, `class="fig-dot"`); got != 13 {
+		t.Errorf("ten frames: %d counters", got)
+	}
+	if got := count("ten-frame", Args{"frames": "1", "filled": "7"}, `class="fig-cell"`); got != 10 {
+		t.Errorf("ten frame: %d cells", got)
+	}
+	for _, name := range FlatShapes {
+		svg, err := Draw("shape", Args{"name": name, "turn": "45"})
+		if err != nil || !strings.Contains(svg, `aria-label="a flat shape"`) || strings.Contains(svg, "<text") {
+			t.Errorf("shape %s: %v, or its name is in the picture: %s", name, err, svg)
+		}
+	}
+	if got := count("shape", Args{"name": "hexagon", "turn": "0"}, ","); got != 6 {
+		t.Errorf("hexagon has %d points", got)
+	}
+	if got := count("shape-mix", Args{"circles": "3", "triangles": "2", "squares": "4"}, "<polygon"); got != 6 {
+		t.Errorf("shape mix: %d polygons", got)
+	}
+	for _, name := range SolidShapes {
+		svg, err := Draw("solid", Args{"name": name})
+		if err != nil || !strings.Contains(svg, `aria-label="a solid shape"`) || strings.Contains(svg, "<text") {
+			t.Errorf("solid %s: %v %s", name, err, svg)
+		}
+	}
+	if got := count("compare", Args{"a": "3", "b": "5", "c": "8", "kind": "length"}, "<rect"); got != 3 {
+		t.Errorf("compare three: %d", got)
+	}
+	for _, place := range []string{"above", "below", "left", "right", "inside"} {
+		if got := count("position", Args{"place": place}, `class="fig-mark"`); got != 1 {
+			t.Errorf("position %s: %d balls", place, got)
+		}
+	}
+	for name, a := range map[string]Args{
+		"dots":       {"count": "7", "arrange": "dice"},
+		"dot-groups": {"a": "2", "b": "5", "style": "crossed"},
+		"ten-frame":  {"frames": "1", "filled": "11"},
+		"shape":      {"name": "star", "turn": "0"},
+		"shape-mix":  {"circles": "0", "triangles": "0", "squares": "0"},
+		"solid":      {"name": "torus"},
+		"compare":    {"a": "0", "b": "3", "c": "0", "kind": "length"},
+		"balance":    {"tip": "up"},
+		"position":   {"place": "behind"},
+	} {
+		if _, err := Draw(name, a); err == nil {
+			t.Errorf("%s %v: drew", name, a)
 		}
 	}
 }

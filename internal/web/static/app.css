@@ -734,6 +734,15 @@ ol.tower { list-style: none; margin: 0; padding: 0; }
 .fig-side { fill: var(--zg-sun-tint); }
 .fig-text { fill: var(--zg-ink); font-family: var(--zg-body); font-weight: 800; font-size: 20px; }
 .fig-small { font-size: 16px; }
+/* Early-years figures: dots, ten frames, shapes and solids. Shapes are told
+   apart by fill and outline, never by red and green. */
+.fig-cross { stroke: var(--zg-ink); stroke-width: 4; stroke-linecap: round; }
+.fig-frame { fill: none; stroke: var(--zg-ink); stroke-width: 4; }
+.fig-cell { fill: var(--zg-surface); stroke: var(--zg-ink); stroke-width: 2; }
+.fig-alt { fill: var(--zg-sun-tint); }
+.fig-alt2 { fill: var(--zg-track); }
+.fig-hidden { stroke: var(--zg-ink-muted); stroke-width: 2; stroke-dasharray: 6 6; fill: none; }
+.fig-thin { stroke-width: 2; }
 
 /* --- placement (S4, S5) ---------------------------------------------------------- */
 

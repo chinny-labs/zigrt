@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Package figure draws the figures problem templates name (ADR 9) as SVG:
-// fraction bars, number lines, clocks, rectangles, boxes, coordinate grids
-// and arrays, from the arguments a template computed. It also cleans the
+// fraction bars, number lines, clocks, rectangles, boxes, coordinate grids,
+// arrays, and the early-years pictures (dots, ten frames, shapes, solids,
+// comparisons, a balance, positions), from the arguments a template
+// computed. It also cleans the
 // static SVGs a content pack ships.
 //
 // The SVG carries no style attributes and no colours: every shape has a
@@ -35,6 +37,15 @@ var Catalogue = map[string][]string{
 	"number-line":  {"from", "to", "step", "mark"},
 	"rectangle":    {"width", "height", "unit"},
 	"prism":        {"length", "width", "height", "unit"},
+	"dots":         {"count", "arrange"},
+	"dot-groups":   {"a", "b", "style"},
+	"ten-frame":    {"frames", "filled"},
+	"shape":        {"name", "turn"},
+	"shape-mix":    {"circles", "triangles", "squares"},
+	"solid":        {"name"},
+	"compare":      {"a", "b", "c", "kind"},
+	"balance":      {"tip"},
+	"position":     {"place"},
 }
 
 // Draw returns a figure as an SVG element, or an error when its arguments
@@ -58,6 +69,24 @@ func Draw(name string, a Args) (string, error) {
 		err = d.rectangle(a)
 	case "prism":
 		err = d.prism(a)
+	case "dots":
+		err = d.dots(a)
+	case "dot-groups":
+		err = d.dotGroups(a)
+	case "ten-frame":
+		err = d.tenFrame(a)
+	case "shape":
+		err = d.shape(a)
+	case "shape-mix":
+		err = d.shapeMix(a)
+	case "solid":
+		err = d.solid(a)
+	case "compare":
+		err = d.compare(a)
+	case "balance":
+		err = d.balance(a)
+	case "position":
+		err = d.position(a)
 	default:
 		return "", fmt.Errorf("figure: there is no figure %q", name)
 	}

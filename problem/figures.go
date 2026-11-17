@@ -20,6 +20,15 @@ var Figures = map[string][]string{
 	"number-line":  {"from", "to", "step", "mark"},        // ticks every step, a dot at mark
 	"rectangle":    {"width", "height", "unit"},           // a labelled rectangle
 	"prism":        {"length", "width", "height", "unit"}, // a labelled box
+	"dots":         {"count", "arrange"},                  // 0-20 dots: line, scatter or dice
+	"dot-groups":   {"a", "b", "style"},                   // two groups: apart, rows or crossed
+	"ten-frame":    {"frames", "filled"},                  // one or two ten frames
+	"shape":        {"name", "turn"},                      // a flat shape, turned
+	"shape-mix":    {"circles", "triangles", "squares"},   // shapes to sort and count
+	"solid":        {"name"},                              // a solid shape
+	"compare":      {"a", "b", "c", "kind"},               // bars or towers to compare; c 0 for two
+	"balance":      {"tip"},                               // a pan balance: left, right or level
+	"position":     {"place"},                             // a ball above, below, beside or in a box
 }
 
 // FigureName is the figure a template draws, or "" when it draws none.
