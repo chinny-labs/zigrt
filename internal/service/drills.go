@@ -238,6 +238,9 @@ func (s *Service) FinishDrill(ctx context.Context, actor store.User, id string, 
 			return err
 		}
 		if inserted {
+			if err := assignmentDone(ctx, tx, actor.ID, v.ID, res.FinishedAt); err != nil {
+				return err
+			}
 			// Free practice is worth a little XP, capped a day (plan 5.2).
 			today, err := s.today(ctx, tx)
 			if err != nil {

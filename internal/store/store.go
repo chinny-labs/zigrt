@@ -89,6 +89,17 @@ type Reader interface {
 	GetDailyTotal(ctx context.Context, studentID, localDate string) (DailyTotal, error)
 	// ListDailyTotals lists days from from to to (YYYY-MM-DD, inclusive).
 	ListDailyTotals(ctx context.Context, studentID, from, to string) ([]DailyTotal, error)
+
+	// ListNotifications lists a parent's notifications, newest first.
+	ListNotifications(ctx context.Context, userID string, limit int) ([]Notification, error)
+	CountUnread(ctx context.Context, userID string) (int, error)
+	GetAssignment(ctx context.Context, id string) (DrillAssignment, error)
+	// ListAssignments lists a student's assigned drills, oldest first.
+	ListAssignments(ctx context.Context, studentID string, openOnly bool) ([]DrillAssignment, error)
+	// GetJobRun returns the last day a job ran for, or ErrNotFound.
+	GetJobRun(ctx context.Context, job string) (string, error)
+	// ListContentPacks lists uploaded packs, newest first.
+	ListContentPacks(ctx context.Context) ([]ContentPackRecord, error)
 }
 
 // Writer holds every write.
@@ -142,4 +153,15 @@ type Writer interface {
 	PutDailyTotal(ctx context.Context, d DailyTotal) error
 	// ReplaceDailyTotals rewrites a student's whole projection (a rebuild).
 	ReplaceDailyTotals(ctx context.Context, studentID string, days []DailyTotal) error
+
+	// InsertNotification reports false, with no error, when that parent
+	// already has a notification with the same dedupe key.
+	InsertNotification(ctx context.Context, n Notification) (bool, error)
+	// MarkNotificationsRead marks one notification read, or all when id is "".
+	MarkNotificationsRead(ctx context.Context, userID, id string, at time.Time) error
+	CreateAssignment(ctx context.Context, a DrillAssignment) error
+	// UpdateAssignment writes an assignment's drill and when it was done.
+	UpdateAssignment(ctx context.Context, a DrillAssignment) error
+	PutJobRun(ctx context.Context, job, lastRunFor string) error
+	PutContentPack(ctx context.Context, c ContentPackRecord) error
 }

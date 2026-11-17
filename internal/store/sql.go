@@ -293,7 +293,11 @@ func (x queries) DeleteUser(ctx context.Context, id string) error {
 		OR drill_id IN (SELECT id FROM drills WHERE owner_id = ?)`, id, id); err != nil {
 		return err
 	}
+	if _, err := x.exec(ctx, `DELETE FROM notifications WHERE user_id = ? OR subject_id = ?`, id, id); err != nil {
+		return err
+	}
 	for _, q := range []string{
+		`DELETE FROM drill_assignments WHERE student_id = ?`,
 		`DELETE FROM attempts WHERE student_id = ?`,
 		`DELETE FROM mastery_events WHERE student_id = ?`,
 		`DELETE FROM topic_state WHERE student_id = ?`,

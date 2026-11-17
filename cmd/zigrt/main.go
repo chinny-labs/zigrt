@@ -150,6 +150,11 @@ func serve() error {
 	defer st.Close()
 	svc := service.New(st, log)
 	contentErr := loadContent(svc, cfg, log)
+	if contentErr == nil {
+		if err := svc.NotePack(ctx); err != nil {
+			log.Warn("recording the content pack", "err", err)
+		}
+	}
 
 	token := ""
 	if need, err := svc.NeedsSetup(ctx); err != nil {
@@ -172,8 +177,17 @@ func serve() error {
 			if n > 0 {
 				log.Info("removed dead sessions", "count", n)
 			}
+			if err != nil {
+				return err
+			}
+			idle, err := svc.SetAsideIdleTasks(ctx)
+			if idle > 0 {
+				log.Info("set aside tasks idle for a week", "count", idle)
+			}
 			return err
 		})},
+		// Day rollover: once per household-local day that ended (streaks lost).
+		{Name: "rollover", Run: svc.Rollover},
 	}}
 	if path, err := sqlite.PathFromURL(cfg.DatabaseURL); err == nil {
 		at, _ := config.ParseClock(cfg.BackupSchedule)
