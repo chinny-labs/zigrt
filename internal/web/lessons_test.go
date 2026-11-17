@@ -136,7 +136,9 @@ func TestLessonPages(t *testing.T) {
 	next()
 	answer(true)
 	body = next()
-	for _, want := range []string{"You placed a new block!", "+14 XP", "12, plus 2 for a clean run", "14 of 15 XP", "Keep climbing"} {
+	// Elapsed time is the prototype pack's only grade 3 topic, so placing it
+	// finishes the tier: the milestone screen (S9b).
+	for _, want := range []string{"Tier complete", "You finished Grade 3!", "Its block is placed.", "+14 XP", "shell-milestone", `href="/tower"`} {
 		if !strings.Contains(body, want) {
 			t.Fatalf("done page lacks %q:\n%s", want, body)
 		}
@@ -275,5 +277,147 @@ func TestReadyzContent(t *testing.T) {
 	srv.ServeHTTP(rec, httptest.NewRequest("GET", "/readyz", nil))
 	if rec.Code != http.StatusServiceUnavailable || !strings.Contains(rec.Body.String(), "needs Zigrt 9.0.0") {
 		t.Fatalf("too new a pack: %d %s", rec.Code, rec.Body.String())
+	}
+}
+
+// TestPlacementPages: a new student is offered the placement test first,
+// can skip it, and a started one asks with "I haven't learned this yet".
+func TestPlacementPages(t *testing.T) {
+	ctx := context.Background()
+	a := newApp(t)
+	a.svc.Learn.OfferPlacement = true
+	now := time.Date(2026, 3, 7, 15, 0, 0, 0, time.UTC)
+	a.svc.Now = func() time.Time { return now }
+	a.setUp()
+	kid, kidID := a.signInStudent("Mika", "2468")
+	mika, _ := a.svc.Store.GetUser(ctx, kidID)
+
+	_, body := a.get(kid, "/")
+	for _, want := range []string{"Find your start", "Where does your tower start?", `name="kind" value="diagnostic"`, "Start from the bottom instead"} {
+		if !strings.Contains(body, want) {
+			t.Fatalf("home lacks %q:\n%s", want, body)
+		}
+	}
+	resp, _ := a.post(kid, "/", "/tasks", url.Values{"kind": {"diagnostic"}, "topic": {""}})
+	m := taskIDRE.FindStringSubmatch(resp.Header.Get("Location"))
+	if m == nil {
+		t.Fatalf("start: %d %s", resp.StatusCode, resp.Header.Get("Location"))
+	}
+	page := "/tasks/" + m[1]
+	_, body = a.get(kid, page)
+	if !strings.Contains(body, "Let's find where your tower starts.") || !strings.Contains(body, ">Start<") {
+		t.Fatalf("intro:\n%s", body)
+	}
+	a.post(kid, page, page+"/next", url.Values{})
+	_, body = a.get(kid, page)
+	if !strings.Contains(body, "Finding your start") || !strings.Contains(body, page+"/not-learned") || !strings.Contains(body, "I haven't learned this yet") || strings.Contains(body, "qans") {
+		t.Fatalf("question:\n%s", body)
+	}
+	tv, err := a.svc.Task(ctx, mika, m[1])
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp, _ = a.post(kid, page, page+"/not-learned", url.Values{"attempt": {tv.AttemptID}})
+	if resp.StatusCode != http.StatusSeeOther {
+		t.Fatalf("not learned: %d", resp.StatusCode)
+	}
+	if tv2, _ := a.svc.Task(ctx, mika, m[1]); tv2.Asked != 1 || tv2.AttemptID == tv.AttemptID {
+		t.Fatalf("after not learned: asked %d", tv2.Asked)
+	}
+
+	// Another student starts from the bottom instead.
+	theo, _ := a.signInStudent("Theo", "13579")
+	resp, _ = a.post(theo, "/", "/placement/skip", url.Values{})
+	if resp.StatusCode != http.StatusSeeOther {
+		t.Fatalf("skip: %d", resp.StatusCode)
+	}
+	if _, body = a.get(theo, "/"); strings.Contains(body, "Find your start") || !strings.Contains(body, "Next step · New block") {
+		t.Fatalf("home after skipping:\n%s", body)
+	}
+}
+
+// TestTowerPage: tiers, faces and blocks, and a block's story with its action.
+func TestTowerPage(t *testing.T) {
+	ctx := context.Background()
+	a := newApp(t)
+	now := time.Date(2026, 3, 7, 15, 0, 0, 0, time.UTC)
+	a.svc.Now = func() time.Time { return now }
+	a.setUp()
+	kid, kidID := a.signInStudent("Mika", "2468")
+	mika, _ := a.svc.Store.GetUser(ctx, kidID)
+
+	_, body := a.get(kid, "/tower")
+	for _, want := range []string{"My tower", "0 blocks placed", "Grade 3 · 0 of 1", `class="face face-on`, "block-ready", "Needs mending", `href="/tower" aria-current="page"`} {
+		if !strings.Contains(body, want) {
+			t.Fatalf("tower lacks %q:\n%s", want, body)
+		}
+	}
+	// A ready block's story offers to start it.
+	_, body = a.get(kid, "/tower?grade=3&strand=measurement&topic=elapsed-time")
+	if !strings.Contains(body, `class="card detail`) || !strings.Contains(body, "Start this block · 12 XP") || !strings.Contains(body, `name="topic" value="elapsed-time"`) {
+		t.Fatalf("block detail:\n%s", body)
+	}
+	// Place it: the tier is finished, with its flag, for good.
+	task, err := a.svc.StartTask(ctx, mika, "lesson", "elapsed-time")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for v, err := a.svc.Continue(ctx, mika, task.ID); v.Phase != service.PhaseDone; {
+		if err != nil {
+			t.Fatal(err)
+		}
+		now = now.Add(9 * time.Second)
+		if v.Phase == service.PhaseProblem {
+			v, err = a.svc.SubmitAnswer(ctx, mika, task.ID, v.AttemptID, v.Problem.Right())
+		} else {
+			v, err = a.svc.Continue(ctx, mika, task.ID)
+		}
+	}
+	_, body = a.get(kid, "/tower?grade=3")
+	if !strings.Contains(body, "Grade 3 · complete") || !strings.Contains(body, "tier-finished") || !strings.Contains(body, "1 block placed") || !strings.Contains(body, "face-done") {
+		t.Fatalf("finished tier:\n%s", body)
+	}
+	_, body = a.get(kid, "/tower?grade=3&strand=measurement&topic=elapsed-time")
+	if !strings.Contains(body, "Placed today") || strings.Contains(body, "Start this block") {
+		t.Fatalf("placed block:\n%s", body)
+	}
+}
+
+// TestQuizResultsPage draws a finished quiz (S11): every problem, the
+// misses opened up with their solutions.
+func TestQuizResultsPage(t *testing.T) {
+	ctx := context.Background()
+	a := newApp(t)
+	pack := hardestPack(t)
+	srv, err := New(ctx, a.svc, config.Config{InsecureCookies: true}, nil, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var results []service.Feedback
+	for i, tpl := range pack.Templates()[:8] {
+		p, _ := tpl.Generate(2, service.Locale)
+		f := service.Feedback{Problem: p, Given: p.Right(), Right: i != 3, Answer: p.Answer.Text(p)}
+		if !f.Right {
+			f.Given = p.Wrong()
+		}
+		results = append(results, f)
+	}
+	done := time.Now()
+	tv := service.TaskView{Task: store.Task{ID: "q1", Kind: store.TaskQuiz, Status: store.TaskPassed, XPAwarded: 13, FinishedAt: &done},
+		Phase: service.PhaseDone, Asked: 8, Total: 8, QuizResults: results, Result: &service.TaskResult{Passed: true, XP: 13}}
+	d := srv.taskData(tv, 0)
+	v := &view{reqCtx: &reqCtx{CSRF: "x"}, Title: d.Title, Shell: "task", D: d, Form: url.Values{}}
+	var buf bytes.Buffer
+	if err := srv.pages["task"].ExecuteTemplate(&buf, "layout", v); err != nil {
+		t.Fatal(err)
+	}
+	html := buf.String()
+	for _, want := range []string{"Quiz done", "7 of 8 held firm.", "+13 XP", "You got it", "See how", "One block needs mending. It is next on your list."} {
+		if !strings.Contains(html, want) {
+			t.Errorf("quiz results lack %q", want)
+		}
+	}
+	if strings.Count(html, `class="quiz-item`) != 8 || strings.Count(html, "<details") != 1 {
+		t.Errorf("items %d, details %d", strings.Count(html, `class="quiz-item`), strings.Count(html, "<details"))
 	}
 }

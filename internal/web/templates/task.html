@@ -3,14 +3,32 @@
 <div class="column task">
   <div class="taskbar">
     <a class="iconbtn" href="/" aria-label="Leave and go home">{{template "i-close"}}</a>
-    <div class="segs" role="img" aria-label="{{if eq (print $v.Task.Kind) "review"}}Problem {{add $v.Asked 1}} of {{$v.Total}}{{else}}Step {{$d.KPNumber}} of {{$v.KPCount}}{{end}}">
+    {{if eq $d.Kind "diagnostic"}}
+    <progress class="grow" max="{{$v.Total}}" value="{{$v.Asked}}" aria-label="How far along">{{$v.Asked}}</progress>
+    {{else}}
+    <div class="segs" role="img" aria-label="{{if eq $d.Kind "lesson"}}Step {{$d.KPNumber}} of {{$v.KPCount}}{{else}}Problem {{add $v.Asked 1}} of {{$v.Total}}{{end}}">
       {{range $d.Segs}}<span class="seg seg-{{.}}"></span>{{end}}
     </div>
     <span class="nowrap">{{$d.XP}} XP</span>
+    {{end}}
   </div>
   {{template "flash" .}}
 
-  {{if eq (print $v.Phase) "explain"}}
+  {{if eq (print $v.Phase) "intro"}}
+  <div class="intro-tower" aria-hidden="true"><span class="tier-ghost tier-w1"></span><span class="tier-ghost tier-w2"></span><span class="tier tier-here tier-w3"></span><span class="tier tier-done tier-w4"></span></div>
+  <div class="stack-sm">
+    <h1>Let's find where your tower starts.</h1>
+    <p class="lead">I'll ask some questions. Then I'll know which blocks you already have.</p>
+  </div>
+  <ul class="steps">
+    <li class="step"><span class="step-icon" aria-hidden="true">{{template "i-clock"}}</span><span>About 20 minutes. You can stop and come back.</span></li>
+    <li class="step"><span class="step-icon" aria-hidden="true">{{template "i-check"}}</span><span>It's not a test. Nothing here is marked.</span></li>
+    <li class="step"><span class="step-icon step-q" aria-hidden="true">?</span><span>Not learned it yet? Just say so. That helps.</span></li>
+  </ul>
+  <div class="grow"></div>
+  <form method="post" action="/tasks/{{$v.Task.ID}}/next">{{template "csrf" .}}<button class="btn btn-primary" type="submit">{{if $v.Asked}}Keep going{{else}}Start{{end}}</button></form>
+
+  {{else if eq (print $v.Phase) "explain"}}
   <div class="stack-sm">
     <span class="eyebrow">{{$d.Title}} · step {{$d.KPNumber}} of {{$v.KPCount}}</span>
     <h1>{{if $d.FirstStep}}Let's learn it{{else}}Watch how it works{{end}}</h1>
@@ -36,14 +54,20 @@
     {{template "csrf" .}}
     <input type="hidden" name="attempt" value="{{$v.AttemptID}}">
     <div class="stack-sm">
-      <span class="eyebrow">{{$d.Title}}</span>
+      <span class="eyebrow">{{$d.Title}}{{if eq $d.Kind "quiz"}} · {{add $v.Asked 1}} of {{$v.Total}}{{end}}</span>
       <h1>{{$d.Question}}</h1>
     </div>
     {{if $d.Body}}<div class="card probcard">{{$d.Body}}</div>{{end}}
     {{template "answer-input" $d}}
     <div class="grow"></div>
-    <button class="btn btn-primary" type="submit">Check</button>
+    <button class="btn btn-primary" type="submit">{{if eq $d.Kind "lesson" "review"}}Check{{else}}Next{{end}}</button>
   </form>
+  {{if eq $d.Kind "diagnostic"}}
+  <form method="post" action="/tasks/{{$v.Task.ID}}/not-learned">
+    {{template "csrf" .}}<input type="hidden" name="attempt" value="{{$v.AttemptID}}">
+    <button class="btn btn-quiet" type="submit">I haven't learned this yet</button>
+  </form>
+  {{end}}
 
   {{else if eq (print $v.Phase) "feedback"}}
   {{$f := $v.Feedback}}
@@ -86,6 +110,60 @@
   <div class="grow"></div>
   {{template "next-task" (pair $ "Try something else")}}
   <a class="btn btn-secondary" href="/">Back home</a>
+
+  {{else if $d.Milestone}}
+  {{$m := $d.Milestone}}{{$res := $v.Result}}
+  <div class="stack-sm center">
+    <span class="eyebrow-on">{{if $m.Tier}}Tier complete{{else}}Face complete{{end}}</span>
+    <h1>You finished {{$m.Title}}!</h1>
+    <p class="lead-on">{{if eq $m.Blocks 1}}Its block is placed.{{else}}All {{$m.Blocks}} blocks are placed.{{end}} {{if $m.Tier}}This tier is yours for good.{{else}}This face is yours for good.{{end}}</p>
+  </div>
+  <div class="card milestone-card">
+    <span class="flag" aria-hidden="true">{{template "i-flag"}}</span>
+    <ol class="tower">
+      {{if $m.Next}}<li class="tier tier-ready tier-w3">{{$m.Next}} · ready</li>{{end}}
+      <li class="tier tier-done tier-finished tier-w4">{{template "i-flag"}} {{$m.Title}} · complete</li>
+      <li class="tier tier-done tier-finished tier-w5"></li>
+    </ol>
+  </div>
+  <div class="stats stats-2">
+    <div class="card stat stat-on"><span>This lesson</span><b>+{{$res.XP}} XP</b></div>
+    <div class="card stat stat-on"><span>Blocks placed</span><b>{{$m.Placed}}</b></div>
+  </div>
+  <div class="grow"></div>
+  <a class="btn btn-sun" href="/tower">See my tower</a>
+
+  {{else if eq $d.Kind "quiz"}}
+  {{$res := $v.Result}}
+  <div class="row-between">
+    <div class="stack-sm"><span class="eyebrow">Quiz done</span><h1>{{sub (len $d.QuizItems) $d.QuizMissed}} of {{len $d.QuizItems}} held firm.</h1></div>
+    <span class="xp-badge">+{{$res.XP}} XP</span>
+  </div>
+  <ol class="quiz-list">
+    {{range $i, $q := $d.QuizItems}}
+    <li class="quiz-item{{if not $q.Right}} quiz-miss{{end}}">
+      <span class="step-n" aria-hidden="true">{{add $i 1}}</span>
+      {{if $q.Right}}<span class="quiz-eq">{{$q.Prompt}}{{if $q.Answer}} <b>{{$q.Answer}}</b>{{end}}</span><span class="muted nowrap">You got it</span>
+      {{else}}<details class="quiz-how"><summary><span class="quiz-eq">{{$q.Prompt}}{{if $q.Answer}} <b>{{$q.Answer}}</b>{{end}}</span><span class="nowrap">See how</span></summary>
+        {{if $q.Given}}<p>You wrote {{$q.Given}}.</p>{{end}}<ol>{{range $q.Steps}}<li>{{.}}</li>{{end}}</ol></details>{{end}}
+    </li>
+    {{end}}
+  </ol>
+  {{if $d.QuizMissed}}<p class="muted">{{if eq $d.QuizMissed 1}}One block needs{{else}}{{$d.QuizMissed}} blocks need{{end}} mending. {{if eq $d.QuizMissed 1}}It is{{else}}They are{{end}} next on your list.</p>{{end}}
+  <div class="grow"></div>
+  <a class="btn btn-primary" href="/tower">Back to my tower</a>
+
+  {{else if eq $d.Kind "diagnostic"}}
+  {{$res := $v.Result}}
+  <div class="stack-sm center">
+    <span class="eyebrow">{{if eq (print $v.Task.Status) "abandoned"}}Skipped{{else}}All done{{end}}</span>
+    <h1>{{if $d.Placed}}Your tower starts with {{len $d.Placed}} {{if eq (len $d.Placed) 1}}block{{else}}blocks{{end}}.{{else}}Your tower starts at the bottom.{{end}}</h1>
+    <p class="lead">{{if $d.Placed}}You already know these. We'll check each one again within a week.{{else}}That's a great place to start. Every block is one step up.{{end}}</p>
+  </div>
+  {{if $d.Placed}}<div class="card stack-sm"><span class="muted">Placed</span><ul class="placed-list">{{range $d.Placed}}<li>{{.}}</li>{{end}}</ul></div>{{end}}
+  <div class="grow"></div>
+  {{template "next-task" (pair $ "First step")}}
+  <a class="btn btn-secondary" href="/tower">See my tower</a>
 
   {{else}}
   {{$res := $v.Result}}

@@ -9,7 +9,7 @@
   {{if .D.Tower}}
   <section class="card stack-sm" aria-labelledby="tower-h">
     <div class="row-between">
-      <h2 id="tower-h">Your tower</h2>
+      <h2 id="tower-h"><a class="plain-link" href="/tower">Your tower</a></h2>
       <span class="muted">{{$h.Placed}} {{if eq $h.Placed 1}}block{{else}}blocks{{end}} placed</span>
     </div>
     <ol class="tower">
@@ -48,6 +48,9 @@
     </button>
   </form>
   {{end}}
+  {{end}}
+  {{if .D.Placement}}
+  <form method="post" action="/placement/skip">{{template "csrf" .}}<button class="btn btn-quiet" type="submit">Start from the bottom instead</button></form>
   {{end}}
   {{if .D.Early}}<p class="muted">You've placed every block in your course. Mend some early, or make a drill.</p>{{end}}
   {{range .D.Others}}

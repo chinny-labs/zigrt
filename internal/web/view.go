@@ -43,10 +43,13 @@ var funcs = template.FuncMap{
 	},
 	"digits": func() []string { return []string{"1", "2", "3", "4", "5", "6", "7", "8", "9"} },
 	// wclass sizes an answer box by digit count, without an inline style.
-	"wclass": func(n int) string { return "w" + strconv.Itoa(min(max(n, 2), 8)) },
-	"add":    func(a, b int) int { return a + b },
-	"list":   func(xs ...string) []string { return xs },
-	"math":   mathHTML,
+	"wclass":    func(n int) string { return "w" + strconv.Itoa(min(max(n, 2), 8)) },
+	"add":       func(a, b int) int { return a + b },
+	"sub":       func(a, b int) int { return a - b },
+	"list":      func(xs ...string) []string { return xs },
+	"math":      mathHTML,
+	"gradeOf":   gradeName,
+	"stateWord": func(state string) string { return stateWords[state] },
 	// pair passes two values to a sub-template, as .A and .B.
 	"pair": func(a, b any) struct{ A, B any } { return struct{ A, B any }{a, b} },
 	// showPrompt says whether a problem's words are worth showing above its

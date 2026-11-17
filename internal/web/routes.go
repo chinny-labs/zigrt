@@ -33,6 +33,9 @@ func (s *Server) routes() http.Handler {
 	mux.HandleFunc("GET /tasks/{id}", s.studentOnly(s.taskPage))
 	mux.HandleFunc("POST /tasks/{id}/next", s.studentOnly(s.taskNext))
 	mux.HandleFunc("POST /tasks/{id}/answer", s.studentOnly(s.taskAnswer))
+	mux.HandleFunc("POST /tasks/{id}/not-learned", s.studentOnly(s.taskNotLearned))
+	mux.HandleFunc("POST /placement/skip", s.studentOnly(s.placementSkip))
+	mux.HandleFunc("GET /tower", s.studentOnly(s.towerPage))
 
 	// Free practice: both roles build sets; only students answer on screen.
 	mux.HandleFunc("GET /drills", s.signedIn(s.drillBuilder))
