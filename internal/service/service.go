@@ -28,6 +28,14 @@ type Service struct {
 	// Learn is the mastery tuning (plan section 3).
 	Learn learning.Config
 
+	// Set by the server at start: the app's version (for a pack's
+	// min_app_version), the content folder uploads go to, where the running
+	// pack came from, and the database's own backups (nil for Postgres).
+	AppVersion string
+	ContentDir string
+	PackSource string
+	Backups    Backups
+
 	lib atomic.Pointer[library]
 }
 

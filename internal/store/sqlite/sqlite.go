@@ -67,6 +67,10 @@ func Open(ctx context.Context, path string, log *slog.Logger) (*store.SQL, error
 		write.Close()
 		return nil, fmt.Errorf("open %s: %w", path, err)
 	}
+	if err := backupBeforeMigrating(ctx, write, path, log); err != nil {
+		write.Close()
+		return nil, err
+	}
 	if err := Migrate(ctx, write); err != nil {
 		write.Close()
 		return nil, err
@@ -92,13 +96,55 @@ func dsn(path string, extra ...string) string {
 	return "file:" + path + "?" + strings.Join(q, "&")
 }
 
-// Migrate applies the embedded SQLite migrations.
-func Migrate(ctx context.Context, db *sql.DB) error {
-	fsys, err := fs.Sub(migrations.SQLite, "sqlite")
+// PreMigratePrefix names the snapshot taken before migrations run. It is not
+// BackupPrefix, so nightly pruning leaves it alone.
+const PreMigratePrefix = "premigrate-"
+
+// backupBeforeMigrating snapshots an existing database into its backups
+// folder before any pending migration runs (plan 10.3), so an upgrade can
+// be undone by restoring it. A new, empty database needs none.
+func backupBeforeMigrating(ctx context.Context, db *sql.DB, path string, log *slog.Logger) error {
+	p, err := provider(db)
 	if err != nil {
 		return err
 	}
-	p, err := goose.NewProvider(database.DialectSQLite3, db, fsys)
+	pending, err := p.HasPending(ctx)
+	if err != nil {
+		return fmt.Errorf("migrate: %w", err)
+	}
+	if !pending {
+		return nil
+	}
+	version, err := p.GetDBVersion(ctx)
+	if err != nil {
+		return fmt.Errorf("migrate: %w", err)
+	}
+	if version == 0 {
+		return nil
+	}
+	dest := filepath.Join(filepath.Dir(path), "backups",
+		fmt.Sprintf("%sv%d-%s.db", PreMigratePrefix, version, time.Now().UTC().Format("20060102-150405")))
+	if err := os.MkdirAll(filepath.Dir(dest), 0o700); err != nil {
+		return err
+	}
+	if _, err := db.ExecContext(ctx, `VACUUM INTO ?`, dest); err != nil {
+		return fmt.Errorf("backup before migrating: %w", err)
+	}
+	log.Info("backed up the database before migrating", "path", dest, "from_version", version)
+	return os.Chmod(dest, 0o600)
+}
+
+func provider(db *sql.DB) (*goose.Provider, error) {
+	fsys, err := fs.Sub(migrations.SQLite, "sqlite")
+	if err != nil {
+		return nil, err
+	}
+	return goose.NewProvider(database.DialectSQLite3, db, fsys)
+}
+
+// Migrate applies the embedded SQLite migrations.
+func Migrate(ctx context.Context, db *sql.DB) error {
+	p, err := provider(db)
 	if err != nil {
 		return err
 	}

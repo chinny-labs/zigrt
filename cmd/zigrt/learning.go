@@ -5,13 +5,17 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/chinny-labs/zigrt/content"
+	"github.com/chinny-labs/zigrt/internal/buildinfo"
 	"github.com/chinny-labs/zigrt/internal/pack"
 	"github.com/chinny-labs/zigrt/internal/service"
 	"github.com/chinny-labs/zigrt/internal/sim"
+	"github.com/chinny-labs/zigrt/internal/store"
+	"github.com/chinny-labs/zigrt/internal/store/engine"
 	"github.com/chinny-labs/zigrt/internal/web"
 )
 
@@ -161,5 +165,68 @@ func simulate(args []string) error {
 	if len(rep.NeverReached) > 0 {
 		fmt.Printf("  never reached (%d): %s\n", len(rep.NeverReached), strings.Join(rep.NeverReached, ", "))
 	}
+	return nil
+}
+
+// export writes the whole household as an engine-independent dump.
+func export(args []string) error {
+	fs := flag.NewFlagSet("export", flag.ContinueOnError)
+	out := fs.String("o", "-", "the file to write (- for standard output)")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	cfg, log, err := setup()
+	if err != nil {
+		return err
+	}
+	ctx := context.Background()
+	st, err := open(ctx, cfg, log)
+	if err != nil {
+		return err
+	}
+	defer st.Close()
+	w := os.Stdout
+	if *out != "-" {
+		f, err := os.Create(*out) //nolint:gosec // the operator names the file
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		w = f
+	}
+	if err := st.Export(ctx, w, store.ExportHeader{App: buildinfo.Version, ExportedAt: time.Now().UTC()}); err != nil {
+		return err
+	}
+	if *out != "-" {
+		fmt.Fprintf(os.Stderr, "Exported to %s.\n", *out)
+	}
+	return nil
+}
+
+// importDump loads an export into an empty database.
+func importDump(args []string) error {
+	if len(args) != 1 {
+		return errors.New("usage: zigrt import <file>")
+	}
+	cfg, log, err := setup()
+	if err != nil {
+		return err
+	}
+	ctx := context.Background()
+	st, err := open(ctx, cfg, log)
+	if err != nil {
+		return err
+	}
+	defer st.Close()
+	f, err := os.Open(args[0]) //nolint:gosec // the operator names the file
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	n, err := st.Import(ctx, f)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Imported %d rows into %s. Everyone signs in again.\n", n, engine.Redact(cfg.DatabaseURL))
 	return nil
 }
