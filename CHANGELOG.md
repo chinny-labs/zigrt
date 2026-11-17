@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.0](https://github.com/chinny-labs/zigrt/compare/v0.6.0...v0.7.0) (2026-11-17)
+
+
+### Features
+
+* **figure:** the kindergarten figures ([#25](https://github.com/chinny-labs/zigrt/issues/25)) ([1c9e2f6](https://github.com/chinny-labs/zigrt/commit/1c9e2f631882849a61e2135b795de0b133e35568))
+* goal-met notifications are opt-in per parent ([#23](https://github.com/chinny-labs/zigrt/issues/23)) ([d8ee305](https://github.com/chinny-labs/zigrt/commit/d8ee30542a81f775660abc9031cbdf436164a54c))
+
 ## [0.6.0](https://github.com/chinny-labs/zigrt/compare/v0.5.0...v0.6.0) (2026-11-17)
 
 
