@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/chinny-labs/zigrt/compare/v0.1.0...v0.1.1) (2026-11-17)
+
+
+### Bug Fixes
+
+* **content:** check only pack files for outside links ([#6](https://github.com/chinny-labs/zigrt/issues/6)) ([5b1483a](https://github.com/chinny-labs/zigrt/commit/5b1483a02c256bed5b8f3b457f4f3a1be6135920))
+
 ## 0.1.0 (2026-11-17)
 
 
