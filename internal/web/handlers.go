@@ -85,9 +85,7 @@ func (s *Server) root(w http.ResponseWriter, r *http.Request) {
 	case c.User.IsParent():
 		http.Redirect(w, r, "/parent", http.StatusSeeOther)
 	default:
-		v := s.newView(w, r, "Home", nil)
-		v.Shell, v.Nav = "student", "home"
-		s.render(w, r, http.StatusOK, "home", v)
+		s.studentHome(w, r, c)
 	}
 }
 

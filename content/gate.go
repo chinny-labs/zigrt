@@ -51,6 +51,11 @@ func (p *Pack) Gate(seeds int) []error {
 	errs = append(errs, p.gateTemplates(seeds)...)
 	errs = append(errs, p.gateReadability()...)
 	errs = append(errs, p.gateSubresources()...)
+	for _, name := range p.Figures {
+		if _, err := p.StaticFigure(name); err != nil {
+			errs = append(errs, fmt.Errorf("subresources: figures/%s.svg: %w", name, err))
+		}
+	}
 	return errs
 }
 

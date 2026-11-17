@@ -1,0 +1,171 @@
+{{define "main"}}
+{{$d := .D}}{{$v := .D.V}}
+<div class="column task">
+  <div class="taskbar">
+    <a class="iconbtn" href="/" aria-label="Leave and go home">{{template "i-close"}}</a>
+    <div class="segs" role="img" aria-label="{{if eq (print $v.Task.Kind) "review"}}Problem {{add $v.Asked 1}} of {{$v.Total}}{{else}}Step {{$d.KPNumber}} of {{$v.KPCount}}{{end}}">
+      {{range $d.Segs}}<span class="seg seg-{{.}}"></span>{{end}}
+    </div>
+    <span class="nowrap">{{$d.XP}} XP</span>
+  </div>
+  {{template "flash" .}}
+
+  {{if eq (print $v.Phase) "explain"}}
+  <div class="stack-sm">
+    <span class="eyebrow">{{$d.Title}} · step {{$d.KPNumber}} of {{$v.KPCount}}</span>
+    <h1>{{if $d.FirstStep}}Let's learn it{{else}}Watch how it works{{end}}</h1>
+    <p class="lead">{{$d.Explain}}</p>
+  </div>
+  <div class="card probcard">
+    {{if showPrompt $v.Example}}<p class="prompt">{{math $v.Example.Prompt}}</p>{{end}}
+    {{$d.Example}}
+  </div>
+  <ol class="steps">
+    {{range $i, $s := $d.Steps}}<li class="step"><span class="step-n" aria-hidden="true">{{add $i 1}}</span><span>{{$s}}</span></li>{{end}}
+    {{if $d.NextStep}}<li class="step step-more" aria-hidden="true"><span class="step-n">{{$d.NextStep}}</span><span>One more step</span></li>{{end}}
+  </ol>
+  <div class="grow"></div>
+  {{if $d.NextStep}}
+  <a class="btn btn-primary" href="/tasks/{{$v.Task.ID}}?step={{$d.NextStep}}">Show the next step</a>
+  {{else}}
+  <form method="post" action="/tasks/{{$v.Task.ID}}/next">{{template "csrf" .}}<button class="btn btn-primary" type="submit">Now you try</button></form>
+  {{end}}
+
+  {{else if eq (print $v.Phase) "problem"}}
+  <form method="post" action="/tasks/{{$v.Task.ID}}/answer" class="column-inner">
+    {{template "csrf" .}}
+    <input type="hidden" name="attempt" value="{{$v.AttemptID}}">
+    <div class="stack-sm">
+      <span class="eyebrow">{{$d.Title}}</span>
+      <h1>{{$d.Question}}</h1>
+    </div>
+    {{if $d.Body}}<div class="card probcard">{{$d.Body}}</div>{{end}}
+    {{template "answer-input" $d}}
+    <div class="grow"></div>
+    <button class="btn btn-primary" type="submit">Check</button>
+  </form>
+
+  {{else if eq (print $v.Phase) "feedback"}}
+  {{$f := $v.Feedback}}
+  {{if $f.Right}}
+  <div class="sheet-right" role="status">
+    <h1>That's right!</h1>
+    <p>{{$f.Answer}} is the answer.</p>
+  </div>
+  {{if $d.Answered}}<div class="card probcard">{{$d.Answered}}</div>{{end}}
+  {{else}}
+  <div class="sheet-notyet" role="status">
+    <h1>Not quite. Let's look together.</h1>
+    <p>{{if $d.NoteText}}{{$d.NoteText}} {{end}}{{if $d.Given}}You wrote {{$d.Given}}. {{end}}The answer is {{$f.Answer}}.</p>
+  </div>
+  <div class="card probcard">{{if showPrompt $f.Problem}}<p class="prompt">{{math $f.Problem.Prompt}}</p>{{end}}{{$d.Answered}}</div>
+  <ol class="steps">
+    {{range $i, $s := $f.Problem.Solution}}<li class="step"><span class="step-n" aria-hidden="true">{{add $i 1}}</span><span>{{$s}}</span></li>{{end}}
+  </ol>
+  {{end}}
+  <div class="grow"></div>
+  <form method="post" action="/tasks/{{$v.Task.ID}}/next">{{template "csrf" .}}<button class="btn btn-primary" type="submit">{{if $f.Right}}Next{{else}}Try another one{{end}}</button></form>
+
+  {{else if eq (print $v.Phase) "slow"}}
+  <div class="stack center">
+    <h1>Let's slow down</h1>
+    <p class="lead">Those answers came very fast. Take your time with each one. Careful beats quick.</p>
+  </div>
+  <div class="grow"></div>
+  <form method="post" action="/tasks/{{$v.Task.ID}}/next">{{template "csrf" .}}<button class="btn btn-primary" type="submit">I'm ready</button></form>
+
+  {{else if eq (print $v.Phase) "paused"}}
+  <div class="stack center">
+    <span class="saved">Saved for later</span>
+    <h1>This one is tricky. Let's rest it.</h1>
+    <p class="lead">Tricky blocks are normal. We'll come back to it next time, right where you stopped.</p>
+  </div>
+  {{if gt $v.KPIndex 0}}
+  <div class="card stack-sm"><span class="muted">You kept</span><strong class="big">Step {{$v.KPIndex}} of {{$v.KPCount}} is done and stays done.</strong></div>
+  {{end}}
+  <div class="grow"></div>
+  {{template "next-task" (pair $ "Try something else")}}
+  <a class="btn btn-secondary" href="/">Back home</a>
+
+  {{else}}
+  {{$res := $v.Result}}
+  <div class="stack-sm center">
+    {{if eq (print $v.Task.Status) "abandoned"}}
+    <span class="eyebrow">Stopped</span><h1>This one stopped part way.</h1>
+    {{else if eq (print $v.Task.Kind) "review"}}
+    <span class="eyebrow">Mending done</span>
+    <h1>{{if $res.Passed}}Block mended!{{else}}This block needs more mending.{{end}}</h1>
+    {{if not $res.Passed}}<p class="lead">That's how blocks get strong. We'll mend it again tomorrow.</p>{{end}}
+    {{else}}
+    <span class="eyebrow">Lesson done</span><h1>You placed a new block!</h1>
+    {{end}}
+  </div>
+  <div class="card placed">{{$d.Title}}</div>
+  {{if $res}}
+  <div class="stats stats-2">
+    <div class="card stat"><span class="muted">You earned</span><b>+{{$res.XP}} XP</b>
+      {{if $res.Rushed}}<span class="muted">No XP this time: the answers came too fast.</span>
+      {{else if $d.BonusXP}}<span class="muted">{{$d.XP}}, plus {{$d.BonusXP}} for a clean run</span>{{end}}</div>
+    <div class="card stat"><span class="muted">Streak</span>{{if $res.Today.Streak}}<b>{{$res.Today.Streak}} {{if eq $res.Today.Streak 1}}day{{else}}days{{end}}</b>{{else}}<b>Not yet</b>{{end}}
+      {{if $res.Today.GoalMet}}<span class="muted">Today's goal is met</span>{{else}}<span class="muted">Meet today's goal to {{if $res.Today.Streak}}keep it{{else}}start one{{end}}</span>{{end}}</div>
+  </div>
+  <section class="stack-sm" aria-label="Today's climb">
+    <div class="row-between"><h2>Today's climb</h2><span class="climb-num">{{$res.Today.XP}} of {{$res.Today.Goal}} XP</span></div>
+    <progress max="{{$res.Today.Goal}}" value="{{$res.Today.XP}}">{{$res.Today.XP}} of {{$res.Today.Goal}}</progress>
+  </section>
+  {{end}}
+  <div class="grow"></div>
+  {{template "next-task" (pair $ "Keep climbing")}}
+  <a class="btn btn-secondary" href="/">{{if and $res $res.Today.GoalMet}}Done for today{{else}}Back home{{end}}</a>
+  {{end}}
+</div>
+{{end}}
+
+{{define "next-task"}}{{$p := .A}}{{with $p.D.Next}}
+<form method="post" action="/tasks">
+  {{template "csrf" $p}}
+  <input type="hidden" name="kind" value="{{.Kind}}"><input type="hidden" name="topic" value="{{.Topic}}">
+  <button class="taskbtn" type="submit">
+    <span class="taskbtn-text"><span class="eyebrow-on">{{$.B}} · {{.Label}}</span><span class="taskbtn-title">{{.Title}}</span></span>
+    <span class="xp-badge">{{.XP}} XP</span>
+  </button>
+</form>
+{{end}}{{end}}
+
+{{define "answer-input"}}
+{{if eq .Input "comparison"}}
+<fieldset class="group answer-group">
+  <legend class="visually-hidden">Pick a sign</legend>
+  <div class="choices choices-3">
+    {{range $s := (list "<" "=" ">")}}<label class="toggle toggle-sign"><input type="radio" name="main" value="{{$s}}" required><span>{{$s}}</span></label>{{end}}
+  </div>
+</fieldset>
+{{else if eq .Input "choice"}}
+<fieldset class="group answer-group">
+  <legend class="visually-hidden">Pick one</legend>
+  <div class="choices choices-2">
+    {{range .Choices}}<label class="toggle toggle-choice"><input type="radio" name="main" value="{{.Value}}" required><span>{{.Label}}</span></label>{{end}}
+  </div>
+</fieldset>
+{{else if eq .Input "fraction"}}
+<div class="answer-row answer-row-frac" role="group" aria-label="Your fraction">
+  <label class="answer-field answer-whole"><span>Whole</span><input name="whole" inputmode="numeric" autocomplete="off" maxlength="6"></label>
+  <div class="answer-frac">
+    <label class="answer-field"><span class="visually-hidden">Top</span><input name="num" inputmode="numeric" autocomplete="off" maxlength="6" required aria-label="Top number"></label>
+    <span class="frac-bar" aria-hidden="true"></span>
+    <label class="answer-field"><span class="visually-hidden">Bottom</span><input name="den" inputmode="numeric" autocomplete="off" maxlength="6" required aria-label="Bottom number"></label>
+  </div>
+</div>
+<p class="hint center">Leave Whole empty unless the answer is more than one.</p>
+{{else if eq .Input "quotient_remainder"}}
+<div class="answer-row">
+  <label class="answer-field"><span>{{if .LongAnswer}}Answer{{else}}Groups{{end}}</span><input name="main" inputmode="numeric" autocomplete="off" maxlength="8" required></label>
+  <span class="rem-r" aria-hidden="true">r</span>
+  <label class="answer-field"><span>Left over</span><input name="rem" inputmode="numeric" autocomplete="off" maxlength="8"></label>
+</div>
+{{else}}
+<div class="answer-row">
+  <label class="answer-field answer-wide"><span>Your answer</span><input name="main" inputmode="{{if eq .Input "decimal"}}decimal{{else}}numeric{{end}}" autocomplete="off" maxlength="12" required></label>
+</div>
+{{end}}
+{{end}}

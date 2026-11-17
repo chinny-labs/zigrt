@@ -138,7 +138,15 @@ type HomeView struct {
 	Today     DaySummary
 	Active    *NextTask // the task on screen, to continue
 	Tasks     []NextTask
-	Complete  bool // nothing left to learn and nothing due
+	Complete  bool   // nothing left to learn and nothing due
+	Placed    int    // topics mastered in the course
+	Tiers     []Tier // the course's grades, youngest first
+}
+
+// Tier is one grade band of the student's tower.
+type Tier struct {
+	Grade         string
+	Placed, Total int
 }
 
 // --- reading state ----------------------------------------------------------
@@ -309,8 +317,31 @@ func (s *Service) Home(ctx context.Context, student store.User) (HomeView, error
 	} else if !errors.Is(err, store.ErrNotFound) {
 		return v, err
 	}
-	v.Tasks, v.Complete, err = s.nextTasks(ctx, s.Store, l, student.ID, today)
-	return v, err
+	sit, err := s.situation(ctx, s.Store, l, student.ID, today)
+	if err != nil {
+		return v, err
+	}
+	v.Tasks, v.Complete = s.toNext(l, sit)
+	byGrade := map[string]*Tier{}
+	for _, id := range sit.Course {
+		t := l.pack.Topic(id)
+		tier := byGrade[t.Grade]
+		if tier == nil {
+			tier = &Tier{Grade: t.Grade}
+			byGrade[t.Grade] = tier
+		}
+		tier.Total++
+		if sit.States[id].State == learning.Mastered {
+			tier.Placed++
+			v.Placed++
+		}
+	}
+	for _, g := range content.Grades {
+		if t := byGrade[g]; t != nil {
+			v.Tiers = append(v.Tiers, *t)
+		}
+	}
+	return v, nil
 }
 
 func (s *Service) nextTasks(ctx context.Context, r store.Reader, l *library, studentID string, today day) ([]NextTask, bool, error) {
@@ -318,12 +349,17 @@ func (s *Service) nextTasks(ctx context.Context, r store.Reader, l *library, stu
 	if err != nil {
 		return nil, false, err
 	}
+	out, complete := s.toNext(l, sit)
+	return out, complete, nil
+}
+
+func (s *Service) toNext(l *library, sit learning.Situation) ([]NextTask, bool) {
 	next, complete := s.Learn.NextTasks(l.graph, sit)
 	out := make([]NextTask, 0, len(next))
 	for _, n := range next {
 		out = append(out, NextTask{Kind: store.TaskKind(n.Kind), Topic: l.pack.Topic(n.Topic), Resume: n.Resume, Early: n.Early})
 	}
-	return out, complete, nil
+	return out, complete
 }
 
 // --- starting and moving through a task -------------------------------------

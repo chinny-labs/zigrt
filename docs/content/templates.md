@@ -182,7 +182,9 @@ Figures the app draws, with the arguments each takes:
 | `coordinate` | `size`, `x`, `y` |
 | `array` | `rows`, `cols` |
 
-Any other name must be a static picture in `figures/<name>.svg`, which takes no arguments.
+Any other name must be a static picture in `figures/<name>.svg`, which takes no arguments. Packs are untrusted, so a static figure is shown only as cleaned: drawing elements (`svg`, `g`, `path`, `rect`, `circle`, `ellipse`, `line`, `polyline`, `polygon`, `text`, `tspan`, `title`, `desc`) with geometry and paint attributes. A script, style, link, `use`, image, event handler or `url(...)` fails the subresources gate. A file is at most 64 KB.
+
+Each catalogue figure has limits it can draw: a fraction bar of 1 to 24 parts, an array up to 12 by 12, a number line of at most 40 jumps with its mark on the line, a clock from 1:00 to 12:59, a grid of size 2 to 20 with the point on it. The `figures` gate draws every generated figure, so a template that strays outside fails `check`.
 
 ```yaml
 id: shade-a-fraction
@@ -277,7 +279,8 @@ The gates (plan section 4.6):
 | generate | a seed finds no problem, or 1,000 seeds give fewer than 30 different problems (`min_variety` lowers this for fixed questions) |
 | answers | a non-whole integer answer, a decimal that never ends, a negative answer, the right answer not marked right or a wrong one marked right |
 | solutions | the last line does not state the answer |
+| figures | a generated figure cannot be drawn (too many parts, a mark off the line) |
 | readability | an explanation sentence too long for the grade |
-| subresources | a link outside the pack |
+| subresources | a link outside the pack, or a static figure that does not clean |
 
 In the curriculum repo the tool is pinned with a `tool` line in `go.mod` (ADR 10), so it is run as `go tool zigrt-content check`.

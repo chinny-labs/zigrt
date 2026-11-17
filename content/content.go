@@ -20,6 +20,7 @@ import (
 
 	"go.yaml.in/yaml/v3"
 
+	"github.com/chinny-labs/zigrt/figure"
 	"github.com/chinny-labs/zigrt/problem"
 )
 
@@ -111,11 +112,27 @@ type Pack struct {
 	Figures     []string // static figures in figures/
 
 	fsys      fs.FS
+	static    map[string]staticFigure
 	topics    map[string]*Topic
 	kps       map[string]*KP
 	templates map[string]*problem.Template
 	owner     map[string]*Topic // template ID to its topic
 	ids       map[string]string // every ID to what it names
+}
+
+type staticFigure struct {
+	svg string
+	err error
+}
+
+// StaticFigure returns a static figure from figures/, cleaned of anything
+// but drawing (figure.Clean), as an SVG element.
+func (p *Pack) StaticFigure(name string) (string, error) {
+	sf, ok := p.static[name]
+	if !ok {
+		return "", fmt.Errorf("no figure %q in the pack", name)
+	}
+	return sf.svg, sf.err
 }
 
 // Topic returns a topic by ID, or nil.
@@ -204,8 +221,19 @@ func Load(fsys fs.FS) (*Pack, error) {
 		return nil, err
 	}
 	if figs, err := fs.Glob(fsys, "figures/*.svg"); err == nil {
+		p.static = map[string]staticFigure{}
 		for _, f := range figs {
-			p.Figures = append(p.Figures, strings.TrimSuffix(path.Base(f), ".svg"))
+			name := strings.TrimSuffix(path.Base(f), ".svg")
+			p.Figures = append(p.Figures, name)
+			// Packs are untrusted: a static figure is drawn only as Clean
+			// rewrote it, and one that does not clean fails the gates.
+			var sf staticFigure
+			if b, err := fs.ReadFile(fsys, f); err != nil {
+				sf.err = err
+			} else {
+				sf.svg, sf.err = figure.Clean(b)
+			}
+			p.static[name] = sf
 		}
 	}
 

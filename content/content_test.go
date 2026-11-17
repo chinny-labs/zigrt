@@ -182,6 +182,7 @@ func TestGates(t *testing.T) {
 		"long sentence":    {edit("topics/two.yaml", "Count them.", "Count all of them one at a time from the first one to the very last one."), "readability"},
 		"url":              {edit("topics/two.yaml", "Count them.", "See https://example.com"), "subresources"},
 		"svg link":         {set("figures/star.svg", `<svg xmlns="http://www.w3.org/2000/svg"><image href="star.png"/></svg>`), "subresources"},
+		"svg script":       {set("figures/star.svg", `<svg xmlns="http://www.w3.org/2000/svg"><script>x()</script></svg>`), "figures/star.svg: figure: <script> is not allowed"},
 		"generate":         {edit("topics/two.yaml", "[1, 50]", "[1, 5]"), "distinct"},
 	}
 	for name, c := range cases {
@@ -215,6 +216,12 @@ func TestGates(t *testing.T) {
 	}
 	if len(p.Figures) != 1 || p.Figures[0] != "star" {
 		t.Errorf("figures = %v", p.Figures)
+	}
+	if svg, err := p.StaticFigure("star"); err != nil || !strings.Contains(svg, `class="fig fig-static"`) {
+		t.Errorf("StaticFigure = %q, %v", svg, err)
+	}
+	if _, err := p.StaticFigure("moon"); err == nil {
+		t.Error("a missing figure was found")
 	}
 }
 
