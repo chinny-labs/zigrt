@@ -418,10 +418,10 @@ func applyFormat(rng *rand.Rand, p Problem, f Format, chosen []Format) Problem {
 		return p
 	}
 	var options []Blank
-	if !(p.Op == Mul && p.Y == 0) { // ? × 0 = 0 has every answer
+	if p.Op != Mul || p.Y != 0 { // ? × 0 = 0 has every answer
 		options = append(options, BlankX)
 	}
-	if !(p.Op == Mul && p.X == 0) && !(p.Op == Div && p.Z == 0) {
+	if (p.Op != Mul || p.X != 0) && (p.Op != Div || p.Z != 0) {
 		options = append(options, BlankY)
 	}
 	if len(options) == 0 {
@@ -543,7 +543,7 @@ func Columns(ps []Problem) int {
 		switch {
 		case chars <= 13:
 			cols = min(cols, 4)
-		case chars <= 19:
+		case chars <= 21:
 			cols = min(cols, 3)
 		default:
 			cols = min(cols, 2)

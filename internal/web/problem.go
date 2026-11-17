@@ -47,8 +47,11 @@ func (p problemView) part(b *strings.Builder, key drill.Blank, n int) {
 	b.WriteString(num(n))
 }
 
-// slots writes the answer box, plus a remainder box when the problem has one.
+// slots writes the answer box, plus a remainder box when the problem has
+// one, as one unit that never splits across lines.
 func (p problemView) slots(b *strings.Builder) {
+	b.WriteString(`<span class="ans">`)
+	defer b.WriteString(`</span>`)
 	box := func(name string, width int) {
 		w := "w" + strconv.Itoa(min(max(width, 2), 8))
 		if p.Mode == "drill" {

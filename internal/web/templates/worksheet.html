@@ -24,9 +24,9 @@
       <div class="sheet-name"><span>Name <i></i></span><span>Date <i></i></span><span>Score <i class="short"></i> / {{len .D.Problems}}</span></div>
       {{end}}
     </header>
-    <div class="sheet-grid cols-{{.D.Cols}}{{if .D.Roomy}} roomy{{end}}">
+    <div class="sheet-grid cols-{{.D.Cols}}">
       {{range .D.Problems}}
-      <div class="sheet-item{{if eq .Format "stacked"}} is-stacked{{end}}"><span class="sheet-num">{{.N}}.</span>{{.HTML}}</div>
+      <div class="sheet-item{{if eq .Format "stacked"}} is-stacked{{end}}{{if .NeedsRoom}} roomy{{end}}"><span class="sheet-num">{{.N}}.</span>{{.HTML}}</div>
       {{end}}
     </div>
     <footer class="sheet-foot">{{.D.About}}</footer>

@@ -126,7 +126,12 @@ func (s *Server) drillCreate(w http.ResponseWriter, r *http.Request, c *reqCtx) 
 		s.renderBuilder(w, r, c, http.StatusUnprocessableEntity, set, r.PostFormValue("title"), msg)
 		return
 	}
-	http.Redirect(w, r, drillPath(d), http.StatusSeeOther)
+	s.toDrill(w, r, d, "")
+}
+
+// toDrill redirects to a drill's page, or to suffix under it.
+func (s *Server) toDrill(w http.ResponseWriter, r *http.Request, d service.DrillView, suffix string) {
+	http.Redirect(w, r, drillPath(d)+suffix, http.StatusSeeOther) //nolint:gosec // a same-site path built from one escaped ID
 }
 
 func drillPath(d service.DrillView) string {
@@ -181,9 +186,9 @@ func (s *Server) drillPage(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 	}
 	switch {
 	case d.Kind == store.KindWorksheet:
-		http.Redirect(w, r, drillPath(d), http.StatusSeeOther)
+		s.toDrill(w, r, d, "")
 	case d.Result != nil || d.OwnerID != c.User.ID:
-		http.Redirect(w, r, drillPath(d)+"/results", http.StatusSeeOther)
+		s.toDrill(w, r, d, "/results")
 	default:
 		v := s.newView(w, r, "Drill", drillData{Drill: d, Problems: problemViews(d.Problems, "drill")})
 		v.Script = "drill.js"
@@ -209,7 +214,7 @@ func (s *Server) drillFinish(w http.ResponseWriter, r *http.Request, c *reqCtx) 
 		s.serverError(w, r, err)
 		return
 	}
-	http.Redirect(w, r, drillPath(d)+"/results", http.StatusSeeOther)
+	s.toDrill(w, r, d, "/results")
 }
 
 type resultsData struct {
@@ -225,12 +230,12 @@ func (s *Server) drillResults(w http.ResponseWriter, r *http.Request, c *reqCtx)
 		return
 	}
 	if d.Kind == store.KindWorksheet {
-		http.Redirect(w, r, drillPath(d), http.StatusSeeOther)
+		s.toDrill(w, r, d, "")
 		return
 	}
 	if d.Result == nil {
 		if d.OwnerID == c.User.ID {
-			http.Redirect(w, r, drillPath(d), http.StatusSeeOther)
+			s.toDrill(w, r, d, "")
 			return
 		}
 		s.renderStatus(w, r, http.StatusOK, "Not finished yet", "This drill hasn't been finished, so there is nothing to show.")
@@ -265,7 +270,7 @@ func (s *Server) drillAgain(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 func (s *Server) afterNewDrill(w http.ResponseWriter, r *http.Request, d service.DrillView, err error) {
 	switch {
 	case err == nil:
-		http.Redirect(w, r, drillPath(d), http.StatusSeeOther)
+		s.toDrill(w, r, d, "")
 	case errors.Is(err, store.ErrNotFound), errors.Is(err, service.ErrForbidden), errors.Is(err, service.ErrNoMisses):
 		s.notFound(w, r)
 	default:
@@ -283,7 +288,6 @@ type sheetData struct {
 	Drill     service.DrillView
 	Problems  []problemView
 	Cols      int
-	Roomy     bool
 	NameLine  bool
 	AnswerKey bool
 	Large     bool
@@ -300,9 +304,6 @@ func (s *Server) worksheetPage(w http.ResponseWriter, r *http.Request, c *reqCtx
 		Drill: d, Problems: problemViews(d.Problems, "sheet"), Cols: drill.Columns(d.Problems), About: drill.Describe(d.Settings),
 		// With no options in the URL, the sheet starts with name and date lines.
 		NameLine: q.Get("name") != "" || !q.Has("opts"), AnswerKey: q.Get("key") != "", Large: q.Get("large") != "",
-	}
-	for _, p := range d.Problems {
-		sd.Roomy = sd.Roomy || p.NeedsRoom()
 	}
 	if sd.Large { // bigger type needs wider cells
 		sd.Cols = max(2, sd.Cols-1)

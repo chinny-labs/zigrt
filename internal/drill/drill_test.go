@@ -1,6 +1,7 @@
 package drill
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 )
@@ -180,7 +181,7 @@ func TestCheck(t *testing.T) {
 }
 
 func TestNormalize(t *testing.T) {
-	if _, err := Normalize(Settings{}); err != ErrNothingChosen {
+	if _, err := Normalize(Settings{}); !errors.Is(err, ErrNothingChosen) {
 		t.Fatalf("empty settings: %v", err)
 	}
 	in := Settings{

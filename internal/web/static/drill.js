@@ -97,7 +97,6 @@
     problems.forEach(function (p, i) { p.hidden = i !== index; p.classList.remove("right", "wrong"); });
     var p = current();
     // Long problems get smaller type so they fit a phone.
-    p.classList.toggle("long", p.textContent.replace(/\s/g, "").length + (hasRem(p) ? 4 : 0) > 9);
     input = { main: "", rem: "" };
     active = "main";
     phase = "answering";
@@ -109,7 +108,21 @@
     progress.value = index;
     setKeys(true);
     drawSlots();
+    fit(p);
   }
+
+  // fit steps the type down until the problem fits the stage, so a long
+  // problem never wraps or runs off the side of a phone.
+  var SIZES = ["", "long", "longer", "longest"];
+  function fit(p) {
+    var stage = p.parentElement;
+    for (var i = 0; i < SIZES.length; i++) {
+      SIZES.forEach(function (c) { if (c) p.classList.remove(c); });
+      if (SIZES[i]) p.classList.add(SIZES[i]);
+      if (p.scrollWidth <= stage.clientWidth - 24) return;
+    }
+  }
+  window.addEventListener("resize", function () { if (phase !== "done") fit(current()); });
 
   function setKeys(on) {
     keys.forEach(function (k) { k.disabled = !on; });
