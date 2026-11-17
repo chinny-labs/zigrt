@@ -564,3 +564,43 @@ solution: ["1/{d}"]
 		t.Fatalf("gate: %v", errs)
 	}
 }
+
+// TestWordFigureArgs checks that text reaches a figure: a literal and a
+// pick, through the gate that draws every figure.
+func TestWordFigureArgs(t *testing.T) {
+	tpl := mustParse(t, `
+id: what-shape
+vars:
+  k: {int: [0, 3]}
+  name: "pick(k, 'triangle', 'square', 'hexagon', 'circle')"
+  turn: {int: [0, 359]}
+prompt: "What shape is this?"
+layout: figure
+figure: shape
+figure_args: {name: name, turn: turn}
+answer:
+  type: choice
+  right: "{name}"
+  distractors: ["{pick(k, 'square', 'hexagon', 'circle', 'triangle')}"]
+min_variety: 20
+solution: ["It is a {name}."]
+`)
+	if errs := tpl.Gate(300); len(errs) > 0 {
+		t.Fatalf("gate: %v", errs)
+	}
+	dice := mustParse(t, `
+id: dice-dots
+vars:
+  n: {int: [1, 6]}
+prompt: "How many dots?"
+layout: figure
+figure: dots
+figure_args: {count: n, arrange: "'dice'"}
+answer: {type: integer, value: n}
+min_variety: 6
+solution: ["{n}"]
+`)
+	if errs := dice.Gate(100); len(errs) > 0 {
+		t.Fatalf("gate: %v", errs)
+	}
+}
