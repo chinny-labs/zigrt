@@ -38,12 +38,52 @@ func (s *Service) notify(ctx context.Context, tx store.Tx, kind, subjectID, key 
 		return err
 	}
 	for _, p := range parents {
+		if kind == NoteGoalMet {
+			if on, err := goalNotesOn(ctx, tx, p.ID); err != nil {
+				return err
+			} else if !on {
+				continue // opt-in: a goal met is on the dashboard and in the weekly email
+			}
+		}
 		if _, err := tx.InsertNotification(ctx, store.Notification{ID: store.NewID(), UserID: p.ID, Kind: kind,
 			SubjectID: subjectID, Payload: b, DedupeKey: kind + ":" + key, CreatedAt: at}); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func goalNotesKey(userID string) string { return "goal_met_notes:" + userID }
+
+func goalNotesOn(ctx context.Context, r store.Reader, userID string) (bool, error) {
+	v, err := r.GetSetting(ctx, goalNotesKey(userID))
+	if errors.Is(err, store.ErrNotFound) {
+		return false, nil
+	}
+	return v == "1", err
+}
+
+// GoalNotesOn reports whether a parent hears each time a child meets their
+// daily goal. It is off unless they turn it on.
+func (s *Service) GoalNotesOn(ctx context.Context, parent store.User) (bool, error) {
+	return goalNotesOn(ctx, s.Store, parent.ID)
+}
+
+// SetGoalNotes turns a parent's goal-met notifications on or off.
+func (s *Service) SetGoalNotes(ctx context.Context, parent store.User, on bool) error {
+	if err := requireParent(parent); err != nil {
+		return err
+	}
+	v := "0"
+	if on {
+		v = "1"
+	}
+	return s.Store.Tx(ctx, "", func(tx store.Tx) error {
+		if err := tx.PutSetting(ctx, goalNotesKey(parent.ID), v, false); err != nil {
+			return err
+		}
+		return s.audit(ctx, tx, parent.ID, "user.goal_notes", parent.ID, map[string]any{"on": on})
+	})
 }
 
 // NotificationView is a notification with the student it is about.

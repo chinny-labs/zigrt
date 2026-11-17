@@ -34,6 +34,14 @@ func TestPasswordResetByEmail(t *testing.T) {
 	if !strings.Contains(body, `name="weekly" value="1" checked`) {
 		t.Fatalf("weekly email switch:\n%s", body)
 	}
+	// Goal-met notifications are off until a parent turns them on.
+	if !strings.Contains(body, `name="goal_notes" value="1">`) {
+		t.Fatalf("goal notes switch should start off:\n%s", body)
+	}
+	a.post(a.c, "/parent/household", "/parent/goal-notes", url.Values{"goal_notes": {"1"}})
+	if on, _ := a.svc.GoalNotesOn(t.Context(), a.parent()); !on {
+		t.Fatal("goal notes not turned on")
+	}
 	resp, _ := a.post(a.c, "/parent/household", "/parent/email", url.Values{})
 	if on, _ := a.svc.WeeklyEmailOn(t.Context(), a.parent()); resp.StatusCode != http.StatusSeeOther || on {
 		t.Fatalf("turning the weekly email off: %d on=%v", resp.StatusCode, on)
