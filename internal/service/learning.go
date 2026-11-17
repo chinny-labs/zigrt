@@ -159,9 +159,10 @@ type HomeView struct {
 	Today     DaySummary
 	Active    *NextTask // the task on screen, to continue
 	Tasks     []NextTask
-	Complete  bool   // nothing left to learn and nothing due
-	Placed    int    // topics mastered in the course
-	Tiers     []Tier // the course's grades, youngest first
+	Complete  bool             // nothing left to learn and nothing due
+	Placed    int              // topics mastered in the course
+	Tiers     []Tier           // the course's grades, youngest first
+	Assigned  []AssignmentView // drills and worksheets a parent set
 }
 
 // Tier is one grade band of the student's tower.
@@ -327,6 +328,9 @@ func (s *Service) Home(ctx context.Context, student store.User) (HomeView, error
 		return v, err
 	}
 	if v.Today, err = s.daySummary(ctx, s.Store, student.ID, today); err != nil {
+		return v, err
+	}
+	if v.Assigned, err = s.Assignments(ctx, student.ID); err != nil {
 		return v, err
 	}
 	l := s.lib.Load()
@@ -714,8 +718,20 @@ func (s *Service) SubmitAnswer(ctx context.Context, student store.User, id, atte
 				if err != nil {
 					return err
 				}
-				return s.applyEvent(ctx, tx, l, t.StudentID, states, learning.Event{
-					Kind: learning.LessonPaused, Topic: t.TopicID, On: today.date, TaskID: t.ID}, now)
+				if err := s.applyEvent(ctx, tx, l, t.StudentID, states, learning.Event{
+					Kind: learning.LessonPaused, Topic: t.TopicID, On: today.date, TaskID: t.ID}, now); err != nil {
+					return err
+				}
+				// Stopped twice: the parents hear, and the blocks under it are mended first.
+				if p := states[t.TopicID].Pauses; p >= s.Learn.PausesBeforeReview {
+					var pre []string
+					if gt := l.graph.Topic(t.TopicID); gt != nil {
+						pre = gt.Requires
+					}
+					return s.notify(ctx, tx, NoteLessonStopped, t.StudentID, fmt.Sprintf("%s:%s:%d", t.StudentID, t.TopicID, p),
+						map[string]any{"topic": t.TopicID, "pauses": p, "step": lesson.KP + 1, "requires": pre}, now)
+				}
+				return nil
 			}
 		case st.Review != nil:
 			review, done := s.Learn.ReviewAnswer(*st.Review, verdict.Right, elapsed.Milliseconds())
@@ -761,6 +777,21 @@ func (s *Service) finish(ctx context.Context, tx store.Tx, l *library, t *store.
 	}
 	if err := s.applyEvent(ctx, tx, l, t.StudentID, states, learning.Event{Kind: kind, Topic: t.TopicID, On: today.date, TaskID: t.ID}, now); err != nil {
 		return err
+	}
+	if kind == learning.LessonPassed {
+		m, err := s.milestone(ctx, tx, l, t.StudentID, t.TopicID, t.ID)
+		if err != nil {
+			return err
+		}
+		if m != nil {
+			data, key := map[string]any{"grade": m.Grade, "blocks": m.Blocks}, t.StudentID+":"+m.Grade
+			if m.Strand != nil {
+				data["strand"], key = m.Strand.Title.In(Locale), key+":"+m.Strand.ID
+			}
+			if err := s.notify(ctx, tx, NoteMilestone, t.StudentID, key, data, now); err != nil {
+				return err
+			}
+		}
 	}
 	return s.awardXP(ctx, tx, t.StudentID, store.XPFromTask, t.ID, xp, today, now)
 }
@@ -999,8 +1030,20 @@ func (s *Service) awardXP(ctx context.Context, tx store.Tx, studentID, kind, sou
 		return err
 	}
 	d.XP += amount
+	wasMet := d.GoalMet
 	d.GoalMet = d.XP >= d.Goal
-	return tx.PutDailyTotal(ctx, d)
+	if err := tx.PutDailyTotal(ctx, d); err != nil {
+		return err
+	}
+	if d.GoalMet && !wasMet {
+		sum, err := s.daySummary(ctx, tx, studentID, today)
+		if err != nil {
+			return err
+		}
+		return s.notify(ctx, tx, NoteGoalMet, studentID, studentID+":"+date,
+			map[string]any{"xp": d.XP, "goal": d.Goal, "streak": sum.Streak}, now)
+	}
+	return nil
 }
 
 // --- rebuilding the projections ---------------------------------------------

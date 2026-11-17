@@ -338,6 +338,9 @@ func (s *Service) recordFailure(ctx context.Context, u store.User, bad error) er
 			return err
 		}
 		if locked {
+			if err := s.notify(ctx, tx, NoteLocked, u.ID, u.ID+":"+now.Format(time.RFC3339Nano), map[string]any{"failures": a.Failures}, now); err != nil {
+				return err
+			}
 			return s.audit(ctx, tx, "", "user.locked", u.ID, map[string]any{"failures": a.Failures})
 		}
 		return nil
