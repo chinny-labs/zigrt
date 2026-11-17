@@ -157,7 +157,8 @@ func (a Answer) forms(p *Problem) []string {
 		if !ok {
 			return []string{a.Value.RatString()}
 		}
-		return []string{s}
+		money, _ := expr.Decimal(a.Value, 2) // $2.50 states 2.5
+		return []string{s, money}
 	case Fraction:
 		return []string{expr.Mixed(a.Value), expr.Fraction(a.Value)}
 	}

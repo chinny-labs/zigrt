@@ -63,7 +63,8 @@ func (t *Template) Gate(n int) []error {
 				}
 			}
 		}
-		if len(distinct) < min(t.MinVariety, n) {
+		// With few seeds repeats are expected, so scale the bar down.
+		if len(distinct) < min(t.MinVariety, max(1, n/3)) {
 			fail("generate", 0, "only %d distinct problems in %d seeds (%s); at least %d are needed", len(distinct), n, loc, t.MinVariety)
 		}
 	}
@@ -80,7 +81,7 @@ func (t *Template) locales() []string {
 	}
 	add(t.prompt)
 	for _, s := range t.solution {
-		add(s)
+		add(s.text)
 	}
 	add(t.answer.right)
 	for _, d := range t.answer.distractors {
@@ -183,7 +184,10 @@ func states(line, answer string) bool {
 		}
 		start, end := i+j, i+j+len(answer)
 		numeric := answer[0] >= '0' && answer[0] <= '9'
-		before := start == 0 || !isNum(line[start-1]) && !(numeric && start >= 2 && line[start-1] == ' ' && line[start-2] >= '0' && line[start-2] <= '9')
+		// A number just before, or "1 " before "3/4", means this is part of
+		// something bigger.
+		wholeBefore := numeric && start >= 2 && line[start-1] == ' ' && line[start-2] >= '0' && line[start-2] <= '9'
+		before := start == 0 || !isNum(line[start-1]) && !wholeBefore
 		after := end == len(line) || !isNum(line[end]) || line[end] == '.' && (end+1 == len(line) || line[end+1] == ' ')
 		if before && after {
 			return true

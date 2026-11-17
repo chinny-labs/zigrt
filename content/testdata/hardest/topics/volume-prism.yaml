@@ -1,0 +1,22 @@
+id: volume-prism
+kps:
+  - id: volume-prism.kp1
+    explain: >-
+      Volume is how many unit cubes fill the box. Multiply the length by the
+      width to fill the bottom layer. Then multiply by the height.
+    templates:
+      - id: volume-prism.kp1.t1
+        vars:
+          l: {int: [2, 12]}
+          w: {int: [2, 9]}
+          h: {int: [2, 9]}
+          unit: {words: [cm, m, in, ft]}
+        prompt: "What is the volume of this box?"
+        layout: figure
+        figure: prism
+        figure_args: {length: l, width: w, height: h, unit: unit}
+        answer: {type: integer, value: l * w * h}
+        solution:
+          - "The bottom layer holds {l} × {w} = {l * w} cubes."
+          - "There are {h} layers, so {l * w} × {h} = {l * w * h}."
+          - "The volume is {l * w * h} cubic {unit}."

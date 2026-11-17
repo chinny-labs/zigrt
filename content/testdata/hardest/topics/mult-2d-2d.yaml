@@ -1,0 +1,25 @@
+id: mult-2d-2d
+kps:
+  - id: mult-2d-2d.kp1
+    explain: >-
+      Multiply by the ones digit first. Then multiply by the tens. Add the two
+      answers together.
+    templates:
+      - id: mult-2d-2d.kp1.t1
+        vars:
+          a: {int: [12, 99]}
+          b: {int: [12, 99]}
+          ones: a * (b % 10)
+          tens: a * (b - b % 10)
+        where:
+          - a % 10 != 0 && b % 10 != 0
+        prompt: "{a} × {b}"
+        layout: stacked
+        op: "*"
+        parts: [a, b]
+        answer: {type: integer, value: a * b}
+        solution:
+          - "Multiply by the ones: {a} × {b % 10} = {ones}."
+          - "Multiply by the tens: {a} × {b - b % 10} = {tens}."
+          - "Add: {ones} + {tens} = {a * b}."
+          - "{a} × {b} = {a * b}"

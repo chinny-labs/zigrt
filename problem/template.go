@@ -79,7 +79,42 @@ type Template struct {
 	figure   string
 	figArgs  map[string]*expr.Expr
 	answer   answerSpec
-	solution []texts
+	solution []step
+}
+
+// step is one line of a worked solution, shown only when its condition holds.
+type step struct {
+	when *expr.Expr
+	text texts
+}
+
+// Step is a solution line in YAML: text, or {when: condition, text: text}.
+type Step struct {
+	When string
+	Text Text
+}
+
+// UnmarshalYAML accepts plain text or a conditional step.
+func (s *Step) UnmarshalYAML(n *yaml.Node) error {
+	if n.Kind == yaml.MappingNode {
+		for i := 0; i < len(n.Content); i += 2 {
+			if n.Content[i].Value == "when" {
+				if err := checkKeys(n, "when", "text"); err != nil {
+					return err
+				}
+				var raw struct {
+					When string `yaml:"when"`
+					Text Text   `yaml:"text"`
+				}
+				if err := n.Decode(&raw); err != nil {
+					return err
+				}
+				s.When, s.Text = raw.When, raw.Text
+				return nil
+			}
+		}
+	}
+	return n.Decode(&s.Text)
 }
 
 type varKind int
@@ -132,7 +167,7 @@ type rawTemplate struct {
 		Distractors []Text     `yaml:"distractors"`
 		Simplest    *bool      `yaml:"simplest"`
 	} `yaml:"answer"`
-	Solution   []Text `yaml:"solution"`
+	Solution   []Step `yaml:"solution"`
 	MinVariety int    `yaml:"min_variety"`
 }
 
@@ -152,7 +187,18 @@ func (t *Template) UnmarshalYAML(n *yaml.Node) error {
 	if err := n.Decode(&raw); err != nil {
 		return err
 	}
-	tpl, err := compile(&raw, n.Line)
+	err := checkKeys(n, "id", "vars", "where", "prompt", "layout", "op", "parts", "blank", "figure", "figure_args", "answer", "solution", "min_variety")
+	if err == nil {
+		for i := 0; i+1 < len(n.Content); i += 2 {
+			if n.Content[i].Value == "answer" {
+				err = checkKeys(n.Content[i+1], "type", "value", "remainder", "compare", "right", "distractors", "simplest")
+			}
+		}
+	}
+	var tpl *Template
+	if err == nil {
+		tpl, err = compile(&raw, n.Line)
+	}
 	if err != nil {
 		where := fmt.Sprintf("line %d", n.Line)
 		if raw.ID != "" {
@@ -350,11 +396,20 @@ func compile(raw *rawTemplate, line int) (*Template, error) {
 		return nil, errors.New("a template needs a worked solution")
 	}
 	for i, s := range raw.Solution {
-		c, err := text(fmt.Sprintf("solution line %d", i+1), s)
-		if err != nil {
+		what := fmt.Sprintf("solution line %d", i+1)
+		st := step{}
+		if st.text, err = text(what, s.Text); err != nil {
 			return nil, err
 		}
-		t.solution = append(t.solution, c)
+		if s.When != "" {
+			if st.when, err = parse(what+" when", s.When); err != nil {
+				return nil, err
+			}
+		}
+		t.solution = append(t.solution, st)
+	}
+	if t.solution[len(t.solution)-1].when != nil {
+		return nil, errors.New("the last solution line states the answer, so it cannot have a when")
 	}
 	return t, nil
 }
@@ -369,6 +424,9 @@ func compileVar(name string, n *yaml.Node, parse func(string, string) (*expr.Exp
 	}
 	if n.Kind != yaml.MappingNode || len(n.Content) == 0 {
 		return v, fmt.Errorf("%s: write an expression, {int: [lo, hi]}, {choose: [...]} or {words: [...]}", what)
+	}
+	if err := checkKeys(n, "int", "step", "choose", "words", "let"); err != nil {
+		return v, fmt.Errorf("%s: %w", what, err)
 	}
 	var raw struct {
 		Int    []string `yaml:"int"`
@@ -470,7 +528,7 @@ var ErrNoProblem = errors.New("no draw satisfied the template")
 func Rand(id string, seed uint64) *rand.Rand {
 	h := fnv.New64a()
 	_, _ = h.Write([]byte(id))
-	return rand.New(rand.NewPCG(seed, h.Sum64()))
+	return rand.New(rand.NewPCG(seed, h.Sum64())) //nolint:gosec // problems must be reproducible from a seed, not secret
 }
 
 // Generate makes the problem for a seed, with text in the given locale.
@@ -555,7 +613,16 @@ func (t *Template) try(rng *rand.Rand, locale string) (*Problem, error) {
 		return nil, err
 	}
 	for _, s := range t.solution {
-		line, err := s.in(locale).render(env, b)
+		if s.when != nil {
+			ok, err := s.when.EvalBool(env, b)
+			if err != nil {
+				return nil, err
+			}
+			if !ok {
+				continue
+			}
+		}
+		line, err := s.text.in(locale).render(env, b)
 		if err != nil {
 			return nil, err
 		}
@@ -656,6 +723,21 @@ func (t *Template) makeAnswer(p *Problem, rng *rand.Rand, env expr.Env, b *expr.
 		rng.Shuffle(len(opts), func(i, j int) { opts[i], opts[j] = opts[j], opts[i] })
 		p.Choices = opts
 		p.Answer.Choice = slices.Index(opts, right)
+	}
+	return nil
+}
+
+// checkKeys rejects keys a mapping should not have, so that a misspelt key is
+// an error rather than silently ignored.
+func checkKeys(n *yaml.Node, allowed ...string) error {
+	if n.Kind != yaml.MappingNode {
+		return nil
+	}
+	for i := 0; i < len(n.Content); i += 2 {
+		k := n.Content[i]
+		if !slices.Contains(allowed, k.Value) {
+			return fmt.Errorf("line %d: unknown key %q", k.Line, k.Value)
+		}
 	}
 	return nil
 }

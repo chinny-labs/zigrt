@@ -1,0 +1,22 @@
+id: mult-decimals
+kps:
+  - id: mult-decimals.kp1
+    explain: >-
+      Multiply as if there were no points. Count the digits after the points in
+      both numbers. The answer has that many digits after its point.
+    templates:
+      - id: mult-decimals.kp1.t1
+        vars:
+          a1: {int: [11, 99]}
+          b1: {int: [2, 9]}
+          a: a1 / 10
+          b: b1 / 10
+        where:
+          - a1 % 10 != 0
+          - (a1 * b1) % 10 != 0
+        prompt: "{dec(a)} × {dec(b)}"
+        answer: {type: decimal, value: a * b}
+        solution:
+          - "Without the points: {a1} × {b1} = {a1 * b1}."
+          - "There are 2 digits after the points in all, so the answer has 2."
+          - "{dec(a)} × {dec(b)} = {dec(a * b)}"

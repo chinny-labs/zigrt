@@ -1,0 +1,33 @@
+id: interpret-remainders
+kps:
+  - id: interpret-remainders.kp1
+    explain: >-
+      A remainder means some are left over. Read the question to see what they
+      need. Sometimes they need one more. Sometimes you leave them out.
+    templates:
+      - id: interpret-remainders.kp1.t1
+        vars:
+          n: {int: [21, 99]}
+          per: {int: [4, 9]}
+          vehicle: {words: [van, minibus, boat]}
+        where:
+          - n % per != 0
+        prompt: "{n} children are going on a trip. Each {vehicle} holds {per} children. How many {vehicle}s are needed?"
+        answer: {type: integer, value: ceil(n / per)}
+        solution:
+          - "{n} ÷ {per} = {n // per} r {n % per}."
+          - "The {n % per} {plural(n % per, 'child', 'children')} left over still need a seat, so add one more {vehicle}."
+          - "{ceil(n / per)} {vehicle}s are needed."
+      - id: interpret-remainders.kp1.t2
+        vars:
+          who: {words: [Mika, Theo, June, Ava, Sam]}
+          n: {int: [21, 99]}
+          per: {int: [4, 9]}
+        where:
+          - n % per != 0
+        prompt: "{who} has {n} stickers and puts {per} on each page. How many pages are full?"
+        answer: {type: integer, value: n // per}
+        solution:
+          - "{n} ÷ {per} = {n // per} r {n % per}."
+          - "The {n % per} left over do not fill a page, so leave them out."
+          - "{n // per} pages are full."

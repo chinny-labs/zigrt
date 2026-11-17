@@ -1,0 +1,20 @@
+id: fraction-to-decimal
+kps:
+  - id: fraction-to-decimal.kp1
+    explain: >-
+      Make the bottom number 100. Multiply the top by the same amount. Then 45
+      hundredths is written 0.45.
+    templates:
+      - id: fraction-to-decimal.kp1.t1
+        vars:
+          d: {choose: [2, 4, 5, 10, 20, 25, 50]}
+          n: {int: [1, d - 1]}
+          k: 100 / d
+        where:
+          - gcd(n, d) == 1
+        prompt: "Write {n}/{d} as a decimal."
+        answer: {type: decimal, value: n / d}
+        solution:
+          - "{d} × {k} = 100, so multiply the top and bottom by {k}."
+          - "{n}/{d} = {n * k}/100."
+          - "{n * k} hundredths is {dec(n / d)}."

@@ -58,6 +58,8 @@ func TestEval(t *testing.T) {
 		{"mixed(-7/4)", "-1 3/4"},
 		{"mixed(3/4)", "3/4"},
 		{"group(1234567)", "1,234,567"},
+		{"join(3, ':', pad(5, 2))", "3:05"},
+		{"pad(123, 2)", "123"},
 		{"group(-1000)", "-1,000"},
 		{"plural(1, 'apple', 'apples')", "apple"},
 		{"plural(a, 'apple', 'apples')", "apples"},
@@ -100,7 +102,7 @@ func TestEvalErrors(t *testing.T) {
 		"y + 1", "1 / 0", "1 // 0", "1.5 // 1", "1 + 'a'", "!1", "-'a'",
 		"1 ? 2 : 3", "1 && true", "1 == 'a'", "2 ^ 13", "2 ^ 0.5",
 		"10 ^ 12 * 10 ^ 12", "dec(1/3)", "pick(2, 1, 2)", "round(1, 0)",
-		"digit(1, 0)", "group(1/2)", "gcd(1/2, 3)", "dec(1, 7)",
+		"digit(1, 0)", "group(1/2)", "pad(-1, 2)", "pad(1, 10)", "gcd(1/2, 3)", "dec(1, 7)",
 	} {
 		if _, err := MustParse(src).Eval(env, nil); err == nil {
 			t.Errorf("Eval(%q) succeeded, want an error", src)

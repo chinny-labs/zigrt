@@ -1,0 +1,34 @@
+id: add-fractions-unlike
+kps:
+  - id: add-fractions-unlike.kp1
+    explain: >-
+      You can only add fractions with the same bottom number. Find a number
+      both bottoms go into. Change both fractions, then add the tops.
+    templates:
+      - id: add-fractions-unlike.kp1.t1
+        vars:
+          d1: {int: [2, 10]}
+          n1: {int: [1, d1 - 1]}
+          d2: {int: [2, 10]}
+          n2: {int: [1, d2 - 1]}
+          l: lcm(d1, d2)
+          a: n1 * l / d1
+          b: n2 * l / d2
+          s: n1 / d1 + n2 / d2
+        where:
+          - gcd(n1, d1) == 1
+          - d1 != d2 && gcd(n2, d2) == 1
+        prompt: "{n1}/{d1} + {n2}/{d2}"
+        answer: {type: fraction, value: s}
+        solution:
+          - "Use {l} as the bottom number for both."
+          - when: d1 != l && d2 != l
+            text: "{n1}/{d1} = {a}/{l} and {n2}/{d2} = {b}/{l}."
+          - when: d1 == l
+            text: "{n2}/{d2} = {b}/{l}."
+          - when: d2 == l
+            text: "{n1}/{d1} = {a}/{l}."
+          - "Add the tops: {a} + {b} = {a + b}, so the sum is {a + b}/{l}."
+          - when: gcd(a + b, l) > 1 || a + b > l
+            text: "{a + b}/{l} in simplest form is {mixed(s)}."
+          - "{n1}/{d1} + {n2}/{d2} = {mixed(s)}"

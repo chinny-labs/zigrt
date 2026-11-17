@@ -1,0 +1,31 @@
+id: divide-unit-fractions
+kps:
+  - id: divide-unit-fractions.kp1
+    explain: >-
+      Cutting a fraction into equal shares makes smaller pieces. Dividing by 3
+      is the same as taking a third.
+    templates:
+      - id: divide-unit-fractions.kp1.t1
+        vars:
+          d: {int: [2, 10]}
+          w: {int: [2, 9]}
+        prompt: "1/{d} ÷ {w}"
+        answer: {type: fraction, value: 1 / d / w}
+        solution:
+          - "Dividing by {w} is the same as multiplying by 1/{w}."
+          - "1/{d} × 1/{w} = 1/{d * w}"
+  - id: divide-unit-fractions.kp2
+    explain: >-
+      Ask how many small pieces fit in the wholes. Each whole holds 4 quarters,
+      so 3 wholes hold 12 quarters.
+    templates:
+      - id: divide-unit-fractions.kp2.t1
+        vars:
+          d: {int: [2, 10]}
+          w: {int: [2, 9]}
+        prompt: "{w} ÷ 1/{d}"
+        answer: {type: integer, value: w * d}
+        solution:
+          - "Each whole holds {d} pieces of size 1/{d}."
+          - "{w} wholes hold {w} × {d} = {w * d} pieces."
+          - "So {w} ÷ 1/{d} = {w * d}."

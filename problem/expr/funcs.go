@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/big"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -52,6 +53,7 @@ func init() {
 		"dec":    {1, 2, "dec(x) writes a decimal; dec(x, 2) keeps at least 2 places, as in money", dec},
 		"frac":   {1, 1, "frac(x) writes 7/4", text1(Fraction)},
 		"mixed":  {1, 1, "mixed(x) writes 1 3/4", text1(Mixed)},
+		"pad":    {2, 2, "pad(5, 2) writes 05, as in 3:05", pad},
 		"group":  {1, 1, "group(12345) writes 12,345", group},
 		"plural": {3, 3, "plural(n, 'apple', 'apples')", plural},
 		"text":   {1, 1, "text(x) turns a number into text, for joining", func(_ *evaluator, _ callNode, a []Value) (Value, error) { return Str(a[0].String()), nil }},
@@ -268,4 +270,17 @@ func join(_ *evaluator, _ callNode, args []Value) (Value, error) {
 		b.WriteString(a.String())
 	}
 	return Str(b.String()), nil
+}
+
+func pad(ev *evaluator, n callNode, args []Value) (Value, error) {
+	x, ok := args[0].Int()
+	w, okw := args[1].Int()
+	if !ok || x < 0 || !okw || w < 1 || w > 9 {
+		return Value{}, ev.fail(n, "pad needs a whole number of at least 0 and a width from 1 to 9")
+	}
+	s := strconv.FormatInt(x, 10)
+	for len(s) < int(w) {
+		s = "0" + s
+	}
+	return Str(s), nil
 }

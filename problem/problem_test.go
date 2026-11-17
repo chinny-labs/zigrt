@@ -335,6 +335,26 @@ answer: {type: fraction, value: n / d, simplest: false}
 min_variety: 20
 solution: ["{n} of {d} parts are shaded: {n}/{d}"]`)
 	gate(t, fig)
+	if err := fig.CheckFigure(nil); err != nil {
+		t.Error(err)
+	}
+	figBase := "id: f\nprompt: x\nlayout: figure\nanswer: {type: integer, value: 1}\nmin_variety: 1\nsolution: [\"1\"]\n"
+	for name, c := range map[string]struct {
+		extra  string
+		static []string
+		ok     bool
+	}{
+		"missing arg":      {"figure: fraction-bar\nfigure_args: {parts: 2}\n", nil, false},
+		"extra arg":        {"figure: clock\nfigure_args: {hour: 1, minute: 0, second: 0}\n", nil, false},
+		"unknown":          {"figure: spiral\n", nil, false},
+		"static":           {"figure: pentagon\n", []string{"pentagon"}, true},
+		"static with args": {"figure: pentagon\nfigure_args: {sides: 5}\n", []string{"pentagon"}, false},
+	} {
+		err := mustParse(t, figBase+c.extra).CheckFigure(c.static)
+		if (err == nil) != c.ok {
+			t.Errorf("%s: CheckFigure = %v", name, err)
+		}
+	}
 	p, _ = fig.Generate(1, "en")
 	if p.Figure != "fraction-bar" || p.FigArgs["parts"] == "" {
 		t.Errorf("figure = %+v", p)
@@ -371,6 +391,9 @@ func TestParseErrors(t *testing.T) {
 		"stray brace":      strings.Replace(base, "prompt: x", "prompt: \"1}\"", 1),
 		"no english":       strings.Replace(base, "prompt: x", "prompt: {fr: x}", 1),
 		"variety":          base + "min_variety: -1\n",
+		"misspelt key":     base + "soluton: [x]\n",
+		"misspelt answer":  strings.Replace(base, "value: 1}", "valeu: 1}", 1),
+		"misspelt var":     base + "vars:\n  a: {integer: [1, 2]}\n",
 	}
 	if _, err := ParseTemplate([]byte(base)); err != nil {
 		t.Fatalf("base template: %v", err)
@@ -458,6 +481,32 @@ answer: {type: fraction, value: q}
 min_variety: 9
 solution: ["36 ÷ {b} = {q}"]`)
 	gate(t, tpl)
+}
+
+func TestConditionalSteps(t *testing.T) {
+	tpl := mustParse(t, `
+id: steps
+vars: {a: {int: [0, 60]}}
+prompt: "{a} + 10"
+answer: {type: integer, value: a + 10}
+solution:
+  - when: a == 0
+    text: "Adding to zero changes nothing."
+  - {when: a > 0, text: {en: "Count on 10 from {a}."}}
+  - "{a} + 10 = {a + 10}"`)
+	gate(t, tpl)
+	for seed := uint64(1); seed < 200; seed++ {
+		p, _ := tpl.Generate(seed, "en")
+		if len(p.Solution) != 2 {
+			t.Fatalf("seed %d: %q", seed, p.Solution)
+		}
+	}
+	if _, err := ParseTemplate([]byte("id: x\nprompt: x\nanswer: {type: integer, value: 1}\nsolution: [{when: true, text: '1'}]\n")); err == nil {
+		t.Error("a conditional last line parsed")
+	}
+	if _, err := ParseTemplate([]byte("id: x\nprompt: x\nanswer: {type: integer, value: 1}\nsolution: [{when: true, txt: a}, '1']\n")); err == nil {
+		t.Error("a misspelt step key parsed")
+	}
 }
 
 func TestStates(t *testing.T) {

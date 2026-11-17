@@ -1,0 +1,25 @@
+id: add-decimals
+kps:
+  - id: add-decimals.kp1
+    explain: >-
+      Line up the decimal points, not the last digits. Write a zero in any
+      empty place. Then add as you would whole numbers.
+    templates:
+      - id: add-decimals.kp1.t1
+        vars:
+          a1: {int: [11, 199]}
+          a2: {int: [101, 999]}
+          a: a1 / 10
+          b: a2 / 100
+        where:
+          - a1 % 10 != 0
+          - a2 % 10 != 0
+        prompt: "{dec(a)} + {dec(b)}"
+        layout: stacked
+        op: "+"
+        parts: ["dec(a, 2)", "dec(b)"]   # quote expressions that contain commas
+        answer: {type: decimal, value: a + b}
+        solution:
+          - "Line up the points and write {dec(a)} as {dec(a, 2)}."
+          - "{dec(a, 2)} + {dec(b, 2)}: add the hundredths, then the tenths, then the ones."
+          - "{dec(a)} + {dec(b)} = {dec(a + b)}"
