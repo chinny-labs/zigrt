@@ -2,7 +2,7 @@
 
 Zigrt is one container. It needs one volume, and optionally a Postgres you already run.
 
-> This version has accounts and sign-in only. No image is published until the first release; build one from a checkout with `just image` (or `docker build -t ghcr.io/chinny-labs/zigrt:0 .`).
+Each release publishes a multi-arch image, `ghcr.io/chinny-labs/zigrt:<version>` (also tagged `<major>.<minor>` and `<major>`), and the Helm chart `oci://ghcr.io/chinny-labs/charts/zigrt`. There is no `latest` tag: pin a version. The [releases page](https://github.com/chinny-labs/zigrt/releases) lists them.
 
 ## Choose a database
 
@@ -30,14 +30,47 @@ To use Postgres, put the URL in a file, add it as a second secret in `compose.ya
 ## Kubernetes (Helm)
 
 ```sh
-helm install zigrt deploy/helm/zigrt \
+helm install zigrt oci://ghcr.io/chinny-labs/charts/zigrt --version 0.1.0 \
   --namespace zigrt --create-namespace \
   --set timezone=America/New_York \
+  --set baseURL=https://zigrt.home.example.com \
+  --set persistence.storageClass=longhorn \
   --set ingress.enabled=true --set 'ingress.hosts[0].host=zigrt.home.example.com'
 kubectl logs -n zigrt deploy/zigrt | grep -i "setup token"
 ```
 
-The chart runs one replica with strategy `Recreate`, a ReadWriteOnce volume for `/data`, a non-root user and a read-only root filesystem. It refuses to render with more than one replica on SQLite. For Postgres set `postgres.external.url`, or `postgres.external.existingSecret` to read the URL from a Secret you manage. Leave `secretKey` empty to have the chart generate a key and keep it across upgrades.
+The chart's version and its `appVersion` are the release, so `--version` pins the image too. Upgrading is changing that version.
+
+The chart runs one replica with strategy `Recreate`, a ReadWriteOnce volume for `/data`, a non-root user and a read-only root filesystem. It refuses to render with more than one replica on SQLite. For Postgres set `postgres.external.url`, or `postgres.external.existingSecret` to read the URL from a Secret you manage. Leave `secretKey` empty to have the chart generate a key into its own Secret and keep it across upgrades (it uses Helm's `lookup`, which Flux's helm-controller runs), or point `secretKey.existingSecret` at a Secret you manage. Argo CD renders charts without cluster access, so `lookup` finds nothing and the key would change on every sync: use `existingSecret` there.
+
+- **Storage class:** set `persistence.storageClass` to a block-backed class (Longhorn, local-path, Ceph RBD). Some clusters, k3s with Longhorn added for example, end up with two default classes, and an omitted class then binds to either. The PVC is kept when the release is uninstalled.
+- **TLS in front of the ingress:** if a proxy outside the cluster terminates TLS and forwards plain HTTP to the ingress controller, leave `insecureCookies` off: what matters is that the browser is on HTTPS.
+- **Client addresses:** set `trustedProxies` to the CIDR the ingress controller's pods run in (the pod network), so client addresses in the logs come from `X-Forwarded-For`.
+- **First run:** the setup token is printed when the server starts with no parent account. A pod restarted before setup prints a new one, so take it from the running pod's log.
+
+With Flux, the chart comes from an OCI `HelmRepository` (the URL is the repository; the chart name goes in the `HelmRelease`):
+
+```yaml
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata: {name: zigrt, namespace: zigrt}
+spec: {type: oci, url: oci://ghcr.io/chinny-labs/charts, interval: 1h}
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata: {name: zigrt, namespace: zigrt}
+spec:
+  interval: 10m
+  chart:
+    spec:
+      chart: zigrt
+      version: "0.1.0"
+      sourceRef: {kind: HelmRepository, name: zigrt}
+  values:
+    timezone: America/New_York
+    baseURL: https://zigrt.home.example.com
+    persistence: {storageClass: longhorn}
+```
 
 ## TLS
 
