@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/chinny-labs/zigrt/compare/v0.4.0...v0.5.0) (2026-11-17)
+
+
+### Features
+
+* phase 5c, the parent screens ([#18](https://github.com/chinny-labs/zigrt/issues/18)) ([fff23b3](https://github.com/chinny-labs/zigrt/commit/fff23b3ce6b136dda4317ca3c85a04006fa71a9e))
+
 ## [0.4.0](https://github.com/chinny-labs/zigrt/compare/v0.3.0...v0.4.0) (2026-11-17)
 
 
