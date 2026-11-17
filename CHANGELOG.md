@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://github.com/chinny-labs/zigrt/compare/v0.3.0...v0.4.0) (2026-11-17)
+
+
+### Features
+
+* phase 5a, the household rules for parents ([#15](https://github.com/chinny-labs/zigrt/issues/15)) ([c2f94b1](https://github.com/chinny-labs/zigrt/commit/c2f94b1baaab26c6f9c6b038341255c787d89dd1))
+* phase 5b, backups before upgrades, export and import, pack upload ([#17](https://github.com/chinny-labs/zigrt/issues/17)) ([70024b3](https://github.com/chinny-labs/zigrt/commit/70024b346453262bbfd71e824473c7a53a0eceaa))
+
 ## [0.3.0](https://github.com/chinny-labs/zigrt/compare/v0.2.0...v0.3.0) (2026-11-17)
 
 
