@@ -57,6 +57,10 @@ func (s *Server) routes() http.Handler {
 
 	mux.HandleFunc("GET /parent/login", s.parentLoginPage)
 	mux.HandleFunc("POST /parent/login", s.parentLoginSubmit)
+	mux.HandleFunc("GET /parent/forgot", s.forgotPage)
+	mux.HandleFunc("POST /parent/forgot", s.forgotSubmit)
+	mux.HandleFunc("GET /parent/reset/{token}", s.resetPage)
+	mux.HandleFunc("POST /parent/reset/{token}", s.resetSubmit)
 	mux.HandleFunc("GET /parent", s.parent(s.dashboard))
 	mux.HandleFunc("GET /parent/students/new", s.parent(s.studentNewPage))
 	mux.HandleFunc("POST /parent/students", s.parent(s.studentCreate))
@@ -78,6 +82,7 @@ func (s *Server) routes() http.Handler {
 	mux.HandleFunc("GET /parent/export", s.parent(s.exportAll))
 	mux.HandleFunc("POST /parent/pack", s.parent(s.packUpload))
 	mux.HandleFunc("GET /parent/notifications", s.parent(s.notificationsPage))
+	mux.HandleFunc("POST /parent/email", s.parent(s.weeklyEmailSave))
 	mux.HandleFunc("POST /parent/tokens", s.parent(s.tokenCreate))
 	mux.HandleFunc("POST /parent/tokens/{id}/revoke", s.parent(s.tokenRevoke))
 	mux.HandleFunc("POST /parent/notifications/read", s.parent(s.notificationsRead))

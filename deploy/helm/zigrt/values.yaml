@@ -26,6 +26,27 @@ insecureCookies: false
 mcp:
   enabled: false
 
+# Email: password reset links and a weekly summary (docs/operations/email.md).
+# Off while host is empty; needs baseURL for the links. The password comes from
+# an existing Secret, never from values.
+smtp:
+  host: ""
+  port: ""                 # default: 587 for starttls, 465 for tls, 25 for none
+  security: starttls       # starttls | tls | none
+  username: ""
+  from: ""                 # Zigrt <zigrt@example.com>
+  existingSecret: ""
+  existingSecretKey: password
+
+# Prometheus metrics on their own port, which the Service exposes but no ingress routes to.
+metrics:
+  enabled: false
+  port: 9090
+  serviceMonitor:
+    enabled: false         # needs the Prometheus Operator's CRDs
+    interval: 60s
+    labels: {}             # e.g. release: kube-prometheus-stack
+
 logFormat: json
 
 backup:

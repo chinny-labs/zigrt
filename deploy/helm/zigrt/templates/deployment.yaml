@@ -45,6 +45,11 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
+            {{- if .Values.metrics.enabled }}
+            - name: metrics
+              containerPort: {{ .Values.metrics.port }}
+              protocol: TCP
+            {{- end }}
           env:
             - name: ZIGRT_LISTEN
               value: ":8080"
@@ -83,6 +88,35 @@ spec:
             {{- if .Values.mcp.enabled }}
             - name: ZIGRT_MCP_ENABLED
               value: "true"
+            {{- end }}
+            {{- if .Values.metrics.enabled }}
+            - name: ZIGRT_METRICS_LISTEN
+              value: {{ printf ":%v" .Values.metrics.port | quote }}
+            {{- end }}
+            {{- with .Values.smtp }}
+            {{- if .host }}
+            - name: ZIGRT_SMTP_HOST
+              value: {{ .host | quote }}
+            - name: ZIGRT_SMTP_SECURITY
+              value: {{ .security | quote }}
+            {{- with .port }}
+            - name: ZIGRT_SMTP_PORT
+              value: {{ . | quote }}
+            {{- end }}
+            {{- with .username }}
+            - name: ZIGRT_SMTP_USERNAME
+              value: {{ . | quote }}
+            {{- end }}
+            - name: ZIGRT_SMTP_FROM
+              value: {{ required "smtp.from is needed when smtp.host is set" .from | quote }}
+            {{- if .existingSecret }}
+            - name: ZIGRT_SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .existingSecret }}
+                  key: {{ .existingSecretKey }}
+            {{- end }}
+            {{- end }}
             {{- end }}
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}

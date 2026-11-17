@@ -20,3 +20,4 @@ One short record per significant choice. Add the next number; do not edit an acc
 | [14](0014-placement-quizzes-compression.md) | Placement, quizzes and review compression |
 | [15](0015-parent-side.md) | The parent side: notifications, overrides and assigned drills |
 | [16](0016-api-tokens-and-mcp.md) | The JSON API and MCP server, with parents' bearer tokens |
+| [17](0017-email-outbox-and-metrics-port.md) | Email through an outbox; metrics on their own port |

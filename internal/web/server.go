@@ -53,7 +53,13 @@ type Server struct {
 	handler    http.Handler
 	contentErr atomic.Value // error: why no content pack could be loaded
 	api, mcp   http.Handler // the JSON API and MCP server, when mounted
+	observe    func(route string, code int, d time.Duration)
 }
+
+// Observe sets a function told about every request (for metrics): the
+// matched route pattern, the status and how long it took. Set it before
+// serving.
+func (s *Server) Observe(f func(route string, code int, d time.Duration)) { s.observe = f }
 
 // MountAPI serves the JSON API under /api/v1/ and, when mcp is not nil, the
 // MCP server at /mcp. Both authenticate with bearer tokens, so they skip
@@ -185,11 +191,14 @@ func (s *Server) middleware(next http.Handler) http.Handler {
 				s.log.Error("panic", "path", r.URL.Path, "panic", rec)
 				http.Error(sw, "Something went wrong.", http.StatusInternalServerError)
 			}
+			if s.observe != nil {
+				s.observe(r.Pattern, sw.code, time.Since(start))
+			}
 			level := slog.LevelInfo
 			if isOpenPath(r.URL.Path) {
 				level = slog.LevelDebug
 			}
-			s.log.Log(r.Context(), level, "http", "method", r.Method, "path", r.URL.Path, "status", sw.code,
+			s.log.Log(r.Context(), level, "http", "method", r.Method, "path", logPath(r.URL.Path), "status", sw.code,
 				"dur_ms", time.Since(start).Milliseconds(), "ip", s.clientIP(r))
 		}()
 
@@ -264,6 +273,14 @@ func (s *Server) middleware(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(sw, r)
 	})
+}
+
+// logPath keeps reset links out of the logs.
+func logPath(p string) string {
+	if strings.HasPrefix(p, "/parent/reset/") {
+		return "/parent/reset/…"
+	}
+	return p
 }
 
 // isTokenPath is the API and MCP, which take bearer tokens, not cookies.

@@ -38,6 +38,8 @@ import (
 	"github.com/chinny-labs/zigrt/internal/backup"
 	"github.com/chinny-labs/zigrt/internal/buildinfo"
 	"github.com/chinny-labs/zigrt/internal/config"
+	"github.com/chinny-labs/zigrt/internal/mail"
+	"github.com/chinny-labs/zigrt/internal/metrics"
 	"github.com/chinny-labs/zigrt/internal/pack"
 	"github.com/chinny-labs/zigrt/internal/scheduler"
 	"github.com/chinny-labs/zigrt/internal/service"
@@ -191,6 +193,24 @@ func serve() error {
 	}
 	srv.MountAPI(a, mcpHandler)
 
+	var met *metrics.Metrics
+	if cfg.MetricsListen != "" {
+		met = metrics.New(svc)
+		srv.Observe(met.Request)
+		ms := &http.Server{Addr: cfg.MetricsListen, Handler: metricsMux(met), ReadHeaderTimeout: 10 * time.Second}
+		go func() {
+			if err := ms.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				log.Error("metrics server", "err", err)
+			}
+		}()
+		defer ms.Close()
+		log.Info("metrics on", "addr", cfg.MetricsListen, "path", "/metrics")
+	}
+	if cfg.MailOn() {
+		svc.Mail, svc.BaseURL = &mail.SMTP{Config: cfg.SMTP}, cfg.BaseURL
+		log.Info("email on", "smtp", cfg.SMTP.Host, "port", cfg.SMTP.Port, "security", cfg.SMTP.Security)
+	}
+
 	sched := &scheduler.Scheduler{Interval: time.Minute, Log: log, Jobs: []scheduler.Job{
 		{Name: "housekeeping", Run: hourly(func(ctx context.Context) error {
 			n, err := svc.SweepSessions(ctx)
@@ -208,7 +228,22 @@ func serve() error {
 		})},
 		// Day rollover: once per household-local day that ended (streaks lost).
 		{Name: "rollover", Run: svc.Rollover},
+		{Name: "weekly_email", Run: svc.WeeklyEmail},
+		{Name: "email", Run: func(ctx context.Context) error {
+			sent, failed, err := svc.SendOutbox(ctx)
+			if met != nil {
+				met.Emails(sent, failed)
+			}
+			return err
+		}},
+		{Name: "email_prune", Run: hourly(func(ctx context.Context) error {
+			_, err := svc.PruneOutbox(ctx)
+			return err
+		})},
 	}}
+	if met != nil {
+		sched.OnRun = met.Job
+	}
 	if path, err := sqlite.PathFromURL(cfg.DatabaseURL); err == nil {
 		at, _ := config.ParseClock(cfg.BackupSchedule)
 		loc, _ := time.LoadLocation(cfg.Timezone)
@@ -389,4 +424,12 @@ func backupNow() error {
 	}
 	fmt.Println(dest)
 	return nil
+}
+
+// metricsMux serves /metrics, and /healthz for a probe on the same port.
+func metricsMux(m *metrics.Metrics) http.Handler {
+	mux := http.NewServeMux()
+	mux.Handle("GET /metrics", m.Handler())
+	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("ok\n")) })
+	return mux
 }

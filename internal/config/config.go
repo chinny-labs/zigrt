@@ -14,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/chinny-labs/zigrt/internal/mail"
 )
 
 // Config is the parsed runtime configuration.
@@ -30,7 +32,15 @@ type Config struct {
 	Timezone        string // default household timezone at setup
 	ContentDir      string // folder scanned for content packs newer than the embedded one
 	MCPEnabled      bool   // serve the MCP server at /mcp (plan §11)
+	// SMTP turns email on when SMTP.Host is set (plan §10).
+	SMTP mail.Config
+	// MetricsListen is where Prometheus metrics are served, on their own
+	// port so a public ingress never exposes them; "" is off.
+	MetricsListen string
 }
+
+// MailOn reports whether email is configured.
+func (c Config) MailOn() bool { return c.SMTP.Host != "" }
 
 // DefaultEnvFile is read when present, before the process environment.
 const DefaultEnvFile = "/data/config.env"
@@ -109,6 +119,31 @@ func parse(lookup func(string) (string, bool)) (Config, error) {
 			errs = append(errs, fmt.Errorf("%s: %w", name, err))
 		} else {
 			*dst = b
+		}
+	}
+
+	c.MetricsListen = str("ZIGRT_METRICS_LISTEN", "")
+	c.SMTP = mail.Config{
+		Host:     str("ZIGRT_SMTP_HOST", ""),
+		Security: mail.Security(strings.ToLower(str("ZIGRT_SMTP_SECURITY", string(mail.StartTLS)))),
+		Username: str("ZIGRT_SMTP_USERNAME", ""),
+		Password: str("ZIGRT_SMTP_PASSWORD", ""),
+		From:     str("ZIGRT_SMTP_FROM", ""),
+	}
+	if c.SMTP.Host != "" {
+		c.SMTP.Port = mail.DefaultPort(c.SMTP.Security)
+		if p := str("ZIGRT_SMTP_PORT", ""); p != "" {
+			n, err := strconv.Atoi(p)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("ZIGRT_SMTP_PORT must be a number, got %q", p))
+			}
+			c.SMTP.Port = n
+		}
+		if err := c.SMTP.Check(); err != nil {
+			errs = append(errs, fmt.Errorf("ZIGRT_SMTP_*: %w", err))
+		}
+		if c.BaseURL == "" {
+			errs = append(errs, errors.New("ZIGRT_BASE_URL is needed for the links in emails when ZIGRT_SMTP_HOST is set"))
 		}
 	}
 

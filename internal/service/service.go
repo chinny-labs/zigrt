@@ -15,6 +15,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/chinny-labs/zigrt/internal/learning"
+	"github.com/chinny-labs/zigrt/internal/mail"
 	"github.com/chinny-labs/zigrt/internal/store"
 )
 
@@ -35,6 +36,10 @@ type Service struct {
 	ContentDir string
 	PackSource string
 	Backups    Backups
+	// Mail sends email, and BaseURL makes its links; email is off unless
+	// both are set.
+	Mail    mail.Sender
+	BaseURL string
 
 	lib atomic.Pointer[library]
 }

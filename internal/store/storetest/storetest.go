@@ -95,6 +95,7 @@ func Run(t *testing.T, open Opener) {
 		"ExportImport":   testExportImport,
 		"HouseholdPage":  testHouseholdPage,
 		"APITokens":      testAPITokens,
+		"Email":          testEmail,
 		"LessonFlow":     testLessonFlow,
 		"LessonPauses":   testLessonPauses,
 		"ReviewsAndXP":   testReviewsAndXP,

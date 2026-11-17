@@ -111,6 +111,14 @@ type Reader interface {
 	GetAPITokenByHash(ctx context.Context, hash string) (APIToken, error)
 	// ListAPITokens lists a parent's tokens that are not revoked.
 	ListAPITokens(ctx context.Context, userID string) ([]APIToken, error)
+
+	// DueEmails lists unsent messages due by now with fewer than
+	// maxAttempts tries, oldest first.
+	DueEmails(ctx context.Context, now time.Time, maxAttempts, limit int) ([]Email, error)
+	GetEmail(ctx context.Context, id string) (Email, error)
+	CountEmails(ctx context.Context, maxAttempts int) (pending, failed int, err error)
+	GetPasswordReset(ctx context.Context, hash string) (PasswordReset, error)
+	LatestPasswordReset(ctx context.Context, userID string) (PasswordReset, error)
 }
 
 // Writer holds every write.
@@ -179,4 +187,10 @@ type Writer interface {
 	CreateAPIToken(ctx context.Context, t APIToken) error
 	RevokeAPIToken(ctx context.Context, id string, at time.Time) error
 	TouchAPIToken(ctx context.Context, id string, at time.Time) error
+
+	QueueEmail(ctx context.Context, e Email) (bool, error)
+	UpdateEmail(ctx context.Context, e Email) error
+	PruneEmails(ctx context.Context, before time.Time) (int64, error)
+	CreatePasswordReset(ctx context.Context, p PasswordReset) error
+	UsePasswordResets(ctx context.Context, userID string, at time.Time) error
 }
