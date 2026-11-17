@@ -198,7 +198,8 @@ func (s *Service) loadDrill(ctx context.Context, r store.Reader, actor store.Use
 // once; a second call returns the saved result.
 func (s *Service) FinishDrill(ctx context.Context, actor store.User, id string, answers []Answer, duration time.Duration) (DrillView, error) {
 	var out DrillView
-	err := s.Store.Tx(ctx, "", func(tx store.Tx) error {
+	// Locked on the student: the daily drill XP cap reads then writes.
+	err := s.Store.Tx(ctx, actor.ID, func(tx store.Tx) error {
 		v, err := s.loadDrill(ctx, tx, actor, id)
 		if err != nil {
 			return err
@@ -232,8 +233,23 @@ func (s *Service) FinishDrill(ctx context.Context, actor store.User, id string, 
 		}
 		res := store.DrillResult{DrillID: v.ID, StudentID: actor.ID, Correct: correct, Total: len(v.Problems),
 			DurationMS: int64(min(max(duration, 0), maxDrillDuration) / time.Millisecond), Answers: aj, FinishedAt: s.now()}
-		if _, err := tx.InsertDrillResult(ctx, res); err != nil {
+		inserted, err := tx.InsertDrillResult(ctx, res)
+		if err != nil {
 			return err
+		}
+		if inserted {
+			// Free practice is worth a little XP, capped a day (plan 5.2).
+			today, err := s.today(ctx, tx)
+			if err != nil {
+				return err
+			}
+			earned, err := tx.SumXP(ctx, actor.ID, store.XPFromDrill, today.date.String())
+			if err != nil {
+				return err
+			}
+			if err := s.awardXP(ctx, tx, actor.ID, store.XPFromDrill, v.ID, s.Learn.DrillXP(correct, earned), today, res.FinishedAt); err != nil {
+				return err
+			}
 		}
 		v.Result = &ResultView{DrillResult: res, Answers: marked}
 		out = v
