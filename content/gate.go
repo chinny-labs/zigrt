@@ -123,9 +123,20 @@ var (
 
 func (p *Pack) gateSubresources() []error {
 	var errs []error
+	// Only what Build puts in the pack file is checked, so a pack folder
+	// inside a git checkout (.git/config holds the remote's URL) passes.
 	_ = fs.WalkDir(p.fsys, ".", func(name string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() || name == "manifest.yaml" || strings.HasPrefix(d.Name(), "LICENSE") || strings.HasSuffix(name, ".md") {
+		if err != nil {
 			return err
+		}
+		if !packFiles(name, d) {
+			if d.IsDir() {
+				return fs.SkipDir
+			}
+			return nil
+		}
+		if d.IsDir() || name == "manifest.yaml" || strings.HasPrefix(d.Name(), "LICENSE") || strings.HasSuffix(name, ".md") {
+			return nil
 		}
 		b, err := fs.ReadFile(p.fsys, name)
 		if err != nil {

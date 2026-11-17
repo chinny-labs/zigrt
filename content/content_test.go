@@ -203,6 +203,9 @@ func TestGates(t *testing.T) {
 		set("released-ids.json", `["zero"]`)(m)
 		edit("topics.yaml", "topics:", "transitions: [{from: zero, to: [one]}]\ntopics:")(m)
 		set("figures/star.svg", `<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1"/></svg>`)(m)
+		// Files that never go in the pack file are not the pack's links.
+		set(".git/config", "[remote \"origin\"]\n\turl = https://github.com/chinny-labs/zigrt-curriculum\n")(m)
+		set(".github/workflows/ci.yml", "# https://docs.github.com/actions\n")(m)
 	}))
 	if err != nil {
 		t.Fatal(err)
