@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/chinny-labs/zigrt/compare/v0.2.0...v0.3.0) (2026-11-17)
+
+
+### Features
+
+* phase 4a, placement test, quizzes, review compression, simulate ([#12](https://github.com/chinny-labs/zigrt/issues/12)) ([2d41437](https://github.com/chinny-labs/zigrt/commit/2d4143727807a0005374995e7a5c379dcaaa57ec))
+* phase 4b, placement, quiz, tower and milestone screens ([#14](https://github.com/chinny-labs/zigrt/issues/14)) ([a6dae82](https://github.com/chinny-labs/zigrt/commit/a6dae820ef82da2c0a4247b1b2d1f7b1a8025910))
+
 ## [0.2.0](https://github.com/chinny-labs/zigrt/compare/v0.1.1...v0.2.0) (2026-11-17)
 
 
