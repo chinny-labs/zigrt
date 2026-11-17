@@ -52,7 +52,20 @@ type Server struct {
 	pages      map[string]*template.Template
 	handler    http.Handler
 	contentErr atomic.Value // error: why no content pack could be loaded
+	api, mcp   http.Handler // the JSON API and MCP server, when mounted
 }
+
+// MountAPI serves the JSON API under /api/v1/ and, when mcp is not nil, the
+// MCP server at /mcp. Both authenticate with bearer tokens, so they skip
+// the session and CSRF checks.
+func (s *Server) MountAPI(api, mcp http.Handler) {
+	s.api, s.mcp = api, mcp
+	s.handler = s.middleware(s.routes())
+}
+
+// ClientIP is the caller's address, from X-Forwarded-For only when the
+// request came through a trusted proxy.
+func (s *Server) ClientIP(r *http.Request) string { return s.clientIP(r) }
 
 // SetContentError records why the content pack could not be loaded, which
 // /readyz reports until the process restarts with a pack it can run.
@@ -186,7 +199,7 @@ func (s *Server) middleware(next http.Handler) http.Handler {
 		h.Set("Referrer-Policy", "same-origin")
 		h.Set("X-Frame-Options", "DENY")
 
-		if isOpenPath(r.URL.Path) {
+		if isOpenPath(r.URL.Path) || isTokenPath(r.URL.Path) {
 			next.ServeHTTP(sw, r)
 			return
 		}
@@ -252,6 +265,9 @@ func (s *Server) middleware(next http.Handler) http.Handler {
 		next.ServeHTTP(sw, r)
 	})
 }
+
+// isTokenPath is the API and MCP, which take bearer tokens, not cookies.
+func isTokenPath(p string) bool { return strings.HasPrefix(p, "/api/") || p == "/mcp" }
 
 func isOpenPath(p string) bool {
 	return strings.HasPrefix(p, "/static/") || p == "/healthz" || p == "/readyz" || p == "/favicon.ico"

@@ -56,6 +56,26 @@
       <a class="btn btn-secondary" href="/parent/export">Export everything</a>
     </div>
   </section>
+  <section class="card stack" aria-labelledby="tokens-h">
+    <h2 id="tokens-h">API tokens</h2>
+    <p class="muted">For home automation or an AI assistant: a token reads the students' progress through the API at <code>{{$.D.BaseURL}}/api/v1</code>{{if $.D.MCP}} or the MCP server at <code>{{$.D.BaseURL}}/mcp</code>{{end}}. Nothing can answer problems for a child.</p>
+    {{if $.D.Tokens}}
+    <ul class="token-list">
+      {{range $.D.Tokens}}
+      <li class="token-row">
+        <span class="person-text"><strong>{{.Label}}</strong><span class="muted">{{if eq (len .Scopes) 2}}Reads and changes settings{{else}}Reads only{{end}} · made {{since .CreatedAt}} · {{if .LastUsedAt}}used {{since .LastUsedAt}}{{else}}not used yet{{end}}</span></span>
+        <form method="post" action="/parent/tokens/{{.ID}}/revoke">{{template "csrf" $}}<button class="btn btn-secondary btn-sm" type="submit">Revoke</button></form>
+      </li>
+      {{end}}
+    </ul>
+    {{end}}
+    <form method="post" action="/parent/tokens" class="stack">
+      {{template "csrf" .}}
+      <div class="field"><label for="label">Name</label><input id="label" name="label" maxlength="60" required placeholder="Home Assistant"><span class="hint">So you know what uses it.</span></div>
+      <label class="check"><input type="checkbox" name="manage" value="1"> Also change settings and make worksheets</label>
+      <button class="btn btn-secondary" type="submit">Make a token</button>
+    </form>
+  </section>
   <p class="muted center">Zigrt {{$h.AppVersion}} · {{if eq $h.Engine "sqlite"}}SQLite{{else}}Postgres{{end}}</p>
 </div>
 {{end}}

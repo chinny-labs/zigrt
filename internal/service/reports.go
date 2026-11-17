@@ -314,3 +314,61 @@ func plural(n int, one, many string) string {
 	}
 	return strconv.Itoa(n) + " " + many
 }
+
+// Struggle is a topic a student keeps finding hard: lessons stopped and
+// reviews failed (plan §11, "topics with repeated failures").
+type Struggle struct {
+	Topic         *content.Topic
+	Stops         int // lessons stopped for the day
+	FailedReviews int
+	Last          time.Time
+}
+
+// Struggles lists a student's topics with two or more stops or failed
+// reviews in the last days days, the most recent first.
+func (s *Service) Struggles(ctx context.Context, parent store.User, studentID string, days int) ([]Struggle, error) {
+	if err := requireParent(parent); err != nil {
+		return nil, err
+	}
+	if _, err := getStudent(ctx, s.Store, studentID); err != nil {
+		return nil, err
+	}
+	l, err := s.library()
+	if err != nil {
+		return nil, err
+	}
+	events, err := s.Store.ListMasteryEvents(ctx, studentID)
+	if err != nil {
+		return nil, err
+	}
+	since := s.now().AddDate(0, 0, -days)
+	byTopic := map[string]*Struggle{}
+	for _, e := range events {
+		if e.CreatedAt.Before(since) || (e.Kind != string(learning.LessonPaused) && e.Kind != string(learning.ReviewFailed)) {
+			continue
+		}
+		t := l.pack.Topic(e.TopicID)
+		if t == nil {
+			continue
+		}
+		st := byTopic[t.ID]
+		if st == nil {
+			st = &Struggle{Topic: t}
+			byTopic[t.ID] = st
+		}
+		if e.Kind == string(learning.LessonPaused) {
+			st.Stops++
+		} else {
+			st.FailedReviews++
+		}
+		st.Last = e.CreatedAt
+	}
+	var out []Struggle
+	for _, st := range byTopic {
+		if st.Stops+st.FailedReviews >= 2 {
+			out = append(out, *st)
+		}
+	}
+	slices.SortFunc(out, func(a, b Struggle) int { return b.Last.Compare(a.Last) })
+	return out, nil
+}

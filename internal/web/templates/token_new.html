@@ -1,0 +1,17 @@
+{{define "main"}}
+<div class="column">
+  <h1>Your new token</h1>
+  <section class="card stack">
+    <p>Copy it now. It won't be shown again; if you lose it, revoke it and make another.</p>
+    <div class="field"><label for="secret">{{.D.Token.Label}}</label><input id="secret" class="token-secret" value="{{.D.Secret}}" readonly></div>
+    <p class="muted">{{if eq (len .D.Token.Scopes) 2}}It reads progress, changes settings and makes worksheets.{{else}}It reads progress only.{{end}}</p>
+    <div class="stack-sm">
+      <strong>Using it</strong>
+      <span class="muted">Send it in a header: <code>Authorization: Bearer {{.D.Secret}}</code></span>
+      <span class="muted">API: <code>{{.D.BaseURL}}/api/v1/students</code>, described at <code>{{.D.BaseURL}}/api/v1/openapi.json</code></span>
+      {{if .D.MCP}}<span class="muted">MCP: <code>{{.D.BaseURL}}/mcp</code> (streamable HTTP)</span>{{end}}
+    </div>
+    <a class="btn btn-primary" href="/parent/household#tokens-h">Done</a>
+  </section>
+</div>
+{{end}}
