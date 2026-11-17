@@ -285,8 +285,8 @@ func (d *drawer) clock(a Args) error {
 	}
 	hourAng := (float64(hour%12) + float64(minute)/60) * math.Pi / 6
 	minAng := float64(minute) * math.Pi / 30
-	d.add(`<line class="fig-hand fig-hand-hour" x1="110" y1="110" x2="%s" y2="%s"/>`, num(c+math.Sin(hourAng)*52), num(c-math.Cos(hourAng)*52))
-	d.add(`<line class="fig-hand fig-hand-minute" x1="110" y1="110" x2="%s" y2="%s"/>`, num(c+math.Sin(minAng)*78), num(c-math.Cos(minAng)*78))
+	d.add(`<line class="fig-hand fig-hand-hour" x1="110" y1="110" x2="%s" y2="%s"/>`, num(c+math.Sin(hourAng)*46), num(c-math.Cos(hourAng)*46))
+	d.add(`<line class="fig-hand fig-hand-minute" x1="110" y1="110" x2="%s" y2="%s"/>`, num(c+math.Sin(minAng)*64), num(c-math.Cos(minAng)*64))
 	d.add(`<circle class="fig-pin" cx="110" cy="110" r="6"/>`)
 	return nil
 }

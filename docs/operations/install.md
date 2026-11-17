@@ -92,6 +92,7 @@ Every setting is an environment variable. Any of them can be read from a file in
 | `ZIGRT_TRUSTED_PROXIES` | none | CIDRs whose `X-Forwarded-For` is trusted for client addresses in logs |
 | `ZIGRT_INSECURE_COOKIES` | `false` | Drop the cookie `Secure` flag for plain-HTTP testing |
 | `ZIGRT_LOG_FORMAT` | `json` | `json` or `text` |
+| `ZIGRT_CONTENT_DIR` | `/data/content` | Folder of content packs newer than the embedded one ([Content packs](content.md)) |
 
 ## Backups
 
@@ -110,8 +111,10 @@ Run these inside the container, for example `docker compose exec zigrt zigrt ver
 | `zigrt healthcheck` | Exits 0 if the local server is healthy |
 | `zigrt reset-password <email>` | Sets a new password for a parent and prints it. `--password-stdin` reads one instead |
 | `zigrt backup` | Takes a SQLite backup now |
+| `zigrt rebuild` | Recomputes every student's progress from the history |
+| `zigrt demo` | Fills an empty database with a demo household, to try Zigrt without a placement |
 | `zigrt version` | Prints the version |
 
 ## Health
 
-`/healthz` answers as soon as the process is up. `/readyz` answers once the database is reachable.
+`/healthz` answers as soon as the process is up. `/readyz` answers once the database is reachable and a content pack is loaded; it fails, saying why, when the content folder holds a pack this version is too old for.

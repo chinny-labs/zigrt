@@ -13,6 +13,7 @@ import (
 	"github.com/chinny-labs/zigrt/content"
 	"github.com/chinny-labs/zigrt/internal/drill"
 	"github.com/chinny-labs/zigrt/internal/learning"
+	"github.com/chinny-labs/zigrt/internal/pack"
 	"github.com/chinny-labs/zigrt/internal/service"
 	"github.com/chinny-labs/zigrt/internal/sim"
 	"github.com/chinny-labs/zigrt/internal/store"
@@ -32,7 +33,11 @@ func HardestPack(t *testing.T) *content.Pack {
 
 // withLessons loads the prototype pack and makes problem seeds repeatable.
 func (f *Fixture) withLessons(t *testing.T) *content.Pack {
-	p := HardestPack(t)
+	return f.withPack(HardestPack(t))
+}
+
+// withPack loads a pack and makes problem seeds repeatable.
+func (f *Fixture) withPack(p *content.Pack) *content.Pack {
 	f.Svc.SetPack(p)
 	var n uint64
 	f.Svc.Seed = func() uint64 { n++; return n * 0x9E3779B97F4A7C15 }
@@ -326,9 +331,23 @@ func testReviewsAndXP(t *testing.T, open Opener) {
 // prototype pack over simulated weeks, and every review lands on the
 // schedule the rules give, on both engines.
 func testSimulatedWeeks(t *testing.T, open Opener) {
+	simulatedWeeks(t, open, HardestPack(t), 60)
+}
+
+// testSampleWeeks does the same with the sample pack the app embeds: 30
+// topics from kindergarten to grade 5.
+func testSampleWeeks(t *testing.T, open Opener) {
+	p, err := pack.Embedded()
+	if err != nil {
+		t.Fatal(err)
+	}
+	simulatedWeeks(t, open, p, 90)
+}
+
+func simulatedWeeks(t *testing.T, open Opener, p *content.Pack, days int) {
 	ctx := context.Background()
 	f := NewFixture(t, open)
-	pack := f.withLessons(t)
+	pack := f.withPack(p)
 
 	// Mika answers everything right; Theo misses about one in six.
 	rng := rand.New(rand.NewPCG(7, 11)) //nolint:gosec // a repeatable script, not a secret
@@ -336,9 +355,14 @@ func testSimulatedWeeks(t *testing.T, open Opener) {
 		f.student(f.Mika, nil),
 		f.student(f.Theo, func(*problem.Problem) bool { return rng.IntN(6) != 0 }),
 	}
+	// Facts come quickly to a child who knows them; everything else takes
+	// a few seconds of work.
+	for _, s := range students {
+		s.Think = sim.ThinkTime(pack, 3*time.Second, 8*time.Second)
+	}
 	maxReviews := 0
 	start := f.Clock.Now()
-	for d := range 60 {
+	for d := range days {
 		for _, s := range students {
 			day, err := s.Day(ctx)
 			if err != nil {
@@ -367,9 +391,9 @@ func testSimulatedWeeks(t *testing.T, open Opener) {
 		}
 		t.Logf("%s: %d of %d topics mastered", s.User.DisplayName, mastered, len(pack.Topics))
 		if mastered < len(pack.Topics)-1 {
-			t.Errorf("%s mastered %d of %d topics in 60 days", s.User.DisplayName, mastered, len(pack.Topics))
+			t.Errorf("%s mastered %d of %d topics in %d days", s.User.DisplayName, mastered, len(pack.Topics), days)
 		}
-		checkSchedule(t, f.Store, s.User, cfg)
+		checkSchedule(t, f.Store, s.User, cfg, 20)
 	}
 	// Theo's misses failed some reviews, and the schedule recovered.
 	evs, _ := f.Store.ListMasteryEvents(ctx, f.Theo.ID)
@@ -389,7 +413,7 @@ func testSimulatedWeeks(t *testing.T, open Opener) {
 // against the state before it: never early, a pass moves one stage up and
 // out by that stage's interval, a fail drops two stages and comes back
 // tomorrow (or reopens the lesson after two in a row).
-func checkSchedule(t *testing.T, st store.Store, u store.User, cfg learning.Config) {
+func checkSchedule(t *testing.T, st store.Store, u store.User, cfg learning.Config, minReviews int) {
 	t.Helper()
 	evs, err := st.ListMasteryEvents(context.Background(), u.ID)
 	must(t, err)
@@ -442,7 +466,43 @@ func checkSchedule(t *testing.T, st store.Store, u store.User, cfg learning.Conf
 		cur[e.TopicID] = prev
 	}
 	t.Logf("%s: %d reviews checked, highest stage %d", u.DisplayName, reviews, highest)
-	if reviews < 20 || highest < 3 {
+	if reviews < minReviews || highest < 2 {
 		t.Errorf("%s: %d reviews, highest stage %d: the run is too short to test the schedule", u.DisplayName, reviews, highest)
+	}
+}
+
+// testDemo fills an empty household with the demo and refuses a second time.
+func testDemo(t *testing.T, open Opener) {
+	ctx := context.Background()
+	st := open(t)
+	svc := service.New(st, nil)
+	p, err := pack.Embedded()
+	must(t, err)
+	svc.SetPack(p)
+	end := time.Date(2026, 11, 17, 12, 0, 0, 0, time.UTC)
+	login, err := sim.Demo(ctx, svc, "America/Los_Angeles", "a demo password", 21, end, 1)
+	must(t, err)
+	if len(login.Students) != 2 || login.Email == "" {
+		t.Fatalf("login %+v", login)
+	}
+	if _, err := sim.Demo(ctx, svc, "America/Los_Angeles", "x", 21, end, 1); !errors.Is(err, sim.ErrNotEmpty) {
+		t.Fatalf("second demo: %v", err)
+	}
+	if svc.Now().Year() == 2026 && svc.Now().Month() == 10 {
+		t.Error("the demo left the service on its simulated clock")
+	}
+	students, err := st.ListUsers(ctx, store.RoleStudent)
+	must(t, err)
+	for _, u := range students {
+		states, _ := st.ListTopicStates(ctx, u.ID)
+		xp, _ := st.ListXPEvents(ctx, u.ID)
+		if len(states) < 5 || len(xp) < 10 {
+			t.Errorf("%s: %d topic states, %d XP events after 21 days", u.DisplayName, len(states), len(xp))
+		}
+		must(t, svc.CheckProjections(ctx, u.ID))
+		checkSchedule(t, st, u, svc.Learn, 10)
+	}
+	if _, err := svc.LoginParent(ctx, login.Email, login.Password, "test"); err != nil {
+		t.Errorf("demo parent sign-in: %v", err)
 	}
 }

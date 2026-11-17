@@ -93,6 +93,8 @@ func Run(t *testing.T, open Opener) {
 		"LessonPauses":   testLessonPauses,
 		"ReviewsAndXP":   testReviewsAndXP,
 		"SimulatedWeeks": testSimulatedWeeks,
+		"SampleWeeks":    testSampleWeeks,
+		"Demo":           testDemo,
 	} {
 		t.Run(name, func(t *testing.T) { fn(t, open) })
 	}

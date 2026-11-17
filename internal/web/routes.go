@@ -58,8 +58,18 @@ func (s *Server) routes() http.Handler {
 	return mux
 }
 
-// readyz reports whether the app can serve: the database answers.
+// readyz reports whether the app can serve: a content pack is loaded and
+// the database answers. A pack in the content folder that needs a newer
+// Zigrt keeps the app unready rather than running an older pack (plan 4.7).
 func (s *Server) readyz(w http.ResponseWriter, r *http.Request) {
+	if err, _ := s.contentErr.Load().(error); err != nil {
+		http.Error(w, "content pack: "+err.Error()+"\n", http.StatusServiceUnavailable)
+		return
+	}
+	if s.svc.Pack() == nil {
+		http.Error(w, "no content pack loaded\n", http.StatusServiceUnavailable)
+		return
+	}
 	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
 	defer cancel()
 	if err := s.svc.Store.Ping(ctx); err != nil {

@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/chinny-labs/zigrt/content"
 	"github.com/chinny-labs/zigrt/internal/service"
 	"github.com/chinny-labs/zigrt/internal/store"
 	"github.com/chinny-labs/zigrt/problem"
@@ -129,4 +130,15 @@ func (s *Student) think(p *problem.Problem) time.Duration {
 		return s.Think(p)
 	}
 	return 8 * time.Second
+}
+
+// ThinkTime answers fluency topics (facts) in fast and everything else in
+// slow, the pace of a child who knows their facts.
+func ThinkTime(p *content.Pack, fast, slow time.Duration) func(*problem.Problem) time.Duration {
+	return func(pr *problem.Problem) time.Duration {
+		if t := p.TopicOf(pr.Template); t != nil && t.FluencySeconds > 0 {
+			return fast
+		}
+		return slow
+	}
 }

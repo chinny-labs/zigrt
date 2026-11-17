@@ -18,6 +18,10 @@ build:
 test:
     go test -race ./...
 
+# Pin a curriculum release as the embedded content pack, e.g. `just pack-update 2026.12.1`.
+pack-update version:
+    scripts/pack-update.sh {{version}}
+
 # The content authoring tool, e.g. `just content check` on the prototype pack.
 content *args:
     go run ./cmd/zigrt-content -pack content/testdata/hardest {{args}}

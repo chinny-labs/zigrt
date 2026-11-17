@@ -5,6 +5,9 @@
 //	zigrt healthcheck              exit 0 if the local server answers /healthz
 //	zigrt reset-password <email>   set a new parent password
 //	zigrt backup                   snapshot the SQLite database now
+//	zigrt rebuild                  recompute progress from the history
+//	zigrt demo [-days n]           fill an empty database with a demo household
+//	zigrt preview [-pack dir] [topic...]  render a pack's lessons to static pages
 //	zigrt version                  print the version
 package main
 
@@ -31,6 +34,7 @@ import (
 	"github.com/chinny-labs/zigrt/internal/backup"
 	"github.com/chinny-labs/zigrt/internal/buildinfo"
 	"github.com/chinny-labs/zigrt/internal/config"
+	"github.com/chinny-labs/zigrt/internal/pack"
 	"github.com/chinny-labs/zigrt/internal/scheduler"
 	"github.com/chinny-labs/zigrt/internal/service"
 	"github.com/chinny-labs/zigrt/internal/store"
@@ -57,6 +61,12 @@ func main() {
 		err = resetPassword(args)
 	case "backup":
 		err = backupNow()
+	case "rebuild":
+		err = rebuild()
+	case "demo":
+		err = demo(args)
+	case "preview":
+		err = preview(args)
 	case "version", "--version", "-v":
 		fmt.Printf("zigrt %s (%s)\n", buildinfo.Version, buildinfo.ShortCommit())
 	case "help", "-h", "--help":
@@ -79,6 +89,10 @@ func usage(w io.Writer) {
   healthcheck                    exit 0 if the local server answers /healthz
   reset-password <email>         set a new parent password (prints one, or reads --password-stdin)
   backup                         snapshot the SQLite database into the backups folder now
+  rebuild                        recompute every student's progress from the history
+  demo [-days 28]                fill an empty database with a demo household and its history
+  preview [-pack .] [-out preview] [-seeds 3] [topic...]
+                                 render a content pack's lessons to static pages, for authors
   version                        print the version
 `)
 }
@@ -130,6 +144,7 @@ func serve() error {
 	}
 	defer st.Close()
 	svc := service.New(st, log)
+	contentErr := loadContent(svc, cfg, log)
 
 	token := ""
 	if need, err := svc.NeedsSetup(ctx); err != nil {
@@ -144,6 +159,7 @@ func serve() error {
 	if err != nil {
 		return err
 	}
+	srv.SetContentError(contentErr)
 
 	sched := &scheduler.Scheduler{Interval: time.Minute, Log: log, Jobs: []scheduler.Job{
 		{Name: "housekeeping", Run: hourly(func(ctx context.Context) error {
@@ -185,6 +201,24 @@ func serve() error {
 	if err := hs.Shutdown(shutdownCtx); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
+	return nil
+}
+
+// loadContent loads the embedded content pack, or a newer one from the
+// content folder. It returns why no pack could be loaded, which keeps
+// /readyz failing (plan 4.7).
+func loadContent(svc *service.Service, cfg config.Config, log *slog.Logger) error {
+	found, err := pack.Select(cfg.ContentDir, buildinfo.Version)
+	for _, s := range found.Skip {
+		log.Warn("content pack skipped", "reason", s)
+	}
+	if err != nil {
+		log.Error("content pack not loaded: the app will not report ready", "err", err)
+		return err
+	}
+	svc.SetPack(found.Pack)
+	log.Info("content loaded", "pack", found.Pack.Manifest.ID, "version", found.Pack.Manifest.Version,
+		"from", found.Source, "topics", len(found.Pack.Topics))
 	return nil
 }
 

@@ -268,6 +268,12 @@ zigrt-content funcs                     # the expression functions
 zigrt-content build -out dist           # the pack file and its checksum
 ```
 
+To see lessons as a child will, with the app's own layouts, figures and inputs, render them to pages and open `preview/index.html` (ADR 13):
+
+```sh
+zigrt preview -pack . add-2d-2d-regroup tell-time-5min   # some topics, or none for all
+```
+
 Read `sample` output, not just `check`. The gates catch broken templates; only reading catches "From 7:00 to 7:00 is 0 hours".
 
 The gates (plan section 4.6):
