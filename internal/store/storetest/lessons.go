@@ -44,7 +44,7 @@ func (f *Fixture) withPack(p *content.Pack) *content.Pack {
 	return p
 }
 
-func (f *Fixture) student(u store.User, right func(*problem.Problem) bool) *sim.Student {
+func (f *Fixture) student(u store.User, right func(sim.Question) bool) *sim.Student {
 	return &sim.Student{Svc: f.Svc, User: u, Clock: f.Clock, Right: right}
 }
 
@@ -143,7 +143,7 @@ func testLessonPauses(t *testing.T, open Opener) {
 	ctx := context.Background()
 	f := NewFixture(t, open)
 	f.withLessons(t)
-	wrong := f.student(f.Mika, func(*problem.Problem) bool { return false })
+	wrong := f.student(f.Mika, func(sim.Question) bool { return false })
 
 	v, err := wrong.Do(ctx, store.TaskLesson, "elapsed-time")
 	must(t, err)
@@ -353,7 +353,7 @@ func simulatedWeeks(t *testing.T, open Opener, p *content.Pack, days int) {
 	rng := rand.New(rand.NewPCG(7, 11)) //nolint:gosec // a repeatable script, not a secret
 	students := []*sim.Student{
 		f.student(f.Mika, nil),
-		f.student(f.Theo, func(*problem.Problem) bool { return rng.IntN(6) != 0 }),
+		f.student(f.Theo, func(sim.Question) bool { return rng.IntN(6) != 0 }),
 	}
 	// Facts come quickly to a child who knows them; everything else takes
 	// a few seconds of work.
@@ -504,5 +504,217 @@ func testDemo(t *testing.T, open Opener) {
 	}
 	if _, err := svc.LoginParent(ctx, login.Email, login.Password, "test"); err != nil {
 		t.Errorf("demo parent sign-in: %v", err)
+	}
+}
+
+// testPlacementFlow walks the placement test by hand: offered first to a
+// new student, a welcome, questions across topics, "I haven't learned
+// this", stopping and resuming, the end, and skipping.
+func testPlacementFlow(t *testing.T, open Opener) {
+	ctx := context.Background()
+	f := NewFixture(t, open)
+	p, err := pack.Embedded()
+	must(t, err)
+	f.withPack(p)
+	f.Svc.Learn.OfferPlacement = true
+
+	home, err := f.Svc.Home(ctx, f.Mika)
+	must(t, err)
+	if len(home.Tasks) < 2 || home.Tasks[0].Kind != store.TaskDiagnostic || home.Tasks[0].Topic != nil || home.Tasks[1].Kind != store.TaskLesson {
+		t.Fatalf("new student's tasks: %+v", home.Tasks)
+	}
+	task, err := f.Svc.StartTask(ctx, f.Mika, store.TaskDiagnostic, "")
+	must(t, err)
+	v, err := f.Svc.Task(ctx, f.Mika, task.ID)
+	must(t, err)
+	if v.Phase != service.PhaseIntro || v.Topic != nil {
+		t.Fatalf("intro: %s", v.Phase)
+	}
+	v, err = f.Svc.Continue(ctx, f.Mika, task.ID)
+	must(t, err)
+	if v.Phase != service.PhaseProblem || v.ProblemTopic == nil || v.Total != 35 {
+		t.Fatalf("first question: %s %v", v.Phase, v.ProblemTopic)
+	}
+	first := v.ProblemTopic.ID
+	v, err = f.Svc.NotLearned(ctx, f.Mika, task.ID, v.AttemptID)
+	must(t, err)
+	if v.Phase != service.PhaseProblem || v.Asked != 1 || v.Feedback != nil {
+		t.Fatalf("after not learned: %s asked %d", v.Phase, v.Asked)
+	}
+	if as, _ := f.Store.ListAttempts(ctx, task.ID); len(as) != 1 || as[0].Note != "not_learned" || as[0].TopicID != first {
+		t.Fatalf("attempts %+v", as)
+	}
+	// Stopping part way: the test is kept and offered to resume.
+	home, _ = f.Svc.Home(ctx, f.Mika)
+	if home.Active == nil || home.Active.Kind != store.TaskDiagnostic {
+		t.Fatalf("active %+v", home.Active)
+	}
+	_, err = f.Svc.StartTask(ctx, f.Mika, store.TaskLesson, home.Tasks[1].Topic.ID)
+	must(t, err)
+	home, _ = f.Svc.Home(ctx, f.Mika)
+	if home.Tasks[0].Kind != store.TaskDiagnostic || !home.Tasks[0].Resume {
+		t.Fatalf("placement set aside: %+v", home.Tasks[0])
+	}
+	again, err := f.Svc.StartTask(ctx, f.Mika, store.TaskDiagnostic, "")
+	must(t, err)
+	if again.ID != task.ID {
+		t.Fatal("resuming made a new placement test")
+	}
+	// Answer everything right from here: every topic is placed except what
+	// "not learned" ruled out.
+	right := f.student(f.Mika, nil)
+	v, err = right.Do(ctx, store.TaskDiagnostic, "")
+	must(t, err)
+	if v.Phase != service.PhaseDone || v.Task.Status != store.TaskPassed || len(v.Placed) == 0 || v.Task.XPAwarded != v.Asked/2 {
+		t.Fatalf("done: %s %s placed %d xp %d asked %d", v.Phase, v.Task.Status, len(v.Placed), v.Task.XPAwarded, v.Asked)
+	}
+	for _, pt := range v.Placed {
+		if pt.ID == first {
+			t.Errorf("%s was placed after \"not learned\"", first)
+		}
+	}
+	states, _ := f.Store.ListTopicStates(ctx, f.Mika.ID)
+	if len(states) != len(v.Placed) || states[0].Stage != 2 {
+		t.Fatalf("states %+v", states)
+	}
+	home, _ = f.Svc.Home(ctx, f.Mika)
+	for _, n := range home.Tasks {
+		if n.Kind == store.TaskDiagnostic {
+			t.Fatal("placement offered again after it finished")
+		}
+	}
+	must(t, f.Svc.CheckProjections(ctx, f.Mika.ID))
+
+	// Theo skips it: it is not offered again, and lessons start at the bottom.
+	must(t, f.Svc.SkipPlacement(ctx, f.Theo))
+	home, _ = f.Svc.Home(ctx, f.Theo)
+	if home.Tasks[0].Kind != store.TaskLesson || home.Tasks[0].Topic.ID != p.Topics[0].ID {
+		t.Fatalf("after skipping: %+v", home.Tasks[0])
+	}
+	if err := f.Svc.SkipPlacement(ctx, f.Theo); !errors.Is(err, service.ErrNotOffered) {
+		t.Fatalf("skipping twice: %v", err)
+	}
+}
+
+// testQuizFlow: after enough XP a quiz comes before reviews; it shows no
+// feedback until the end; a miss brings that topic's review due now.
+func testQuizFlow(t *testing.T, open Opener) {
+	ctx := context.Background()
+	f := NewFixture(t, open)
+	p, err := pack.Embedded()
+	must(t, err)
+	f.withPack(p)
+	f.Svc.Learn.OfferQuizzes = true
+	f.Svc.Learn.QuizEveryXP = 30 // three lessons' worth, to keep the test short
+	stu := f.student(f.Mika, nil)
+	stu.Think = sim.ThinkTime(p, 3*time.Second, 8*time.Second)
+	for range 3 {
+		home, err := f.Svc.Home(ctx, f.Mika)
+		must(t, err)
+		if home.Tasks[0].Kind == store.TaskQuiz {
+			t.Fatal("a quiz before enough XP")
+		}
+		_, err = stu.Do(ctx, store.TaskLesson, home.Tasks[0].Topic.ID)
+		must(t, err)
+	}
+	home, err := f.Svc.Home(ctx, f.Mika)
+	must(t, err)
+	if home.Tasks[0].Kind != store.TaskQuiz {
+		t.Fatalf("after 3 lessons: %+v", home.Tasks[0])
+	}
+	task, err := f.Svc.StartTask(ctx, f.Mika, store.TaskQuiz, "")
+	must(t, err)
+	v, err := f.Svc.Task(ctx, f.Mika, task.ID)
+	must(t, err)
+	if v.Total != 8 || v.Phase != service.PhaseProblem {
+		t.Fatalf("quiz: %d problems, %s", v.Total, v.Phase)
+	}
+	missed := v.ProblemTopic.ID
+	for i := 0; v.Phase == service.PhaseProblem; i++ {
+		f.Clock.Advance(9 * time.Second)
+		resp := v.Problem.Right()
+		if i == 0 {
+			resp = v.Problem.Wrong()
+		}
+		v, err = f.Svc.SubmitAnswer(ctx, f.Mika, task.ID, v.AttemptID, resp)
+		must(t, err)
+		if v.Phase == service.PhaseFeedback {
+			t.Fatal("feedback in a quiz before the end")
+		}
+	}
+	if v.Phase != service.PhaseDone || len(v.QuizResults) != 8 || v.QuizResults[0].Right || !v.QuizResults[1].Right || v.Task.XPAwarded != 13 {
+		t.Fatalf("results: %s, %d results, xp %d", v.Phase, len(v.QuizResults), v.Task.XPAwarded)
+	}
+	states, _ := f.Store.ListTopicStates(ctx, f.Mika.ID)
+	today := learning.DateOf(f.Clock.Now(), mustLoc(t, "America/New_York")).String()
+	for _, s := range states {
+		if s.TopicID == missed && s.DueOn != today {
+			t.Errorf("missed %s is due %s, want today %s", missed, s.DueOn, today)
+		}
+	}
+	home, _ = f.Svc.Home(ctx, f.Mika)
+	if home.Tasks[0].Kind != store.TaskReview || home.Tasks[0].Topic.ID != missed {
+		t.Fatalf("after the quiz: %+v", home.Tasks[0])
+	}
+	must(t, f.Svc.CheckProjections(ctx, f.Mika.ID))
+}
+
+func mustLoc(t *testing.T, name string) *time.Location {
+	t.Helper()
+	loc, err := time.LoadLocation(name)
+	must(t, err)
+	return loc
+}
+
+// testProfiles is plan section 12's simulated students: each profile plays
+// 60 days of the sample pack with placement and quizzes on. A student who
+// knows grade 2 is placed there and no higher; review load stays bounded;
+// no topic is left unreached; every review lands on schedule.
+func testProfiles(t *testing.T, open Opener) {
+	p, err := pack.Embedded()
+	must(t, err)
+	for _, prof := range sim.Profiles {
+		t.Run(prof.Name, func(t *testing.T) {
+			ctx := context.Background()
+			svc := service.New(open(t), nil)
+			svc.SetPack(p)
+			svc.Learn.OfferPlacement, svc.Learn.OfferQuizzes = true, true
+			rep, err := sim.Run(ctx, svc, prof, 60, 11)
+			must(t, err)
+			t.Logf("%s: placed %d, mastered %d of %d, %d lessons, %d reviews (max %d a day), %d quizzes",
+				prof.Name, rep.Placed, rep.Mastered, rep.Topics, rep.Lessons, rep.Reviews, rep.ReviewsMax, rep.Quizzes)
+			if rep.ReviewsMax > 10 {
+				t.Errorf("a day had %d reviews", rep.ReviewsMax)
+			}
+			if len(rep.NeverReached) > 0 {
+				t.Errorf("never reached: %v", rep.NeverReached)
+			}
+			if rep.Quizzes == 0 {
+				t.Error("no quiz in 60 days")
+			}
+			students, err := svc.Store.ListUsers(ctx, store.RoleStudent)
+			must(t, err)
+			u := students[0]
+			evs, err := svc.Store.ListMasteryEvents(ctx, u.ID)
+			must(t, err)
+			for _, e := range evs {
+				if e.Kind != string(learning.Placed) {
+					continue
+				}
+				if tp := p.Topic(e.TopicID); !prof.Knows(tp) {
+					t.Errorf("placed %s (grade %s), which the student did not know", e.TopicID, tp.Grade)
+				}
+			}
+			known := 0
+			for _, tp := range p.Topics {
+				if prof.Knows(tp) {
+					known++
+				}
+			}
+			if rep.Placed != known {
+				t.Errorf("placed %d, knew %d", rep.Placed, known)
+			}
+			checkSchedule(t, svc.Store, u, svc.Learn, 30)
+		})
 	}
 }

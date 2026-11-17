@@ -44,6 +44,16 @@ type Config struct {
 
 	DrillXPPer      int // correct drill answers per XP
 	DrillXPDailyCap int // drill XP a day
+
+	// OfferPlacement and OfferQuizzes switch the placement test and quizzes
+	// on (plan 3.3, 3.6).
+	OfferPlacement        bool
+	OfferQuizzes          bool
+	PlacementEvidence     int // right answers (on a topic or one that requires it) that make it known
+	PlacementMaxQuestions int
+	QuizEveryXP           int // XP earned between quizzes
+	QuizMin, QuizMax      int // problems in a quiz
+	QuizBaseXP            int // a perfect quiz
 }
 
 // Default is the plan's tuning.
@@ -67,6 +77,13 @@ func Default() Config {
 		FastRun:            3,
 		DrillXPPer:         10,
 		DrillXPDailyCap:    5,
+
+		PlacementEvidence:     2,
+		PlacementMaxQuestions: 35,
+		QuizEveryXP:           150,
+		QuizMin:               8,
+		QuizMax:               10,
+		QuizBaseXP:            15,
 	}
 }
 

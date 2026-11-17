@@ -37,6 +37,7 @@ var (
 type Phase string
 
 const (
+	PhaseIntro    Phase = "intro"    // the placement test's welcome (S4)
 	PhaseExplain  Phase = "explain"  // a knowledge point's explanation and worked example
 	PhaseProblem  Phase = "problem"  // a problem to answer
 	PhaseFeedback Phase = "feedback" // right, or the worked solution to the problem just missed
@@ -57,12 +58,27 @@ type taskState struct {
 	Problem  *issued          `json:"problem,omitempty"`
 	Last     *lastAnswer      `json:"last,omitempty"`
 	PausedOn string           `json:"paused_on,omitempty"` // the day three misses paused it
+
+	Placement *learning.Placement `json:"placement,omitempty"`
+	Set       []string            `json:"set,omitempty"`    // placement: the working set it places within
+	Placed    []string            `json:"placed,omitempty"` // placement: what it found known
+	Quiz      *learning.Quiz      `json:"quiz,omitempty"`
+	Results   []quizResult        `json:"results,omitempty"` // quiz: every answer, for the results page
+}
+
+// quizResult is one quiz answer, kept to show at the end (S11).
+type quizResult struct {
+	Template string           `json:"template"`
+	Seed     uint64           `json:"seed"`
+	Given    problem.Response `json:"given"`
+	Right    bool             `json:"right"`
 }
 
 // issued is the problem on screen. The answer is never stored or sent: the
 // problem is regenerated from template and seed to check it (plan 7.4).
 type issued struct {
 	AttemptID string    `json:"attempt"`
+	Topic     string    `json:"topic,omitempty"` // the problem's topic (placement and quizzes span topics)
 	KP        string    `json:"kp"`
 	Template  string    `json:"template"`
 	Seed      uint64    `json:"seed"`
@@ -92,7 +108,11 @@ type TaskView struct {
 
 	Feedback *Feedback
 
-	Asked, Total int // reviews: problems answered, and in all
+	Asked, Total int // reviews, quizzes and placement: problems answered, and in all (placement: at most)
+
+	ProblemTopic *content.Topic // the topic of the problem on screen (placement and quizzes span topics)
+	Placed       []*content.Topic
+	QuizResults  []Feedback // a finished quiz: every problem, answer and worked solution
 
 	Result *TaskResult // paused or done
 }
@@ -242,6 +262,9 @@ func (s *Service) situation(ctx context.Context, r store.Reader, l *library, stu
 			sit.PausedToday[t.TopicID] = true
 		}
 	}
+	if err := s.placementAndQuizzes(ctx, r, studentID, open, &sit); err != nil {
+		return sit, err
+	}
 	done, err := r.ListFinishedTasks(ctx, studentID, 20)
 	if err != nil {
 		return sit, err
@@ -311,7 +334,8 @@ func (s *Service) Home(ctx context.Context, student store.User) (HomeView, error
 		return v, nil
 	}
 	if t, err := s.Store.GetActiveTask(ctx, student.ID); err == nil {
-		if topic := l.pack.Topic(t.TopicID); topic != nil {
+		// Placement tests and quizzes span topics, so they have none.
+		if topic := l.pack.Topic(t.TopicID); topic != nil || t.TopicID == "" {
 			v.Active = &NextTask{Kind: t.Kind, Topic: topic, Resume: true, TaskID: t.ID}
 		}
 	} else if !errors.Is(err, store.ErrNotFound) {
@@ -398,20 +422,21 @@ func (s *Service) StartTask(ctx context.Context, student store.User, kind store.
 		if err != nil {
 			return err
 		}
-		i := slices.IndexFunc(next, func(n NextTask) bool { return n.Kind == kind && n.Topic != nil && n.Topic.ID == topicID })
+		i := slices.IndexFunc(next, func(n NextTask) bool {
+			return n.Kind == kind && (n.Topic == nil && topicID == "" || n.Topic != nil && n.Topic.ID == topicID)
+		})
 		if i < 0 {
 			return ErrNotOffered
 		}
-		topic := next[i].Topic
 
-		if kind == store.TaskLesson {
+		if kind == store.TaskLesson || kind == store.TaskDiagnostic {
 			open, err := tx.ListOpenTasks(ctx, student.ID)
 			if err != nil {
 				return err
 			}
 			for _, t := range open {
-				if t.Kind == store.TaskLesson && t.TopicID == topicID {
-					out, err = s.resumeLesson(ctx, tx, t, now)
+				if t.Kind == kind && t.TopicID == topicID {
+					out, err = s.resumeTask(ctx, tx, t, now)
 					return err
 				}
 			}
@@ -425,7 +450,25 @@ func (s *Service) StartTask(ctx context.Context, student store.User, kind store.
 			st = taskState{Phase: PhaseExplain, Lesson: &learning.Lesson{}}
 		case store.TaskReview:
 			st = taskState{Review: &learning.Review{}}
-			if err := s.issue(l, &t, &st, topic, now); err != nil {
+			if err := s.issue(l, &t, &st, now); err != nil {
+				return err
+			}
+		case store.TaskDiagnostic:
+			set, err := tx.GetStudentSettings(ctx, student.ID)
+			if err != nil && !errors.Is(err, store.ErrNotFound) {
+				return err
+			}
+			st = taskState{Phase: PhaseIntro, Placement: &learning.Placement{}, Set: l.courseTopics(set.CourseID)}
+		case store.TaskQuiz:
+			topics, err := s.quizTopics(ctx, tx, student.ID)
+			if err != nil {
+				return err
+			}
+			st = taskState{Quiz: &learning.Quiz{Topics: s.Learn.QuizTopics(topics)}}
+			if len(st.Quiz.Topics) == 0 {
+				return ErrNotOffered
+			}
+			if err := s.issue(l, &t, &st, now); err != nil {
 				return err
 			}
 		default:
@@ -456,13 +499,16 @@ func (s *Service) StartTask(ctx context.Context, student store.User, kind store.
 // setAside takes a task off screen so another can start.
 func (s *Service) setAside(ctx context.Context, tx store.Tx, t store.Task, now time.Time) error {
 	t.UpdatedAt = now
-	if t.Kind == store.TaskLesson {
+	if t.Kind == store.TaskLesson || t.Kind == store.TaskDiagnostic {
 		st, err := decodeState(t)
 		if err != nil {
 			return err
 		}
 		if st.Phase == PhaseProblem || st.Phase == PhaseFeedback || st.Phase == PhaseSlow {
 			st.Phase, st.Problem, st.SlowNext = PhaseExplain, nil, false
+			if st.Placement != nil {
+				st.Phase = PhaseIntro
+			}
 		}
 		if err := encodeState(&t, st); err != nil {
 			return err
@@ -474,18 +520,22 @@ func (s *Service) setAside(ctx context.Context, tx store.Tx, t store.Task, now t
 	return tx.UpdateTask(ctx, t)
 }
 
-// resumeLesson picks a paused lesson up where it stopped, with the misses
-// that paused it forgiven.
-func (s *Service) resumeLesson(ctx context.Context, tx store.Tx, t store.Task, now time.Time) (store.Task, error) {
+// resumeTask picks a paused lesson up where it stopped, with the misses
+// that paused it forgiven, or a placement test where it was left.
+func (s *Service) resumeTask(ctx context.Context, tx store.Tx, t store.Task, now time.Time) (store.Task, error) {
 	st, err := decodeState(t)
 	if err != nil {
 		return t, err
 	}
-	if st.Lesson == nil {
-		st.Lesson = &learning.Lesson{}
-	}
-	st.Lesson.Misses, st.Lesson.Streak = 0, 0
 	st.Phase, st.Then, st.SlowNext, st.Problem, st.PausedOn = PhaseExplain, "", false, nil, ""
+	if st.Placement != nil {
+		st.Phase = PhaseIntro
+	} else {
+		if st.Lesson == nil {
+			st.Lesson = &learning.Lesson{}
+		}
+		st.Lesson.Misses, st.Lesson.Streak = 0, 0
+	}
 	t.Status, t.UpdatedAt = store.TaskActive, now
 	if err := encodeState(&t, st); err != nil {
 		return t, err
@@ -493,21 +543,41 @@ func (s *Service) resumeLesson(ctx context.Context, tx store.Tx, t store.Task, n
 	return t, tx.UpdateTask(ctx, t)
 }
 
+// errPlacementDone means the placement test has nothing left to ask.
+var errPlacementDone = errors.New("placement done")
+
 // issue puts the next problem on screen. A lesson cycles through its
 // knowledge point's templates; a review cycles through the topic's
-// knowledge points.
-func (s *Service) issue(l *library, t *store.Task, st *taskState, topic *content.Topic, now time.Time) error {
+// knowledge points; the placement test and quizzes ask the hardest
+// knowledge point of each topic they choose.
+func (s *Service) issue(l *library, t *store.Task, st *taskState, now time.Time) error {
+	topicID := t.TopicID
+	switch {
+	case st.Placement != nil:
+		id, done := s.Learn.PlacementNext(l.graph, st.Set, *st.Placement)
+		if done {
+			return errPlacementDone
+		}
+		topicID = id
+	case st.Quiz != nil:
+		topicID = st.Quiz.Topics[min(st.Quiz.Asked, len(st.Quiz.Topics)-1)]
+	}
+	topic := l.pack.Topic(topicID)
 	if topic == nil || len(topic.KPs) == 0 {
 		return ErrTaskGone
 	}
 	var kp *content.KP
 	var tpl *problem.Template
-	if st.Lesson != nil {
+	switch {
+	case st.Lesson != nil:
 		kp = topic.KPs[min(st.Lesson.KP, len(topic.KPs)-1)]
 		tpl = kp.Templates[st.Issued%len(kp.Templates)]
-	} else {
+	case st.Review != nil:
 		kp = topic.KPs[st.Issued%len(topic.KPs)]
 		tpl = kp.Templates[(st.Issued/len(topic.KPs))%len(kp.Templates)]
+	default:
+		kp = topic.KPs[len(topic.KPs)-1]
+		tpl = kp.Templates[st.Issued%len(kp.Templates)]
 	}
 	var seed uint64
 	for try := 0; ; try++ {
@@ -518,7 +588,7 @@ func (s *Service) issue(l *library, t *store.Task, st *taskState, topic *content
 			return fmt.Errorf("%w: %w", ErrTaskGone, err)
 		}
 	}
-	st.Problem = &issued{AttemptID: store.NewID(), KP: kp.ID, Template: tpl.ID, Seed: seed, At: now}
+	st.Problem = &issued{AttemptID: store.NewID(), Topic: topic.ID, KP: kp.ID, Template: tpl.ID, Seed: seed, At: now}
 	st.Issued++
 	st.Phase = PhaseProblem
 	return nil
@@ -544,10 +614,9 @@ func (s *Service) Task(ctx context.Context, student store.User, id string) (Task
 // screen.
 func (s *Service) Continue(ctx context.Context, student store.User, id string) (TaskView, error) {
 	return s.update(ctx, student, id, func(tx store.Tx, l *library, t *store.Task, st *taskState, today day, now time.Time) error {
-		topic := l.pack.Topic(t.TopicID)
 		var next Phase
 		switch st.Phase {
-		case PhaseExplain:
+		case PhaseExplain, PhaseIntro:
 			next = PhaseProblem
 		case PhaseFeedback:
 			if st.SlowNext {
@@ -562,7 +631,11 @@ func (s *Service) Continue(ctx context.Context, student store.User, id string) (
 			return nil
 		}
 		if next == PhaseProblem && t.Status == store.TaskActive {
-			return s.issue(l, t, st, topic, now)
+			err := s.issue(l, t, st, now)
+			if errors.Is(err, errPlacementDone) {
+				return s.finishPlacement(ctx, tx, l, t, st, today, now)
+			}
+			return err
 		}
 		st.Phase = next
 		return nil
@@ -578,7 +651,11 @@ func (s *Service) SubmitAnswer(ctx context.Context, student store.User, id, atte
 		if t.Status != store.TaskActive || st.Phase != PhaseProblem || st.Problem == nil || st.Problem.AttemptID != attemptID {
 			return errUnchanged
 		}
-		topic := l.pack.Topic(t.TopicID)
+		topicID := st.Problem.Topic
+		if topicID == "" {
+			topicID = t.TopicID
+		}
+		topic := l.pack.Topic(topicID)
 		tpl := l.pack.Template(st.Problem.Template)
 		if topic == nil || tpl == nil {
 			return ErrTaskGone
@@ -594,7 +671,7 @@ func (s *Service) SubmitAnswer(ctx context.Context, student store.User, id, atte
 			return err
 		}
 		inserted, err := tx.InsertAttempt(ctx, store.Attempt{ID: attemptID, TaskID: t.ID, StudentID: t.StudentID,
-			TopicID: t.TopicID, KPID: st.Problem.KP, TemplateID: tpl.ID, Seed: st.Problem.Seed, Answer: given,
+			TopicID: topicID, KPID: st.Problem.KP, TemplateID: tpl.ID, Seed: st.Problem.Seed, Answer: given,
 			Correct: verdict.Right, Note: string(verdict.Note), ResponseMS: elapsed.Milliseconds(), CreatedAt: now})
 		if err != nil {
 			return err
@@ -607,7 +684,11 @@ func (s *Service) SubmitAnswer(ctx context.Context, student store.User, id, atte
 		if err != nil && !errors.Is(err, store.ErrNotFound) {
 			return err
 		}
-		lt := l.graph.Topic(t.TopicID)
+		lt := l.graph.Topic(topicID)
+		if st.Placement != nil || st.Quiz != nil {
+			// No feedback between questions: the next one comes straight away.
+			return s.answerAcross(ctx, tx, l, t, st, topicID, p, resp, verdict.Right, elapsed, today, now)
+		}
 		fluency := lt != nil && lt.FluencySeconds > 0 && set.FluencyEnabled
 		var slow bool
 		st.Pace, slow = s.Learn.Pace(st.Pace, elapsed, fluency)
@@ -748,7 +829,7 @@ func (s *Service) view(ctx context.Context, r store.Reader, l *library, t store.
 		return TaskView{}, err
 	}
 	v := TaskView{Task: t, Topic: l.pack.Topic(t.TopicID), Phase: st.Phase}
-	if v.Topic == nil {
+	if v.Topic == nil && (t.Kind == store.TaskLesson || t.Kind == store.TaskReview) {
 		return v, ErrTaskGone
 	}
 	if t.Status == store.TaskAbandoned {
@@ -761,6 +842,26 @@ func (s *Service) view(ctx context.Context, r store.Reader, l *library, t store.
 	}
 	if st.Review != nil {
 		v.Asked, v.Total = st.Review.Asked, s.Learn.ReviewProblems
+	}
+	if st.Placement != nil {
+		v.Asked, v.Total = st.Placement.Asked, s.Learn.PlacementMaxQuestions
+		for _, id := range st.Placed {
+			if pt := l.pack.Topic(id); pt != nil {
+				v.Placed = append(v.Placed, pt)
+			}
+		}
+	}
+	if st.Quiz != nil {
+		v.Asked, v.Total = st.Quiz.Asked, len(st.Quiz.Topics)
+		if t.FinishedAt != nil {
+			for _, r := range st.Results {
+				if tpl := l.pack.Template(r.Template); tpl != nil {
+					if p, err := tpl.Generate(r.Seed, Locale); err == nil {
+						v.QuizResults = append(v.QuizResults, Feedback{Problem: p, Given: r.Given, Right: r.Right, Answer: p.Answer.Text(p)})
+					}
+				}
+			}
+		}
 	}
 	switch v.Phase {
 	case PhaseExplain:
@@ -782,11 +883,15 @@ func (s *Service) view(ctx context.Context, r store.Reader, l *library, t store.
 			return v, fmt.Errorf("%w: %w", ErrTaskGone, err)
 		}
 		v.AttemptID = st.Problem.AttemptID
+		v.ProblemTopic = l.pack.Topic(st.Problem.Topic)
+		if v.ProblemTopic == nil {
+			v.ProblemTopic = v.Topic
+		}
 		if st.Lesson != nil {
 			v.KP = l.pack.KP(st.Problem.KP)
 		}
 	}
-	if st.Last != nil && (v.Phase == PhaseFeedback || v.Phase == PhasePaused || v.Phase == PhaseDone) {
+	if st.Last != nil && st.Placement == nil && st.Quiz == nil && (v.Phase == PhaseFeedback || v.Phase == PhasePaused || v.Phase == PhaseDone) {
 		if tpl := l.pack.Template(st.Last.Template); tpl != nil {
 			if p, err := tpl.Generate(st.Last.Seed, Locale); err == nil {
 				v.Feedback = &Feedback{Problem: p, Given: st.Last.Given, Right: st.Last.Right, Note: st.Last.Note, Answer: p.Answer.Text(p)}

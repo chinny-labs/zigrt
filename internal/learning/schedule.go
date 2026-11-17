@@ -68,6 +68,7 @@ const (
 	ReviewFailed   EventKind = "review_failed"
 	Placed         EventKind = "placed"
 	ParentOverride EventKind = "parent_override"
+	QuizMissed     EventKind = "quiz_missed" // a quiz problem on the topic was missed
 
 	// Derived events are recorded with the event that caused them, to say
 	// why a date moved. A rebuild works them out again rather than replaying
@@ -210,6 +211,14 @@ func (c Config) Apply(g *Graph, s States, e Event) Change {
 			record(e)
 		}
 		c.flowUp(g, s, e, put, record)
+
+	case QuizMissed:
+		// A quiz found the topic shaky: its review comes due now (plan 3.6).
+		if st.State == Mastered && st.Due > e.On {
+			st.Due = e.On
+			put(st)
+		}
+		record(e)
 
 	case Placed:
 		st = TopicState{Topic: e.Topic, State: Mastered, Stage: 2, Due: e.On.Add(c.Interval(2)), LastResult: "placed"}

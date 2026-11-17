@@ -69,6 +69,9 @@ type Reader interface {
 	ListOpenTasks(ctx context.Context, studentID string) ([]Task, error)
 	// ListFinishedTasks lists finished tasks, most recently finished first.
 	ListFinishedTasks(ctx context.Context, studentID string, limit int) ([]Task, error)
+	// ListTasksOfKind lists a student's tasks of one kind, newest started
+	// first.
+	ListTasksOfKind(ctx context.Context, studentID string, kind TaskKind, limit int) ([]Task, error)
 	GetAttempt(ctx context.Context, id string) (Attempt, error)
 	// ListAttempts lists a task's attempts, oldest first.
 	ListAttempts(ctx context.Context, taskID string) ([]Attempt, error)
@@ -79,6 +82,8 @@ type Reader interface {
 
 	// ListXPEvents lists a student's XP in the order it was earned.
 	ListXPEvents(ctx context.Context, studentID string) ([]XPEvent, error)
+	// SumXPSince totals every XP a student earned after an instant.
+	SumXPSince(ctx context.Context, studentID string, after time.Time) (int, error)
 	// SumXP totals one kind of XP on one household-local day.
 	SumXP(ctx context.Context, studentID, sourceKind, localDate string) (int, error)
 	GetDailyTotal(ctx context.Context, studentID, localDate string) (DailyTotal, error)

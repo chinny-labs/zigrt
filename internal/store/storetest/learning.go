@@ -150,6 +150,27 @@ func testLearningStore(t *testing.T, open Opener) {
 		t.Fatalf("xp events %+v %v", xs, err)
 	}
 
+	// XP since an instant: strictly after it.
+	if n, err := st.SumXPSince(ctx, f.Mika.ID, now.Add(-time.Second)); err != nil || n != 18 {
+		t.Fatalf("XP since before: %d %v", n, err)
+	}
+	if n, err := st.SumXPSince(ctx, f.Mika.ID, now); err != nil || n != 0 {
+		t.Fatalf("XP since now: %d %v", n, err)
+	}
+	// Tasks of a kind, newest first.
+	quiz := store.Task{ID: store.NewID(), StudentID: f.Mika.ID, Kind: store.TaskQuiz, PackVersion: "2026.11.1",
+		Status: store.TaskPassed, State: json.RawMessage(`{}`), StartedAt: now.Add(time.Hour), UpdatedAt: now.Add(time.Hour), FinishedAt: &done}
+	tx(func(x store.Tx) error { return x.CreateTask(ctx, quiz) })
+	if ts, err := st.ListTasksOfKind(ctx, f.Mika.ID, store.TaskQuiz, 1); err != nil || len(ts) != 1 || ts[0].ID != quiz.ID || ts[0].TopicID != "" {
+		t.Fatalf("quiz tasks %+v %v", ts, err)
+	}
+	if ts, err := st.ListTasksOfKind(ctx, f.Mika.ID, store.TaskLesson, 0); err != nil || len(ts) != 2 || ts[0].ID != second.ID {
+		t.Fatalf("lesson tasks %+v %v", ts, err)
+	}
+	if ts, _ := st.ListTasksOfKind(ctx, f.Mika.ID, store.TaskDiagnostic, 0); len(ts) != 0 {
+		t.Fatal("a diagnostic task appeared")
+	}
+
 	// daily_totals upserts and lists a range.
 	for _, d := range []store.DailyTotal{
 		{StudentID: f.Mika.ID, LocalDate: "2026-03-06", XP: 20, Goal: 15, GoalMet: true},

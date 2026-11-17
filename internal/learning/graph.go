@@ -13,8 +13,9 @@ type Topic struct {
 	Grade          string
 	Order          int // teaching order
 	Requires       []string
-	Encompasses    []Edge // topics this one exercises
-	EncompassedBy  []Edge // topics that exercise this one
+	Encompasses    []Edge   // topics this one exercises
+	EncompassedBy  []Edge   // topics that exercise this one
+	RequiredBy     []string // topics that require this one
 	XP             int
 	FluencySeconds int
 }
@@ -59,7 +60,7 @@ func BuildGraph(topics []Topic, transitions map[string][]string) *Graph {
 	g := &Graph{topics: map[string]*Topic{}, transitions: map[string][]string{}}
 	for i, t := range topics {
 		t.Order = i
-		t.EncompassedBy = nil
+		t.EncompassedBy, t.RequiredBy = nil, nil
 		g.topics[t.ID] = &t
 		g.order = append(g.order, &t)
 	}
@@ -67,6 +68,11 @@ func BuildGraph(topics []Topic, transitions map[string][]string) *Graph {
 		for _, e := range t.Encompasses {
 			if a := g.topics[e.Topic]; a != nil {
 				a.EncompassedBy = append(a.EncompassedBy, Edge{Topic: t.ID, Weight: e.Weight})
+			}
+		}
+		for _, r := range t.Requires {
+			if a := g.topics[r]; a != nil {
+				a.RequiredBy = append(a.RequiredBy, t.ID)
 			}
 		}
 	}
@@ -136,6 +142,37 @@ func (g *Graph) WorkingSet(course []string) []string {
 	for _, t := range g.order {
 		if in[t.ID] {
 			out = append(out, t.ID)
+		}
+	}
+	return out
+}
+
+// Prerequisites lists every topic id requires, directly or not.
+func (g *Graph) Prerequisites(id string) []string {
+	return g.walk(id, func(t *Topic) []string { return t.Requires })
+}
+
+// Dependents lists every topic that requires id, directly or not.
+func (g *Graph) Dependents(id string) []string {
+	return g.walk(id, func(t *Topic) []string { return t.RequiredBy })
+}
+
+func (g *Graph) walk(id string, next func(*Topic) []string) []string {
+	seen := map[string]bool{id: true}
+	var out []string
+	stack := []string{id}
+	for len(stack) > 0 {
+		t := g.topics[stack[len(stack)-1]]
+		stack = stack[:len(stack)-1]
+		if t == nil {
+			continue
+		}
+		for _, n := range next(t) {
+			if !seen[n] {
+				seen[n] = true
+				out = append(out, n)
+				stack = append(stack, n)
+			}
 		}
 	}
 	return out
