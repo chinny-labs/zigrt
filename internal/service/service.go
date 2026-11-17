@@ -135,6 +135,12 @@ func cleanAvatar(a string) string {
 }
 
 func (s *Service) audit(ctx context.Context, tx store.Tx, actorID, action, targetID string, detail map[string]any) error {
+	if id := tokenFrom(ctx); id != "" {
+		if detail == nil {
+			detail = map[string]any{}
+		}
+		detail["via_token"] = id
+	}
 	var raw json.RawMessage
 	if len(detail) > 0 {
 		b, err := json.Marshal(detail)

@@ -19,3 +19,4 @@ One short record per significant choice. Add the next number; do not edit an acc
 | [13](0013-preview-in-the-app-binary.md) | Lesson preview is a command of the app, not of the authoring tool |
 | [14](0014-placement-quizzes-compression.md) | Placement, quizzes and review compression |
 | [15](0015-parent-side.md) | The parent side: notifications, overrides and assigned drills |
+| [16](0016-api-tokens-and-mcp.md) | The JSON API and MCP server, with parents' bearer tokens |

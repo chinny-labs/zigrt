@@ -29,6 +29,7 @@ type Config struct {
 	LogFormat       string // json | text
 	Timezone        string // default household timezone at setup
 	ContentDir      string // folder scanned for content packs newer than the embedded one
+	MCPEnabled      bool   // serve the MCP server at /mcp (plan §11)
 }
 
 // DefaultEnvFile is read when present, before the process environment.
@@ -101,6 +102,14 @@ func parse(lookup func(string) (string, bool)) (Config, error) {
 		errs = append(errs, fmt.Errorf("ZIGRT_BACKUP_RETAIN must be a positive integer, got %q", retain))
 	} else {
 		c.BackupRetain = n
+	}
+
+	for name, dst := range map[string]*bool{"ZIGRT_MCP_ENABLED": &c.MCPEnabled} {
+		if b, err := strconv.ParseBool(str(name, "false")); err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", name, err))
+		} else {
+			*dst = b
+		}
 	}
 
 	insecure := str("ZIGRT_INSECURE_COOKIES", "false")

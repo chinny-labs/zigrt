@@ -106,6 +106,11 @@ type Reader interface {
 	GetJobRun(ctx context.Context, job string) (string, error)
 	// ListContentPacks lists uploaded packs, newest first.
 	ListContentPacks(ctx context.Context) ([]ContentPackRecord, error)
+
+	GetAPIToken(ctx context.Context, id string) (APIToken, error)
+	GetAPITokenByHash(ctx context.Context, hash string) (APIToken, error)
+	// ListAPITokens lists a parent's tokens that are not revoked.
+	ListAPITokens(ctx context.Context, userID string) ([]APIToken, error)
 }
 
 // Writer holds every write.
@@ -170,4 +175,8 @@ type Writer interface {
 	UpdateAssignment(ctx context.Context, a DrillAssignment) error
 	PutJobRun(ctx context.Context, job, lastRunFor string) error
 	PutContentPack(ctx context.Context, c ContentPackRecord) error
+
+	CreateAPIToken(ctx context.Context, t APIToken) error
+	RevokeAPIToken(ctx context.Context, id string, at time.Time) error
+	TouchAPIToken(ctx context.Context, id string, at time.Time) error
 }

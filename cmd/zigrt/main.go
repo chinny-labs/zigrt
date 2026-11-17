@@ -33,6 +33,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/chinny-labs/zigrt/internal/api"
 	"github.com/chinny-labs/zigrt/internal/auth"
 	"github.com/chinny-labs/zigrt/internal/backup"
 	"github.com/chinny-labs/zigrt/internal/buildinfo"
@@ -182,6 +183,13 @@ func serve() error {
 		return err
 	}
 	srv.SetContentError(contentErr)
+	a := api.New(svc, api.Options{ClientIP: srv.ClientIP, BaseURL: cfg.BaseURL, Log: log})
+	var mcpHandler http.Handler
+	if cfg.MCPEnabled {
+		mcpHandler = a.MCPHandler()
+		log.Info("MCP server enabled", "path", api.MCPPath)
+	}
+	srv.MountAPI(a, mcpHandler)
 
 	sched := &scheduler.Scheduler{Interval: time.Minute, Log: log, Jobs: []scheduler.Job{
 		{Name: "housekeeping", Run: hourly(func(ctx context.Context) error {

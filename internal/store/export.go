@@ -77,6 +77,7 @@ var exportTables = []exportTable{
 	{"drill_assignments", "id", cols("id student_id parent_id kind title settings drill_id created_at:t done_at:t")},
 	{"job_runs", "job", cols("job last_run_for")},
 	{"content_packs", "version", cols("version sha256 file installed_by installed_at:t")},
+	{"api_tokens", "id", cols("id user_id label token_hash scopes created_at:t last_used_at:t revoked_at:t")},
 }
 
 // NotExported lists the tables an export leaves out on purpose.

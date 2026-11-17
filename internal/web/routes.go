@@ -18,6 +18,12 @@ func (s *Server) routes() http.Handler {
 
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("ok\n")) })
 	mux.HandleFunc("GET /readyz", s.readyz)
+	if s.api != nil {
+		mux.Handle("/api/", s.api)
+	}
+	if s.mcp != nil {
+		mux.Handle("/mcp", s.mcp)
+	}
 
 	mux.HandleFunc("GET /setup", s.setupPage)
 	mux.HandleFunc("POST /setup", s.setupSubmit)
@@ -72,6 +78,8 @@ func (s *Server) routes() http.Handler {
 	mux.HandleFunc("GET /parent/export", s.parent(s.exportAll))
 	mux.HandleFunc("POST /parent/pack", s.parent(s.packUpload))
 	mux.HandleFunc("GET /parent/notifications", s.parent(s.notificationsPage))
+	mux.HandleFunc("POST /parent/tokens", s.parent(s.tokenCreate))
+	mux.HandleFunc("POST /parent/tokens/{id}/revoke", s.parent(s.tokenRevoke))
 	mux.HandleFunc("POST /parent/notifications/read", s.parent(s.notificationsRead))
 	mux.HandleFunc("POST /parent/students/{id}/pin", s.parent(s.studentResetPIN))
 	mux.HandleFunc("POST /parent/students/{id}/unlock", s.parent(s.studentUnlock))

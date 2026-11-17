@@ -21,6 +21,11 @@ trustedProxies: ""
 # Drops the cookie Secure flag for plain-HTTP testing. Leave off behind TLS.
 insecureCookies: false
 
+# The MCP server at /mcp, for AI assistants (docs/operations/api.md). Every
+# call still needs an API token a parent makes on the Household page.
+mcp:
+  enabled: false
+
 logFormat: json
 
 backup:

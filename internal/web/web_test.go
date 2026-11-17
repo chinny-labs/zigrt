@@ -24,6 +24,7 @@ const setupToken = "test-setup-token"
 
 // app is a server on a fresh SQLite file plus a browser-like client.
 type app struct {
+	srv *Server
 	t   *testing.T
 	svc *service.Service
 	ts  *httptest.Server
@@ -49,7 +50,7 @@ func newApp(t *testing.T) *app {
 	}
 	ts := httptest.NewServer(srv)
 	t.Cleanup(ts.Close)
-	a := &app{t: t, svc: svc, ts: ts}
+	a := &app{t: t, svc: svc, ts: ts, srv: srv}
 	a.c = a.client()
 	return a
 }

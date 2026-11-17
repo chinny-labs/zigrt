@@ -89,10 +89,11 @@ Every setting is an environment variable. Any of them can be read from a file in
 | `TZ` | `UTC` | Time zone offered at setup, and the clock for nightly backups |
 | `ZIGRT_BACKUP_SCHEDULE` | `03:15` | Time of the nightly SQLite backup |
 | `ZIGRT_BACKUP_RETAIN` | `14` | How many nightly backups to keep |
-| `ZIGRT_TRUSTED_PROXIES` | none | CIDRs whose `X-Forwarded-For` is trusted for client addresses in logs |
+| `ZIGRT_TRUSTED_PROXIES` | none | CIDRs whose `X-Forwarded-For` is trusted for client addresses in logs and the API's bad-token throttle |
 | `ZIGRT_INSECURE_COOKIES` | `false` | Drop the cookie `Secure` flag for plain-HTTP testing |
 | `ZIGRT_LOG_FORMAT` | `json` | `json` or `text` |
 | `ZIGRT_CONTENT_DIR` | `/data/content` | Folder of content packs newer than the embedded one ([Content packs](content.md)) |
+| `ZIGRT_MCP_ENABLED` | `false` | Serve the MCP server at `/mcp` ([API and MCP](api.md)); `mcp.enabled` in the chart |
 
 ## Backups
 

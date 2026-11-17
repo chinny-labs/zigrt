@@ -80,6 +80,10 @@ spec:
             - name: ZIGRT_INSECURE_COOKIES
               value: "true"
             {{- end }}
+            {{- if .Values.mcp.enabled }}
+            - name: ZIGRT_MCP_ENABLED
+              value: "true"
+            {{- end }}
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

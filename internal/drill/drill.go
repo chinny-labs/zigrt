@@ -154,8 +154,8 @@ var Counts = []int{10, 20, 30, 50}
 type OpSettings struct {
 	On         bool   `json:"on"`
 	Level      string `json:"level"`
-	CustomA    Range  `json:"custom_a"`
-	CustomB    Range  `json:"custom_b"`
+	CustomA    Range  `json:"custom_a,omitempty"` // omitempty marks it optional in schemas; an array is always encoded
+	CustomB    Range  `json:"custom_b,omitempty"`
 	Remainders bool   `json:"remainders,omitempty"` // Div only
 }
 

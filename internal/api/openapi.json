@@ -1,0 +1,996 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Zigrt API",
+    "version": "1",
+    "description": "Read a household's progress and change a few settings. Every call needs a bearer token a parent makes on the Household page. Learning happens in the app only: nothing here answers problems.",
+    "license": {
+      "name": "AGPL-3.0-only",
+      "identifier": "AGPL-3.0-only"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "A token starting zg_. Scopes: `read` (every token) and `manage`."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "A stable code: unauthorized, insufficient_scope, rate_limited, not_found, invalid, bad_request, no_content, internal."
+              },
+              "message": {
+                "type": "string",
+                "description": "A sentence for a person."
+              },
+              "field": {
+                "type": "string",
+                "description": "The field at fault, for invalid."
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "Today": {
+        "type": "object",
+        "properties": {
+          "xp": {
+            "type": "integer"
+          },
+          "goal": {
+            "type": "integer",
+            "description": "0 on a rest day"
+          },
+          "goal_met": {
+            "type": "boolean"
+          },
+          "streak": {
+            "type": "integer",
+            "description": "Days in a row the goal was met; rest days don't break it."
+          }
+        }
+      },
+      "Day": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "xp": {
+            "type": "integer"
+          },
+          "goal": {
+            "type": "integer"
+          },
+          "met": {
+            "type": "boolean"
+          },
+          "rest": {
+            "type": "boolean"
+          },
+          "future": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Week": {
+        "type": "object",
+        "properties": {
+          "xp": {
+            "type": "integer"
+          },
+          "goal": {
+            "type": "integer"
+          },
+          "days": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Day"
+            },
+            "description": "Monday to Sunday, in the household's time zone."
+          }
+        }
+      },
+      "TopicRef": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "Student": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "avatar": {
+            "type": "string"
+          },
+          "course_id": {
+            "type": "string"
+          },
+          "course": {
+            "type": "string"
+          },
+          "daily_xp_goal": {
+            "type": "integer"
+          },
+          "rest_days": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 6
+            },
+            "description": "Weekdays with no goal, 0 = Sunday."
+          },
+          "fluency": {
+            "type": "boolean",
+            "description": "Whether fact topics also check speed."
+          },
+          "locked": {
+            "type": "boolean",
+            "description": "Locked out after too many wrong PINs."
+          },
+          "today": {
+            "$ref": "#/components/schemas/Today"
+          },
+          "week": {
+            "$ref": "#/components/schemas/Week"
+          },
+          "blocks_placed": {
+            "type": "integer",
+            "description": "Topics mastered so far."
+          },
+          "new_blocks_this_week": {
+            "type": "integer"
+          },
+          "last_active": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "stuck": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TopicRef"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A lesson that stopped twice and is not passed yet."
+          }
+        }
+      },
+      "Topic": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "grade": {
+            "type": "string"
+          },
+          "strand": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "placed",
+              "mend",
+              "building",
+              "ready",
+              "later"
+            ],
+            "description": "placed: mastered. mend: mastered, a review is due. building: a lesson is under way. ready: can be started. later: needs earlier topics first."
+          },
+          "first_placed": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reviews_passed": {
+            "type": "integer"
+          },
+          "next_review": {
+            "type": "string",
+            "format": "date",
+            "description": "Household-local date of the next review."
+          }
+        }
+      },
+      "Activity": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "lesson",
+              "review",
+              "quiz",
+              "placement",
+              "paused",
+              "drill",
+              "worksheet",
+              "diagnostic"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "passed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Struggle": {
+        "type": "object",
+        "properties": {
+          "topic": {
+            "$ref": "#/components/schemas/TopicRef"
+          },
+          "lessons_stopped": {
+            "type": "integer"
+          },
+          "reviews_failed": {
+            "type": "integer"
+          },
+          "last": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SettingsPatch": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "course_id": {
+            "type": "string"
+          },
+          "daily_xp_goal": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 120
+          },
+          "rest_days": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 6
+            }
+          },
+          "fluency": {
+            "type": "boolean"
+          }
+        },
+        "description": "Fields left out keep their values."
+      },
+      "OpSettings": {
+        "type": "object",
+        "properties": {
+          "on": {
+            "type": "boolean"
+          },
+          "level": {
+            "type": "string",
+            "description": "A preset: add sum10, sum20, d2d1, d2d2, d3d3, d4d4; sub within10, within20, d2d1, d2d2, d3d3, d4d4; mul facts5, facts10, facts12, d2d1, d3d1, d2d2; div facts5, facts10, facts12, d2d1, d3d1, d3d2; or custom."
+          },
+          "custom_a": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "custom_b": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "remainders": {
+            "type": "boolean",
+            "description": "Division only."
+          }
+        }
+      },
+      "DrillSettings": {
+        "type": "object",
+        "properties": {
+          "ops": {
+            "type": "object",
+            "properties": {
+              "add": {
+                "$ref": "#/components/schemas/OpSettings"
+              },
+              "sub": {
+                "$ref": "#/components/schemas/OpSettings"
+              },
+              "mul": {
+                "$ref": "#/components/schemas/OpSettings"
+              },
+              "div": {
+                "$ref": "#/components/schemas/OpSettings"
+              }
+            }
+          },
+          "formats": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "across",
+                "stacked",
+                "missing"
+              ]
+            }
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "ops",
+          "formats",
+          "count"
+        ]
+      },
+      "WorksheetRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "settings": {
+            "$ref": "#/components/schemas/DrillSettings"
+          }
+        },
+        "required": [
+          "settings"
+        ]
+      },
+      "Problem": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string",
+            "enum": [
+              "add",
+              "sub",
+              "mul",
+              "div"
+            ]
+          },
+          "x": {
+            "type": "integer"
+          },
+          "y": {
+            "type": "integer"
+          },
+          "z": {
+            "type": "integer",
+            "description": "The answer."
+          },
+          "rem": {
+            "type": "integer"
+          },
+          "has_rem": {
+            "type": "boolean"
+          },
+          "format": {
+            "type": "string"
+          },
+          "blank": {
+            "type": "string"
+          }
+        }
+      },
+      "Worksheet": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "about": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "The printable page; opens for a signed-in parent."
+          },
+          "problems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          },
+          "settings": {
+            "$ref": "#/components/schemas/DrillSettings"
+          }
+        }
+      },
+      "System": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string"
+          },
+          "pack_id": {
+            "type": "string"
+          },
+          "pack_version": {
+            "type": "string"
+          },
+          "pack_source": {
+            "type": "string",
+            "description": "embedded, uploaded, or the file in the content folder it came from."
+          },
+          "topics": {
+            "type": "integer"
+          },
+          "healthy": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "No token, or one that isn't valid.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "The token lacks the scope.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "No such student.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Invalid": {
+        "description": "A value was refused; `field` names it.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "Too many requests; see Retry-After.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/openapi.json": {
+      "get": {
+        "operationId": "getOpenAPI",
+        "summary": "This document",
+        "description": "The OpenAPI description of the API.",
+        "responses": {
+          "200": {
+            "description": "The document.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/system": {
+      "get": {
+        "operationId": "getSystem",
+        "summary": "Version and content",
+        "description": "Zigrt's version and the content pack in use.\n\nNeeds the `read` scope.",
+        "responses": {
+          "200": {
+            "description": "The system.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/System"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/students": {
+      "get": {
+        "operationId": "listStudents",
+        "summary": "List students",
+        "description": "Every student's summary: today, this week, streak, goal, last active.\n\nNeeds the `read` scope.",
+        "responses": {
+          "200": {
+            "description": "The students.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "students": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Student"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/students/{id}": {
+      "get": {
+        "operationId": "getStudent",
+        "summary": "Get a student",
+        "description": "One student's summary.\n\nNeeds the `read` scope.",
+        "responses": {
+          "200": {
+            "description": "The student.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Student"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A student's ID, from `GET /students`."
+          }
+        ]
+      }
+    },
+    "/students/{id}/topics": {
+      "get": {
+        "operationId": "getTopics",
+        "summary": "A student's topics",
+        "description": "Every topic in the student's course with its state.\n\nNeeds the `read` scope.",
+        "responses": {
+          "200": {
+            "description": "The topics.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "topics": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Topic"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A student's ID, from `GET /students`."
+          }
+        ]
+      }
+    },
+    "/students/{id}/activity": {
+      "get": {
+        "operationId": "getActivity",
+        "summary": "A student's activity",
+        "description": "What the student did recently, newest first.\n\nNeeds the `read` scope.",
+        "responses": {
+          "200": {
+            "description": "The activity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "activity": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Activity"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A student's ID, from `GET /students`."
+          }
+        ]
+      }
+    },
+    "/students/{id}/struggles": {
+      "get": {
+        "operationId": "getStruggles",
+        "summary": "Topics with repeated failures",
+        "description": "Topics with two or more lessons stopped or reviews failed in the last `days` days.\n\nNeeds the `read` scope.",
+        "responses": {
+          "200": {
+            "description": "The topics.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "days": {
+                      "type": "integer"
+                    },
+                    "struggles": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Struggle"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/Invalid"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A student's ID, from `GET /students`."
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 365,
+              "default": 30
+            }
+          }
+        ]
+      }
+    },
+    "/students/{id}/settings": {
+      "patch": {
+        "operationId": "updateSettings",
+        "summary": "Change settings",
+        "description": "Change a student's daily goal, rest days, course or fact-speed checks. Returns the student.\n\nNeeds the `manage` scope.",
+        "responses": {
+          "200": {
+            "description": "The student, changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Student"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not valid JSON, or an unknown field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/Invalid"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A student's ID, from `GET /students`."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SettingsPatch"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/worksheets": {
+      "post": {
+        "operationId": "createWorksheet",
+        "summary": "Make a worksheet",
+        "description": "Make a printable worksheet from the drill builder's settings. Returns its URL and problems, for a \"print Friday's sheet\" job.\n\nNeeds the `manage` scope.",
+        "responses": {
+          "201": {
+            "description": "The worksheet.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Worksheet"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not valid JSON, or an unknown field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "422": {
+            "$ref": "#/components/responses/Invalid"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorksheetRequest"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

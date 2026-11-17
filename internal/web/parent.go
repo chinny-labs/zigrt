@@ -274,6 +274,9 @@ type householdData struct {
 	H         service.HouseholdView
 	Me        store.User
 	Timezones []string
+	Tokens    []store.APIToken
+	BaseURL   string
+	MCP       bool // the MCP server is on
 }
 
 func (s *Server) householdPage(w http.ResponseWriter, r *http.Request, c *reqCtx) {
@@ -282,7 +285,13 @@ func (s *Server) householdPage(w http.ResponseWriter, r *http.Request, c *reqCtx
 		s.parentFail(w, r, err)
 		return
 	}
-	v := s.newView(w, r, "Household", householdData{H: h, Me: *c.User, Timezones: commonZones(h.Household.Timezone)})
+	tokens, err := s.svc.APITokens(r.Context(), *c.User)
+	if err != nil {
+		s.parentFail(w, r, err)
+		return
+	}
+	v := s.newView(w, r, "Household", householdData{H: h, Me: *c.User, Timezones: commonZones(h.Household.Timezone),
+		Tokens: tokens, BaseURL: s.baseURL(r), MCP: s.mcp != nil})
 	v.Shell, v.Back, v.BackLabel = "parent", "/parent", "Everyone"
 	s.render(w, r, http.StatusOK, "household", v)
 }
@@ -299,6 +308,51 @@ func commonZones(current string) []string {
 		}
 	}
 	return append([]string{current}, zones...)
+}
+
+// tokenCreated shows a new token's secret, once.
+type tokenCreated struct {
+	Secret  string
+	Token   store.APIToken
+	BaseURL string
+	MCP     bool
+}
+
+func (s *Server) tokenCreate(w http.ResponseWriter, r *http.Request, c *reqCtx) {
+	scopes := []string{service.ScopeRead}
+	if r.PostFormValue("manage") != "" {
+		scopes = append(scopes, service.ScopeManage)
+	}
+	secret, t, err := s.svc.CreateAPIToken(r.Context(), *c.User, service.TokenInput{Label: r.PostFormValue("label"), Scopes: scopes})
+	if err != nil {
+		s.fail(w, r, "/parent/household#tokens-h", err)
+		return
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	v := s.newView(w, r, "Your new token", tokenCreated{Secret: secret, Token: t, BaseURL: s.baseURL(r), MCP: s.mcp != nil})
+	v.Shell, v.Back, v.BackLabel = "parent", "/parent/household", "Household"
+	s.render(w, r, http.StatusOK, "token_new", v)
+}
+
+func (s *Server) tokenRevoke(w http.ResponseWriter, r *http.Request, c *reqCtx) {
+	if err := s.svc.RevokeAPIToken(r.Context(), *c.User, r.PathValue("id")); err != nil {
+		s.parentFail(w, r, err)
+		return
+	}
+	s.flash(w, "ok", "Token revoked. Anything using it stops working now.")
+	http.Redirect(w, r, "/parent/household#tokens-h", http.StatusSeeOther)
+}
+
+// baseURL is the public URL: ZIGRT_BASE_URL, or what this request came to.
+func (s *Server) baseURL(r *http.Request) string {
+	if s.cfg.BaseURL != "" {
+		return s.cfg.BaseURL
+	}
+	scheme := "https"
+	if r.TLS == nil && s.cfg.InsecureCookies {
+		scheme = "http"
+	}
+	return scheme + "://" + r.Host
 }
 
 func (s *Server) householdSave(w http.ResponseWriter, r *http.Request, c *reqCtx) {
