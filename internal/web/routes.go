@@ -83,6 +83,7 @@ func (s *Server) routes() http.Handler {
 	mux.HandleFunc("POST /parent/pack", s.parent(s.packUpload))
 	mux.HandleFunc("GET /parent/notifications", s.parent(s.notificationsPage))
 	mux.HandleFunc("POST /parent/email", s.parent(s.weeklyEmailSave))
+	mux.HandleFunc("POST /parent/goal-notes", s.parent(s.goalNotesSave))
 	mux.HandleFunc("POST /parent/tokens", s.parent(s.tokenCreate))
 	mux.HandleFunc("POST /parent/tokens/{id}/revoke", s.parent(s.tokenRevoke))
 	mux.HandleFunc("POST /parent/notifications/read", s.parent(s.notificationsRead))

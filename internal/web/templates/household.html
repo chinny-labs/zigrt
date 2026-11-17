@@ -19,6 +19,15 @@
       <button class="btn btn-secondary" type="submit">Change password</button>
     </form>
   </section>
+  <section class="card stack" aria-labelledby="notes-h">
+    <h2 id="notes-h">Notifications</h2>
+    <p class="muted">You always hear about lockouts, lessons stopped twice, streaks lost, tiers finished and new lessons.</p>
+    <form method="post" action="/parent/goal-notes" class="stack">
+      {{template "csrf" .}}
+      <label class="check"><input type="checkbox" name="goal_notes" value="1"{{if $.D.GoalNotes}} checked{{end}}> Also tell me each time a child meets their daily goal</label>
+      <button class="btn btn-secondary" type="submit">Save</button>
+    </form>
+  </section>
   <section class="card stack" aria-labelledby="email-h">
     <h2 id="email-h">Weekly email</h2>
     {{if $.D.Mail}}

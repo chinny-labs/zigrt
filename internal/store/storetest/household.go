@@ -281,6 +281,8 @@ func testNotifications(t *testing.T, open Opener) {
 	if got := kinds(f.Sam); !slices.Contains(got, service.NoteMilestone) {
 		t.Fatalf("after the tier: %v", got)
 	}
+	// Goal met is opt-in: Sam turns it on, Alex doesn't.
+	must(t, svc.SetGoalNotes(ctx, f.Sam, true))
 	for range 3 {
 		home, err := svc.Home(ctx, f.Mika)
 		must(t, err)
@@ -297,6 +299,9 @@ func testNotifications(t *testing.T, open Opener) {
 	}
 	if goal != 1 {
 		t.Fatalf("goal met %d times", goal)
+	}
+	if slices.Contains(kinds(f.Alex), service.NoteGoalMet) {
+		t.Fatal("Alex heard of a goal met without turning it on")
 	}
 
 	// A lesson stopped twice.

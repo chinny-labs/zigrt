@@ -67,6 +67,16 @@ func (s *Server) resetSubmit(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/parent/login", http.StatusSeeOther)
 }
 
+func (s *Server) goalNotesSave(w http.ResponseWriter, r *http.Request, c *reqCtx) {
+	on := r.PostFormValue("goal_notes") != ""
+	if err := s.svc.SetGoalNotes(r.Context(), *c.User, on); err != nil {
+		s.fail(w, r, "/parent/household#notes-h", err)
+		return
+	}
+	s.flash(w, "ok", "Saved.")
+	http.Redirect(w, r, "/parent/household#notes-h", http.StatusSeeOther)
+}
+
 func (s *Server) weeklyEmailSave(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 	on := r.PostFormValue("weekly") != ""
 	if err := s.svc.SetWeeklyEmail(r.Context(), *c.User, on); err != nil {

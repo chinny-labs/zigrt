@@ -279,6 +279,7 @@ type householdData struct {
 	MCP       bool // the MCP server is on
 	Mail      bool // email is set up
 	Weekly    bool // this parent gets the weekly email
+	GoalNotes bool // this parent hears each goal met
 }
 
 func (s *Server) householdPage(w http.ResponseWriter, r *http.Request, c *reqCtx) {
@@ -297,8 +298,13 @@ func (s *Server) householdPage(w http.ResponseWriter, r *http.Request, c *reqCtx
 		s.parentFail(w, r, err)
 		return
 	}
+	goalNotes, err := s.svc.GoalNotesOn(r.Context(), *c.User)
+	if err != nil {
+		s.parentFail(w, r, err)
+		return
+	}
 	v := s.newView(w, r, "Household", householdData{H: h, Me: *c.User, Timezones: commonZones(h.Household.Timezone),
-		Tokens: tokens, BaseURL: s.baseURL(r), MCP: s.mcp != nil, Mail: s.svc.MailOn(), Weekly: weekly})
+		Tokens: tokens, BaseURL: s.baseURL(r), MCP: s.mcp != nil, Mail: s.svc.MailOn(), Weekly: weekly, GoalNotes: goalNotes})
 	v.Shell, v.Back, v.BackLabel = "parent", "/parent", "Everyone"
 	s.render(w, r, http.StatusOK, "household", v)
 }
