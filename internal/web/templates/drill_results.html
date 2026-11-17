@@ -1,0 +1,42 @@
+{{define "main"}}
+{{$r := .D.Drill.Result}}
+<div class="column">
+  <div class="stack-sm">
+    <span class="eyebrow">Drill done</span>
+    <h1>{{$r.Correct}} of {{$r.Total}} right.{{if eq $r.Correct $r.Total}} Every one!{{end}}</h1>
+  </div>
+  {{template "flash" .}}
+  <div class="stats">
+    <div class="card stat"><span class="muted">Right</span><b>{{$r.Correct}}</b></div>
+    <div class="card stat"><span class="muted">Out of</span><b>{{$r.Total}}</b></div>
+    <div class="card stat"><span class="muted">Time</span><b>{{.D.Time}}</b></div>
+  </div>
+  {{if .D.Misses}}
+  <section class="card stack-sm" aria-labelledby="miss-h">
+    <h2 id="miss-h">{{len .D.Misses}} to look at again</h2>
+    {{range .D.Misses}}
+    <div class="miss">
+      <span class="miss-eq">{{.Problem.Equation}}</span>
+      <span class="muted nowrap">{{if .Given}}You wrote {{.Given}}{{else}}Not answered{{end}}</span>
+    </div>
+    {{end}}
+  </section>
+  {{end}}
+  <div class="grow"></div>
+  {{if .D.Mine}}
+  {{if .D.Misses}}
+  <form method="post" action="/drills/{{.D.Drill.ID}}/retry" class="stack">
+    {{template "csrf" .}}
+    <button class="btn btn-primary" type="submit">Drill just these</button>
+  </form>
+  {{end}}
+  <div class="pair">
+    <form method="post" action="/drills/{{.D.Drill.ID}}/again" class="stack">
+      {{template "csrf" .}}
+      <button class="btn btn-secondary" type="submit">Go again</button>
+    </form>
+    <a class="btn btn-secondary" href="/">Done</a>
+  </div>
+  {{end}}
+</div>
+{{end}}

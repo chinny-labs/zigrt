@@ -1,0 +1,20 @@
+id: unit-conversion
+kps:
+  - id: unit-conversion.kp1
+    explain: >-
+      Change the big units into small units first. Multiply by how many small
+      units fit in one big unit. Then add the small units you already have.
+    templates:
+      - id: unit-conversion.kp1.t1
+        vars:
+          pi: {int: [0, 5]}
+          big: pick(pi, 'ft', 'yd', 'm', 'kg', 'h', 'min')
+          small: pick(pi, 'in', 'ft', 'cm', 'g', 'min', 's')
+          f: pick(pi, 12, 3, 100, 1000, 60, 60)
+          w: {int: [2, 9]}
+          r: {int: [1, f - 1]}
+        prompt: "{w} {big} {r} {small} = ? {small}"
+        answer: {type: integer, value: w * f + r}
+        solution:
+          - "1 {big} = {f} {small}, so {w} {big} = {w} × {f} = {w * f} {small}."
+          - "{w * f} + {r} = {w * f + r}, so {w} {big} {r} {small} = {w * f + r} {small}."

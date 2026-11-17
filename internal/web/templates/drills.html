@@ -1,0 +1,85 @@
+{{define "main"}}
+<div class="column">
+  <h1>{{.Title}}</h1>
+  {{template "flash" .}}
+  <form method="post" action="/drills" class="stack">
+    {{template "csrf" .}}
+    <fieldset class="group">
+      <legend>What kind?</legend>
+      {{range .D.Ops}}
+      <div class="oprow">
+        <label class="toggle toggle-op">
+          <input type="checkbox" name="op_{{.Op}}" value="1"{{if .Settings.On}} checked{{end}}>
+          <span aria-hidden="true">{{.Op.Symbol}}</span>
+          <span class="visually-hidden">{{.Op.Name}}</span>
+        </label>
+        <div class="oplevel stack-sm">
+          <label class="visually-hidden" for="level_{{.Op}}">{{.Op.Name}}: how hard</label>
+          <select id="level_{{.Op}}" name="level_{{.Op}}">
+            {{$cur := .Settings.Level}}
+            {{range .Levels}}<option value="{{.ID}}"{{if eq .ID $cur}} selected{{end}}>{{.Label}}</option>{{end}}
+            <option value="custom"{{if eq $cur "custom"}} selected{{end}}>My own numbers</option>
+          </select>
+          <details class="custom"{{if eq $cur "custom"}} open{{end}}>
+            <summary>My own numbers</summary>
+            <div class="ranges">
+              <label>{{index .Labels 0}} from <input type="number" name="{{.Op}}_a_lo" value="{{index .Settings.CustomA 0}}" min="0" max="99999" inputmode="numeric"></label>
+              <label>to <input type="number" name="{{.Op}}_a_hi" value="{{index .Settings.CustomA 1}}" min="0" max="99999" inputmode="numeric"></label>
+              <label>{{index .Labels 1}} from <input type="number" name="{{.Op}}_b_lo" value="{{index .Settings.CustomB 0}}" min="0" max="99999" inputmode="numeric"></label>
+              <label>to <input type="number" name="{{.Op}}_b_hi" value="{{index .Settings.CustomB 1}}" min="0" max="99999" inputmode="numeric"></label>
+            </div>
+            <span class="hint">Used when "My own numbers" is chosen above.</span>
+          </details>
+          {{if eq .Op "div"}}
+          <label class="check"><input type="checkbox" name="div_rem" value="1"{{if .Settings.Remainders}} checked{{end}}> Allow remainders</label>
+          {{end}}
+        </div>
+      </div>
+      {{end}}
+    </fieldset>
+    <fieldset class="group">
+      <legend>How should it look?</legend>
+      <div class="choices choices-3">
+        {{range .D.Formats}}
+        <label class="toggle toggle-format">
+          <input type="checkbox" name="fmt_{{.Format}}" value="1"{{if .On}} checked{{end}}>
+          <span>
+            {{if eq .Format "across"}}<b>7 + 5 =</b>{{else if eq .Format "stacked"}}<b class="mini-stack">7<br>+ 5</b>{{else}}<b>7 + ? = 12</b>{{end}}
+            {{.Format.Label}}
+          </span>
+        </label>
+        {{end}}
+      </div>
+    </fieldset>
+    <fieldset class="group">
+      <legend>How many?</legend>
+      <div class="choices choices-4 segmented">
+        {{$count := .D.Count}}
+        {{range .D.Counts}}
+        <label class="toggle toggle-count"><input type="radio" name="count" value="{{.}}"{{if eq . $count}} checked{{end}}><span>{{.}}</span></label>
+        {{end}}
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="title">Title for a worksheet</label>
+      <input id="title" name="title" value="{{.D.Title}}" maxlength="80" placeholder="Maths practice">
+    </div>
+    {{if .D.CanDrill}}<button class="btn btn-primary" type="submit" name="kind" value="drill">Start the drill</button>{{end}}
+    <button class="btn {{if .D.CanDrill}}btn-secondary{{else}}btn-primary{{end}}" type="submit" name="kind" value="worksheet">Print a worksheet</button>
+  </form>
+  {{if .D.Recent}}
+  <section class="card stack-sm" aria-labelledby="recent-h">
+    <h2 id="recent-h">Lately</h2>
+    {{range .D.Recent}}
+    <a class="rowlink" href="{{if eq .Kind "worksheet"}}/worksheets/{{.ID}}{{else if .Finished}}/drills/{{.ID}}/results{{else}}/drills/{{.ID}}{{end}}">
+      <span class="rowlink-text">
+        <span>{{if eq .Kind "worksheet"}}{{.Title}}{{else}}Drill, {{.Count}} problems{{end}}</span>
+        <span class="muted">{{.About}}</span>
+      </span>
+      <span class="muted nowrap">{{if eq .Kind "worksheet"}}Worksheet{{else if .Finished}}{{.Correct}} of {{.Total}}{{else}}Not finished{{end}}</span>
+    </a>
+    {{end}}
+  </section>
+  {{end}}
+</div>
+{{end}}

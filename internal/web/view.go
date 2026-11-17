@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/chinny-labs/zigrt/internal/buildinfo"
 )
@@ -17,6 +18,8 @@ type view struct {
 	Shell     string // "student", "parent" or "" for bare pages
 	Back      string // back-link target, if any
 	BackLabel string
+	Nav       string // active item of the student's bottom nav
+	Script    string // an extra script from /static, for the one page that needs it
 	FlashKind string
 	Flash     string
 	Err       string
@@ -38,6 +41,9 @@ var funcs = template.FuncMap{
 		return s
 	},
 	"digits": func() []string { return []string{"1", "2", "3", "4", "5", "6", "7", "8", "9"} },
+	// wclass sizes an answer box by digit count, without an inline style.
+	"wclass": func(n int) string { return "w" + strconv.Itoa(min(max(n, 2), 8)) },
+	"add":    func(a, b int) int { return a + b },
 	// tone turns a stored avatar name into a CSS class, never trusting it.
 	"tone": func(avatar string) string {
 		switch avatar {

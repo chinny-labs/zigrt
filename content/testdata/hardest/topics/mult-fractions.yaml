@@ -1,0 +1,23 @@
+id: mult-fractions
+kps:
+  - id: mult-fractions.kp1
+    explain: >-
+      Multiply the top numbers. Multiply the bottom numbers. Then write the
+      answer in simplest form.
+    templates:
+      - id: mult-fractions.kp1.t1
+        vars:
+          d1: {int: [2, 10]}
+          n1: {int: [1, d1 - 1]}
+          d2: {int: [2, 10]}
+          n2: {int: [1, d2 - 1]}
+          p: n1 / d1 * n2 / d2
+        where:
+          - gcd(n1, d1) == 1
+          - gcd(n2, d2) == 1
+        prompt: "{n1}/{d1} × {n2}/{d2}"
+        answer: {type: fraction, value: p}
+        solution:
+          - "Multiply the tops: {n1} × {n2} = {n1 * n2}."
+          - "Multiply the bottoms: {d1} × {d2} = {d1 * d2}."
+          - "{n1 * n2}/{d1 * d2} in simplest form is {frac(p)}."

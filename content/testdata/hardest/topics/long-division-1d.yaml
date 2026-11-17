@@ -1,0 +1,25 @@
+id: long-division-1d
+kps:
+  - id: long-division-1d.kp1
+    explain: >-
+      Divide one place at a time, starting on the left. Write how many fit.
+      Bring the leftover down to the next place. What is left at the end is the
+      remainder.
+    templates:
+      - id: long-division-1d.kp1.t1
+        vars:
+          d: {int: [3, 9]}
+          q: {int: [100, 999]}
+          r: {int: [1, d - 1]}
+          n: q * d + r
+        where:
+          - n <= 9999
+        prompt: "{n} ÷ {d}"
+        layout: long-division
+        parts: [n, d]
+        answer: {type: quotient_remainder, value: n // d, remainder: n % d}
+        solution:
+          - "Hundreds: {n // 100} ÷ {d} = {q // 100}, with {n // 100 - d * (q // 100)} left over."
+          - "Tens: bring down {digit(n, 10)} to make {n // 10 - 10 * d * (q // 100)}. That ÷ {d} = {digit(q, 10)}, with {n // 10 - d * (q // 10)} left over."
+          - "Ones: bring down {digit(n, 1)} to make {n - 10 * d * (q // 10)}. That ÷ {d} = {digit(q, 1)}, with {r} left over."
+          - "{n} ÷ {d} = {q} r {r}"

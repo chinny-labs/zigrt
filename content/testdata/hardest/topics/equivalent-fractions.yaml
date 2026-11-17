@@ -1,0 +1,33 @@
+id: equivalent-fractions
+kps:
+  - id: equivalent-fractions.kp1
+    explain: >-
+      Multiply the top and the bottom by the same number. The fraction looks
+      different but is the same amount.
+    templates:
+      - id: equivalent-fractions.kp1.t1
+        vars:
+          d: {choose: [2, 3, 4, 5, 6, 8, 10]}
+          n: {int: [1, d - 1]}
+          k: {int: [2, 6]}
+        where:
+          - gcd(n, d) == 1
+        prompt: "{n}/{d} = ?/{d * k}"
+        answer: {type: integer, value: n * k}
+        solution:
+          - "{d} × {k} = {d * k}, so multiply the top by {k} too."
+          - "{n} × {k} = {n * k}."
+          - "The missing number is {n * k}: {n}/{d} = {n * k}/{d * k}."
+      - id: equivalent-fractions.kp1.t2
+        vars:
+          d: {choose: [2, 3, 4, 5, 6, 8, 10]}
+          n: {int: [1, d - 1]}
+          k: {int: [2, 6]}
+        where:
+          - gcd(n, d) == 1
+        prompt: "{n}/{d} = {n * k}/?"
+        answer: {type: integer, value: d * k}
+        solution:
+          - "{n} × {k} = {n * k}, so multiply the bottom by {k} too."
+          - "{d} × {k} = {d * k}."
+          - "The missing number is {d * k}: {n}/{d} = {n * k}/{d * k}."

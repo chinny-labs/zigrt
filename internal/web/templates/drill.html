@@ -1,0 +1,40 @@
+{{define "main"}}
+<div class="column drill">
+  <noscript>
+    <div class="alert alert-warn stack-sm">
+      <strong>This drill needs JavaScript.</strong>
+      <span>Turn it on and reload, or <a href="/drills">print a worksheet</a> instead.</span>
+    </div>
+  </noscript>
+  <div class="drill-app" data-drill hidden>
+    <div class="drillbar">
+      <button type="button" class="iconbtn" data-stop aria-label="Stop the drill">{{template "i-close"}}</button>
+      <div class="drill-progress">
+        <span data-count>1 of {{len .D.Problems}}</span>
+        <progress data-progress max="{{len .D.Problems}}" value="0" aria-label="Problems done"></progress>
+      </div>
+      <button type="button" class="iconbtn" data-sound aria-pressed="true" aria-label="Sound">{{template "i-sound"}}</button>
+    </div>
+    <div class="stage card">
+      {{range .D.Problems}}
+      <section class="dp" data-problem data-answer="{{.Answer}}"{{if .AsksRemainder}} data-rem="{{.Rem}}"{{end}} data-eq="{{.Equation}}" data-text="{{.AnswerText}}" hidden>
+        {{.HTML}}
+      </section>
+      {{end}}
+    </div>
+    <div class="feedback" data-feedback role="status" aria-live="polite"></div>
+    <div class="pad">
+      {{range digits}}<button type="button" class="key key-sm" data-key="{{.}}">{{.}}</button>{{end}}
+      <button type="button" class="key key-sm key-word" data-key="switch">Clear</button>
+      <button type="button" class="key key-sm" data-key="0">0</button>
+      <button type="button" class="key key-sm key-word" data-key="del" aria-label="Delete last digit">Del</button>
+    </div>
+    <button type="button" class="btn btn-primary" data-check>Check</button>
+  </div>
+  <form method="post" action="/drills/{{.D.Drill.ID}}/finish" data-finish hidden>
+    {{template "csrf" .}}
+    <input type="hidden" name="answers" value="">
+    <input type="hidden" name="duration_ms" value="0">
+  </form>
+</div>
+{{end}}

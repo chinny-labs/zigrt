@@ -1,0 +1,46 @@
+id: round-whole-numbers
+kps:
+  - id: round-whole-numbers.kp1
+    explain: >-
+      Find the place you are rounding to. Look at the digit just to its right.
+      If that digit is 5 or more, round up. If it is less than 5, round down.
+    templates:
+      - id: round-whole-numbers.kp1.t1
+        vars:
+          pi: {int: [0, 2]}
+          place: 10 ^ (pi + 1)
+          name: pick(pi, 'ten', 'hundred', 'thousand')
+          n: {int: [1000, 99999]}
+          d: digit(n, place / 10)
+          r: round(n, place)
+        where:
+          - n % place != 0
+        prompt: "Round {group(n)} to the nearest {name}."
+        answer: {type: integer, value: r}
+        solution:
+          - "The digit to the right of the {name}s place is {d}."
+          - "{d >= 5 ? 'It is 5 or more, so round up' : 'It is less than 5, so round down'}."
+          - "{group(n)} rounds to {group(r)}."
+  - id: round-whole-numbers.kp2
+    explain: >-
+      Sometimes rounding up turns a 9 into 10. Then the next place goes up by 1
+      as well. So 4,962 rounds to 5,000 at the nearest hundred.
+    templates:
+      - id: round-whole-numbers.kp2.t1
+        # Built from its parts, because filtering random numbers for "9 then
+        # 5 or more" would throw away 19 draws in 20.
+        vars:
+          pi: {int: [0, 2]}
+          place: 10 ^ (pi + 1)
+          name: pick(pi, 'ten', 'hundred', 'thousand')
+          hi: {int: [1, 99999 // (10 * place) - 1]}
+          lo: {int: [place / 2, place - 1]}
+          n: hi * 10 * place + 9 * place + lo
+          d: digit(n, place / 10)
+          r: round(n, place)
+        prompt: "Round {group(n)} to the nearest {name}."
+        answer: {type: integer, value: r}
+        solution:
+          - "The digit to the right of the {name}s place is {d}, so round up."
+          - "The {name}s digit is 9, and 9 + 1 = 10, so carry 1 into the next place."
+          - "{group(n)} rounds to {group(r)}."

@@ -1,0 +1,19 @@
+# The 20 hardest K-5 topics, written to test the template format (plan
+# section 14.1). Test data for the content package and the authoring CLI;
+# the real curriculum lives in zigrt-curriculum.
+id: zigrt-hardest
+title: Hardest K-5 topics (prototype)
+version: 2026.11.0
+min_app_version: 0.1.0
+licence: CC-BY-SA-4.0
+locales: [en]
+courses:
+  - id: k5
+    title: All of K-5
+    grades: [K, "1", "2", "3", "4", "5"]
+  - id: grade-4
+    title: Grade 4
+    grades: ["4"]
+  - id: grade-5
+    title: Grade 5
+    grades: ["5"]

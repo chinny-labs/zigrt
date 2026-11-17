@@ -28,7 +28,8 @@ It ships as one container image: a Go binary serving server-rendered HTML with H
 | Fluency timing | On by default for fact topics; a parent can turn it off per student |
 | Rewards | Tower milestones only. No badges or avatar items |
 | Languages | English only in version 1, with all text keyed for translation from the start |
-| Licences | App AGPL-3.0-only; curriculum CC BY-SA 4.0; the `problem` and `content` packages Apache-2.0 |
+| Licences | App AGPL-3.0-only; curriculum CC BY-SA 4.0; the `problem` and `content` packages and the `zigrt-content` tool Apache-2.0 |
+| Template expressions | A purpose-built evaluator with exact fractions, not `cel-go` (ADR 9) |
 
 ### Goals
 
@@ -196,7 +197,7 @@ The curriculum is a second repository, `zigrt-curriculum`, that builds a single 
 
 | File | Contents |
 | --- | --- |
-| `manifest.yaml` | Pack version (calendar, such as `2027.02.1`), `minAppVersion`, licence, courses |
+| `manifest.yaml` | Pack version (calendar, such as `2027.02.1`), `min_app_version`, licence, locales, courses |
 | `topics.yaml` | Every topic: stable ID, title, strand, grade band, `requires`, `encompasses`, base XP, optional standards codes (Common Core, shown to parents only), optional `fluency_seconds`, teaching order |
 | `topics/<id>.yaml` | The lesson: knowledge points, each with explanation text, a worked example and one or more problem templates |
 | `drills.yaml` | The drill catalogue: operations, levels and styles offered by the worksheet builder (section 5) |
@@ -216,17 +217,20 @@ where:
   - (a % 10) + (b % 10) >= 10      # forces regrouping in the ones
   - a + b <= 99
 prompt: "{a} + {b}"
-layout: stacked                     # across | stacked | missing | long-division | figure
+layout: stacked                     # text | across | stacked | missing | long-division | figure
+op: "+"
+parts: [a, b]
 answer: {type: integer, value: a + b}
 solution:
   - "Add the ones: {a % 10} + {b % 10} = {(a % 10) + (b % 10)}. Write {(a + b) % 10}, carry 1."
-  - "Add the tens: {a / 10} + {b / 10} + 1 = {(a + b) / 10}."
+  - "Add the tens: {a // 10} + {b // 10} + 1 = {(a + b) // 10}."   # // is whole-number division
   - "{a} + {b} = {a + b}"
 ```
 
-- **Expressions** are evaluated by a small sandboxed evaluator over integers and exact rationals (candidate: `cel-go`; decide in an ADR). There are no loops, no I/O and a fixed step budget.
-- **Generation** draws variables from a PRNG seeded with (template ID, seed) and retries until `where` holds, up to a fixed limit. The pack's CI proves every template succeeds.
-- **Layouts** are the ones the math drill app already has (across, stacked, missing number, long division) plus `figure`, which fills an SVG template from the variables.
+- **Expressions** are evaluated by a small purpose-built evaluator in which every number is an exact fraction, so `/` is exact and `//` is whole-number division (ADR 9, chosen over `cel-go` after writing the 20 hardest topics against both). There are no loops, no I/O and a fixed step budget. The full format is in `docs/content/templates.md`.
+- **Generation** draws variables from a PRNG seeded with (template ID, seed) and retries until `where` holds, up to a fixed limit. Each `where` is checked as soon as its variables exist. The pack's CI proves every template succeeds.
+- **Worked solutions** can leave out a step that does not apply, with `{when: ..., text: ...}`.
+- **Layouts** are the ones the math drill app already has (across, stacked, missing number, long division), `text` for word problems, and `figure`, which draws a figure from the app's catalogue (fraction bar, number line, clock, rectangle, box, coordinate grid, array) from the variables, or shows a static SVG from the pack.
 - **Distractors** for multiple choice are expressions too, so wrong options reflect real mistakes (for example, forgetting to carry).
 
 ### 4.3 Rendering maths
@@ -275,7 +279,7 @@ Licensing: the app is AGPL-3.0-only and the curriculum is CC BY-SA 4.0. The prob
 
 ### 4.8 Authoring CLI
 
-The curriculum repo ships a command-line tool, `zigrt-content`, that gives an author (a person or Claude Code) an answer in seconds about whether a topic works. It is required, not optional: around 300 topics cannot be written well without a fast feedback loop.
+The curriculum repo uses a command-line tool, `zigrt-content`, that gives an author (a person or Claude Code) an answer in seconds about whether a topic works. It is required, not optional: around 300 topics cannot be written well without a fast feedback loop.
 
 | Command | Does |
 | --- | --- |
@@ -286,7 +290,7 @@ The curriculum repo ships a command-line tool, `zigrt-content`, that gives an au
 | `zigrt-content check` | Runs every CI gate from section 4.6 locally |
 | `zigrt-content build --out dist` | Builds the pack file exactly as the release job does |
 
-The tool is written in Go and imports the app's `problem` and `content` packages, so a template behaves identically in authoring, in CI and in the running app. Those two packages are therefore a public, versioned Go module within the app repo.
+The tool is written in Go and imports the app's `problem` and `content` packages, so a template behaves identically in authoring, in CI and in the running app. It is built in the app repo (`cmd/zigrt-content`) and the curriculum repo pins it with a `tool` line in its `go.mod`, so the tool always matches the app release it targets (ADR 10). `preview` arrives with the lesson layouts in phase 3.
 
 ## 5. Drills and worksheets
 
@@ -744,7 +748,7 @@ The build runs in seven phases, each ending in something deployable; version 1.0
 | 0. Design | This document, the Claude Design board and tokens, the first ADRs, repo scaffolding copied from Goldberry | The board covers every screen in section 6 and CI is green on an empty app |
 | 1. Skeleton | Config, both stores, migrations, auth, first-run setup, parent and student sign-in, image, Compose file, Helm chart, release pipeline | A parent can install it either way, add a student, and the student can sign in to an empty home screen |
 | 2. Problems and drills | `problem` and `drill` packages, pack loader, the authoring CLI (section 4.8), problem layouts, answer inputs, drill builder, on-screen drills, printable worksheets | Everything the current math drill app does works inside Zigrt, with history |
-| 3. Lessons and mastery | `learning` package, tasks, lessons, reviews, XP, streaks, student home, a 30-topic sample pack, the demo household command | A student can work through the sample pack over simulated weeks with correct review scheduling |
+| 3. Lessons and mastery | `learning` package, tasks, lessons, reviews, XP, streaks, student home, the answer inputs and figures that lessons need beyond the drill's (fraction, decimal, remainder, comparison, choice), `zigrt-content preview`, loading the pack at startup, a 30-topic sample pack, the demo household command | A student can work through the sample pack over simulated weeks with correct review scheduling |
 | 4. Diagnostic and quizzes | Placement test, quizzes, implicit credit, review compression, the progress map, the simulate command | The simulated-student tests in section 12 pass |
 | 5. Parent side | Dashboard, student detail, settings, notifications, backups, export and import, operations docs, site | A parent can run a household without the command line. This is the release candidate; once the K-5 curriculum is complete it is tagged **Version 1.0** |
 | 6. Integrations | JSON API, API tokens, MCP server, weekly email, metrics | The API tests and the OpenAPI drift test pass |
@@ -759,7 +763,7 @@ The largest risk is content, not code: about 300 topics, each needing explanatio
 | Risk | Why it matters | Mitigation |
 | --- | --- | --- |
 | Curriculum volume | The app is useless without lessons, and K-5 is hundreds of topics | Version 1.0 waits for all of K-5. Write strand by strand in the graph's order, install preview packs in your own household as each strand lands, and build the authoring CLI early so writing is fast |
-| Template language too weak | Word problems, figures and multi-step solutions may not fit declarative templates | Prototype the 20 hardest topics in phase 2 before fixing the format |
+| Template language too weak | Word problems, figures and multi-step solutions may not fit declarative templates | Done in phase 2: the 20 hardest topics are in `content/testdata/hardest` and pass every gate. They added conditional solution steps and the figure catalogue to the format |
 | Review load grows without bound | Poorly tuned intervals bury a child in reviews | Implicit credit and compression, plus a simulated-student test that caps reviews per day |
 | Diagnostic misplaces a child | Too high frustrates, too low bores | Conservative two-answer rule, early confirming reviews, parent override |
 | Young readers | A five-year-old cannot read an explanation | Figures first, very short text; narration is a candidate for a later version, as Copperkeep does |
@@ -767,6 +771,6 @@ The largest risk is content, not code: about 300 topics, each needing explanatio
 
 ### 14.2 Open questions
 
-One question is still open; the rest are settled and recorded in the decisions table in section 1.
+Every question is settled and recorded in the decisions table in section 1 or in an ADR.
 
-- [ ] **Expression evaluator.** `cel-go` or a small purpose-built evaluator with exact fractions as a native type. Decide during phase 2: write the 20 hardest topics against both, then record the choice in an ADR.
+- [x] **Expression evaluator.** A small purpose-built evaluator with exact fractions as a native type, chosen over `cel-go` after writing the 20 hardest topics against both (ADR 9).

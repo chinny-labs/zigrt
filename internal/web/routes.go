@@ -28,6 +28,17 @@ func (s *Server) routes() http.Handler {
 	mux.HandleFunc("POST /pin/{id}", s.pinSubmit)
 	mux.HandleFunc("POST /logout", s.signedIn(s.logout))
 
+	// Free practice: both roles build sets; only students answer on screen.
+	mux.HandleFunc("GET /drills", s.signedIn(s.drillBuilder))
+	mux.HandleFunc("POST /drills", s.signedIn(s.drillCreate))
+	mux.HandleFunc("GET /drills/{id}", s.signedIn(s.drillPage))
+	mux.HandleFunc("POST /drills/{id}/finish", s.signedIn(s.drillFinish))
+	mux.HandleFunc("GET /drills/{id}/results", s.signedIn(s.drillResults))
+	mux.HandleFunc("POST /drills/{id}/retry", s.signedIn(s.drillRetry))
+	mux.HandleFunc("POST /drills/{id}/again", s.signedIn(s.drillAgain))
+	mux.HandleFunc("GET /worksheets/{id}", s.signedIn(s.worksheetPage))
+	mux.HandleFunc("POST /worksheets/{id}/again", s.signedIn(s.drillAgain))
+
 	mux.HandleFunc("GET /parent/login", s.parentLoginPage)
 	mux.HandleFunc("POST /parent/login", s.parentLoginSubmit)
 	mux.HandleFunc("GET /parent", s.parent(s.dashboard))

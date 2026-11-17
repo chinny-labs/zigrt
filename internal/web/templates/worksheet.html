@@ -1,0 +1,43 @@
+{{define "main"}}
+<div class="column column-sheet">
+  <div class="no-print stack">
+    <h1>Your worksheet</h1>
+    {{template "flash" .}}
+    <form method="get" action="/worksheets/{{.D.Drill.ID}}" class="card options" data-autosubmit>
+      <input type="hidden" name="opts" value="1">
+      <label class="check"><input type="checkbox" name="name" value="1"{{if .D.NameLine}} checked{{end}}> Name and date lines</label>
+      <label class="check"><input type="checkbox" name="key" value="1"{{if .D.AnswerKey}} checked{{end}}> Answer key on its own page</label>
+      <label class="check"><input type="checkbox" name="large" value="1"{{if .D.Large}} checked{{end}}> Large print</label>
+      <button class="btn btn-secondary btn-inline" type="submit" data-autosubmit-button>Update</button>
+    </form>
+    <button class="btn btn-primary" type="button" data-print hidden>Print</button>
+    <p class="muted center" data-print-hint>To print, use your browser's Print command.</p>
+    <form method="post" action="/worksheets/{{.D.Drill.ID}}/again" class="stack">
+      {{template "csrf" .}}
+      <button class="btn btn-secondary" type="submit">New version, same settings</button>
+    </form>
+  </div>
+  <article class="sheet{{if .D.Large}} sheet-large{{end}}">
+    <header class="sheet-head">
+      <h2 class="sheet-title">{{.D.Drill.Title}}</h2>
+      {{if .D.NameLine}}
+      <div class="sheet-name"><span>Name <i></i></span><span>Date <i></i></span><span>Score <i class="short"></i> / {{len .D.Problems}}</span></div>
+      {{end}}
+    </header>
+    <div class="sheet-grid cols-{{.D.Cols}}">
+      {{range .D.Problems}}
+      <div class="sheet-item{{if eq .Format "stacked"}} is-stacked{{end}}{{if .NeedsRoom}} roomy{{end}}"><span class="sheet-num">{{.N}}.</span>{{.HTML}}</div>
+      {{end}}
+    </div>
+    <footer class="sheet-foot">{{.D.About}}</footer>
+  </article>
+  {{if .D.AnswerKey}}
+  <article class="sheet answer-key{{if .D.Large}} sheet-large{{end}}">
+    <h2 class="sheet-title">{{.D.Drill.Title}}: answer key</h2>
+    <ol class="key-list">
+      {{range .D.Problems}}<li>{{.AnswerText}}</li>{{end}}
+    </ol>
+  </article>
+  {{end}}
+</div>
+{{end}}

@@ -4,7 +4,7 @@ Self-hosted mastery-learning maths for one household. Zigrt decides what each ch
 
 One container, one volume: a Go binary serving server-rendered HTML, with SQLite on the volume by default or Postgres if you point it at one.
 
-> **Status: early.** This version has accounts and sign-in only: first-run setup, parents, students with PINs, and an empty student home. Lessons, reviews, drills and worksheets are not built yet. See the [plan](docs/design/plan.md) for what is coming and in what order.
+> **Status: early.** This version has accounts, sign-in, drills and printable worksheets. Lessons, reviews and the placement check are not built yet, so the student home has no tasks. See the [plan](docs/design/plan.md) for what is coming and in what order.
 
 | Who's climbing? | PIN pad | Parent dashboard |
 | --- | --- | --- |
@@ -35,6 +35,10 @@ On Kubernetes there is a Helm chart in `deploy/helm/zigrt`. See [docs/operations
 - **First run:** a one-time setup token from the server log creates the first parent.
 - **Parents** sign in with an email and password, add students, set a new PIN for a student and unlock one who is locked out.
 - **Students** pick their name and type a 4 to 6 digit PIN on a large pad. Ten wrong PINs in a row lock the student until a parent unlocks them.
+- **Drills:** a student picks any mix of +, −, × and ÷ at K-5 levels (or their own number ranges), across, stacked or missing-number layouts, and 10 to 50 problems, then answers on a big number pad or the keyboard with a chime for right and a soft sound for wrong. The server marks every answer again and saves the result. The results list the misses, with "Drill just these" to practise them again.
+- **Worksheets:** the same choices, printed or saved as PDF from the browser, with name and date lines, large print and an answer key on its own page. Parents can make them too. Every sheet keeps its problems, so it reprints the same; "New version" gives fresh ones.
+- Drills are free practice: they never change what a student has mastered.
+- **Content tools:** the problem-template engine, the content-pack loader with every curriculum gate, and `zigrt-content`, the authoring tool the curriculum repo uses. Lessons will use them in the next phase. See [Writing content](docs/content/templates.md).
 - **Database:** SQLite on the `/data` volume with nightly backups, or an existing Postgres by URL. The same test suite runs against both.
 - **Private by default:** no telemetry, no CDN assets, no outbound requests. A strict Content-Security-Policy; pages work without JavaScript.
 

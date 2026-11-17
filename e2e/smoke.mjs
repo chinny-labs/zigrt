@@ -45,6 +45,36 @@ for (const k of ['2', '4', '6', '8']) await page.click(`[data-key="${k}"]`);
 await page.getByRole('button', { name: 'Go' }).click();
 await expectText('Hi Mika. Ready to climb?');
 
+// A short drill: answer the first problem wrong, the rest right, from the
+// number pad, then check the server's marking on the results screen.
+await page.getByRole('link', { name: 'Make a drill' }).click();
+await page.locator('label:has(input[name=count][value="10"])').click();
+await page.getByRole('button', { name: 'Start the drill' }).click();
+await page.waitForURL(/\/drills\/[^/]+$/);
+for (let i = 0; i < 10; i++) {
+  const p = page.locator('[data-problem]:not([hidden])');
+  const ans = await p.getAttribute('data-answer');
+  const typed = i === 0 ? String(Number(ans) + 1) : ans;
+  for (const d of typed) await page.click(`[data-key="${d}"]`);
+  await page.click('[data-check]');
+  if (i === 0) {
+    await expectText('Not quite.');
+    await page.click('[data-check]'); // Next
+  } else if (i < 9) {
+    await page.waitForFunction((n) => !document.querySelectorAll('[data-problem]')[n].hidden, i + 1);
+  }
+}
+await page.waitForURL(/results$/);
+await expectText('9 of 10 right.');
+
+// A worksheet with an answer key.
+await page.goto(base + '/drills');
+await page.getByRole('button', { name: 'Print a worksheet' }).click();
+await page.waitForURL(/\/worksheets\//);
+await page.locator('input[name=key]').check();
+await page.waitForURL(/key=1/);
+await expectText('answer key');
+
 // The self-hosted fonts loaded, so nothing fell back to a system face.
 const fonts = await page.evaluate(async () => {
   await document.fonts.ready;

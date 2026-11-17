@@ -11,3 +11,6 @@ One short record per significant choice. Add the next number; do not edit an acc
 | [5](0005-no-llm.md) | No LLM at runtime |
 | [6](0006-secret-key-optional.md) | The secret key is optional; a generated key is the fallback |
 | [7](0007-student-sign-in.md) | Students sign in by picking their name and typing a PIN |
+| [8](0008-drills-store-their-problems.md) | A drill stores its problems, not just its seed |
+| [9](0009-purpose-built-expression-evaluator.md) | Templates use a purpose-built expression language over exact fractions |
+| [10](0010-authoring-tool-in-the-app-module.md) | The authoring tool is built from the app's module |

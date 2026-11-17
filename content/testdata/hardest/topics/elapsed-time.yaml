@@ -1,0 +1,28 @@
+id: elapsed-time
+kps:
+  - id: elapsed-time.kp1
+    explain: >-
+      Count on in jumps. First jump to the next o'clock. Then jump whole hours.
+      Then jump the last few minutes. Add the jumps.
+    templates:
+      - id: elapsed-time.kp1.t1
+        vars:
+          who: {words: [Mika, Theo, June, Ava, Sam]}
+          what: {words: [swim lesson, film, football match, piano lesson, party]}
+          h1: {int: [1, 9]}
+          m1: {int: [5, 55], step: 5}
+          dur: {int: [40, 170], step: 5}
+          end: h1 * 60 + m1 + dur
+          h2: end // 60
+          m2: end % 60
+        where:
+          - h2 > h1 && h2 <= 12
+        prompt: "{who}'s {what} starts at {h1}:{pad(m1, 2)} and ends at {h2}:{pad(m2, 2)}. How many minutes does it last?"
+        answer: {type: integer, value: dur}
+        solution:
+          - "From {h1}:{pad(m1, 2)} to {h1 + 1}:00 is {60 - m1} minutes."
+          - when: h2 - h1 > 1
+            text: "From {h1 + 1}:00 to {h2}:00 is {h2 - h1 - 1} {plural(h2 - h1 - 1, 'hour', 'hours')}, which is {60 * (h2 - h1 - 1)} minutes."
+          - when: m2 > 0
+            text: "From {h2}:00 to {h2}:{pad(m2, 2)} is {m2} minutes."
+          - "{60 - m1}{h2 - h1 > 1 ? join(' + ', 60 * (h2 - h1 - 1)) : ''}{m2 > 0 ? join(' + ', m2) : ''} = {dur} minutes."

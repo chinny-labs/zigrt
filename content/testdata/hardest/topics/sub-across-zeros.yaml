@@ -1,0 +1,25 @@
+id: sub-across-zeros
+kps:
+  - id: sub-across-zeros.kp1
+    explain: >-
+      You need more ones, but there are no tens or hundreds to take from. So
+      take 1 thousand. It becomes 9 hundreds, 9 tens and 10 ones.
+    templates:
+      - id: sub-across-zeros.kp1.t1
+        vars:
+          th: {int: [2, 9]}
+          o: {int: [0, 8]}
+          a: th * 1000 + o
+          b: {int: [1001, a - 1]}
+        where:
+          - b % 10 > o
+        prompt: "{a} − {b}"
+        layout: stacked
+        op: "-"
+        parts: [a, b]
+        answer: {type: integer, value: a - b}
+        solution:
+          - "There are no tens or hundreds, so take 1 thousand: {th - 1} {plural(th - 1, 'thousand', 'thousands')}, 9 hundreds, 9 tens and {o + 10} ones."
+          - "Ones: {o + 10} − {b % 10} = {o + 10 - b % 10}. Tens: 9 − {digit(b, 10)} = {9 - digit(b, 10)}."
+          - "Hundreds: 9 − {digit(b, 100)} = {9 - digit(b, 100)}. Thousands: {th - 1} − {digit(b, 1000)} = {th - 1 - digit(b, 1000)}."
+          - "{a} − {b} = {a - b}"

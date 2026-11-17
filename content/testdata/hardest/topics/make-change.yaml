@@ -1,0 +1,24 @@
+id: make-change
+kps:
+  - id: make-change.kp1
+    explain: >-
+      Count up from the price. First count up to the next whole dollar. Then
+      count up to the money paid. Add the two amounts.
+    templates:
+      - id: make-change.kp1.t1
+        vars:
+          who: {words: [Mika, Theo, June, Ava, Sam]}
+          item: {words: [a book, a kite, a puzzle, a lunchbox, a torch]}
+          pc: {int: [105, 1995]}
+          price: pc / 100
+          paid: {choose: [5, 10, 20]}
+          up: ceil(price)
+        where:
+          - pc % 100 != 0
+          - paid > price
+        prompt: "{who} buys {item} for ${dec(price, 2)} and pays with ${paid}. How much change should {who} get?"
+        answer: {type: decimal, value: paid - price}
+        solution:
+          - "Count up from ${dec(price, 2)} to ${up}.00: that is ${dec(up - price, 2)}."
+          - "Then from ${up}.00 to ${paid}.00 is ${dec(paid - up, 2)}."
+          - "${dec(up - price, 2)} + ${dec(paid - up, 2)} = ${dec(paid - price, 2)}."

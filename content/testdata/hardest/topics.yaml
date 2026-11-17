@@ -1,0 +1,94 @@
+strands:
+  - {id: place-value, title: Counting and place value}
+  - {id: add-sub, title: Adding and taking away}
+  - {id: multiplication, title: Multiplying}
+  - {id: division, title: Dividing}
+  - {id: fractions, title: Fractions}
+  - {id: decimals, title: Decimals}
+  - {id: measurement, title: Measuring}
+  - {id: geometry, title: Shapes and space}
+
+# Teaching order is the order written here.
+topics:
+  - {id: elapsed-time, title: Elapsed time, strand: measurement, grade: "3", xp: 12, standards: [3.MD.A.1]}
+  - {id: round-whole-numbers, title: Rounding whole numbers, strand: place-value, grade: "4", xp: 10, standards: [4.NBT.A.3]}
+  - {id: sub-across-zeros, title: Taking away across zeros, strand: add-sub, grade: "4", xp: 12, standards: [4.NBT.B.4]}
+  - {id: mult-2d-2d, title: 2-digit by 2-digit multiplying, strand: multiplication, grade: "4", xp: 14, standards: [4.NBT.B.5]}
+  - id: long-division-1d
+    title: Long division by 1 digit
+    strand: division
+    grade: "4"
+    xp: 14
+    standards: [4.NBT.B.6]
+  - id: interpret-remainders
+    title: What to do with a remainder
+    strand: division
+    grade: "4"
+    requires: [long-division-1d]
+    xp: 12
+    standards: [4.OA.A.3]
+  - {id: equivalent-fractions, title: Equivalent fractions, strand: fractions, grade: "4", xp: 10, standards: [4.NF.A.1]}
+  - id: compare-fractions
+    title: Comparing fractions
+    strand: fractions
+    grade: "4"
+    requires: [equivalent-fractions]
+    encompasses: [{topic: equivalent-fractions, weight: 0.5}]
+    xp: 12
+    standards: [4.NF.A.2]
+  - {id: sub-mixed-regroup, title: Taking away mixed numbers, strand: fractions, grade: "4", xp: 14, standards: [4.NF.B.3c]}
+  - id: fraction-to-decimal
+    title: Fractions as decimals
+    strand: decimals
+    grade: "4"
+    requires: [equivalent-fractions]
+    xp: 10
+    standards: [4.NF.C.6]
+  - {id: make-change, title: Making change, strand: measurement, grade: "4", xp: 12, standards: [4.MD.A.2]}
+  - {id: unit-conversion, title: Changing units, strand: measurement, grade: "4", xp: 10, standards: [4.MD.A.1]}
+  - id: long-division-2d
+    title: Long division by 2 digits
+    strand: division
+    grade: "5"
+    requires: [long-division-1d, mult-2d-2d]
+    encompasses: [{topic: long-division-1d, weight: 1.0}, {topic: mult-2d-2d, weight: 0.3}]
+    xp: 15
+    standards: [5.NBT.B.6]
+  - id: add-fractions-unlike
+    title: Adding unlike fractions
+    strand: fractions
+    grade: "5"
+    requires: [compare-fractions]
+    encompasses: [{topic: equivalent-fractions, weight: 1.0}]
+    xp: 14
+    standards: [5.NF.A.1]
+  - {id: mult-fractions, title: Multiplying fractions, strand: fractions, grade: "5", xp: 12, standards: [5.NF.B.4]}
+  - id: divide-unit-fractions
+    title: Dividing with unit fractions
+    strand: fractions
+    grade: "5"
+    requires: [mult-fractions]
+    xp: 14
+    standards: [5.NF.B.7]
+  - id: add-decimals
+    title: Adding decimals
+    strand: decimals
+    grade: "5"
+    requires: [fraction-to-decimal]
+    xp: 10
+    standards: [5.NBT.B.7]
+  - id: mult-decimals
+    title: Multiplying decimals
+    strand: decimals
+    grade: "5"
+    requires: [add-decimals, mult-2d-2d]
+    xp: 14
+    standards: [5.NBT.B.7]
+  - id: volume-prism
+    title: Volume of a box
+    strand: measurement
+    grade: "5"
+    requires: [mult-2d-2d]
+    xp: 12
+    standards: [5.MD.C.5]
+  - {id: coordinate-points, title: Points on a grid, strand: geometry, grade: "5", xp: 10, standards: [5.G.A.2]}

@@ -95,3 +95,35 @@ type AuditEntry struct {
 	Detail    json.RawMessage
 	CreatedAt time.Time
 }
+
+// DrillKind says whether a set is answered on screen or printed.
+type DrillKind string
+
+const (
+	KindDrill     DrillKind = "drill"
+	KindWorksheet DrillKind = "worksheet"
+)
+
+// Drill is a saved problem set (plan §5). Settings and Problems are JSON the
+// service owns; the store keeps them as written.
+type Drill struct {
+	ID        string
+	OwnerID   string
+	Kind      DrillKind
+	Title     string
+	Settings  json.RawMessage
+	Seed      uint64
+	Problems  json.RawMessage
+	CreatedAt time.Time
+}
+
+// DrillResult is how one on-screen drill went.
+type DrillResult struct {
+	DrillID    string
+	StudentID  string
+	Correct    int
+	Total      int
+	DurationMS int64
+	Answers    json.RawMessage
+	FinishedAt time.Time
+}
