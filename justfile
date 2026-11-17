@@ -18,6 +18,10 @@ build:
 test:
     go test -race ./...
 
+# The content authoring tool, e.g. `just content check` on the prototype pack.
+content *args:
+    go run ./cmd/zigrt-content -pack content/testdata/hardest {{args}}
+
 # The store contract suite on Postgres (needs a server; see pg_url).
 test-pg:
     ZIGRT_TEST_POSTGRES_URL='{{pg_url}}' go test -race ./internal/store/...

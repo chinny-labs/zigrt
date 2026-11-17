@@ -4,7 +4,8 @@ Self-hosted mastery-learning maths for one household. Go + server-rendered HTML,
 
 - **Source of truth:** `docs/design/plan.md` (snapshot of the living plan doc) and `docs/design/` (board sources, PNG renders, tokens). Decisions go in `docs/adr/`.
 - **Layers:** `web` → `service` → `store`. Handlers parse input, call one service method and render; they never call the store for writes. Every rule lives in `service`. Only `store` has SQL.
-- **Pure packages:** algorithms that need no database or HTTP (`learning`, `problem`, `drill`, when they arrive) take a clock and a PRNG as arguments and never read the time or random numbers themselves.
+- **Pure packages:** algorithms that need no database or HTTP (`problem`, `content`, `drill`, and `learning` when it arrives) take a clock, a PRNG or a seed as arguments and never read the time or random numbers themselves.
+- **Content:** `problem`, `problem/expr`, `content` and `cmd/zigrt-content` are Apache-2.0 and used by the curriculum repo (ADR 10). Template format: `docs/content/templates.md`; its examples are tested. New expression functions get a test and never change meaning once released. The 20-topic prototype pack in `content/testdata/hardest` must keep passing every gate.
 - **History is append-only:** `attempts`, `mastery_events` and `xp_events` (when they arrive) are never updated or deleted; a correction is a new event. Projections must be rebuildable from the logs.
 - **Queries are written once:** a portable SQL subset with `?` placeholders in `internal/store/sql.go`; the `Dialect` covers what differs between engines.
 - **Migrations:** add the same numbered file to both `migrations/sqlite` and `migrations/postgres`; `scripts/check-migrations.sh` enforces it.

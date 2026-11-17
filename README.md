@@ -38,6 +38,7 @@ On Kubernetes there is a Helm chart in `deploy/helm/zigrt`. See [docs/operations
 - **Drills:** a student picks any mix of +, −, × and ÷ at K-5 levels (or their own number ranges), across, stacked or missing-number layouts, and 10 to 50 problems, then answers on a big number pad or the keyboard with a chime for right and a soft sound for wrong. The server marks every answer again and saves the result. The results list the misses, with "Drill just these" to practise them again.
 - **Worksheets:** the same choices, printed or saved as PDF from the browser, with name and date lines, large print and an answer key on its own page. Parents can make them too. Every sheet keeps its problems, so it reprints the same; "New version" gives fresh ones.
 - Drills are free practice: they never change what a student has mastered.
+- **Content tools:** the problem-template engine, the content-pack loader with every curriculum gate, and `zigrt-content`, the authoring tool the curriculum repo uses. Lessons will use them in the next phase. See [Writing content](docs/content/templates.md).
 - **Database:** SQLite on the `/data` volume with nightly backups, or an existing Postgres by URL. The same test suite runs against both.
 - **Private by default:** no telemetry, no CDN assets, no outbound requests. A strict Content-Security-Policy; pages work without JavaScript.
 
