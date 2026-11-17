@@ -126,7 +126,7 @@ func (s *Server) studentHome(w http.ResponseWriter, r *http.Request, c *reqCtx) 
 		cards = append(cards, s.card(*h.Active))
 	}
 	for _, n := range h.Tasks {
-		if h.Active != nil && n.Topic != nil && n.Topic.ID == h.Active.Topic.ID && n.Kind == h.Active.Kind {
+		if h.Active != nil && n.Kind == h.Active.Kind && (n.Topic == nil || h.Active.Topic == nil || n.Topic.ID == h.Active.Topic.ID) {
 			continue
 		}
 		cards = append(cards, s.card(n))

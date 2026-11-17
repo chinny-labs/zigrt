@@ -5,9 +5,11 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/chinny-labs/zigrt/content"
+	"github.com/chinny-labs/zigrt/internal/pack"
 	"github.com/chinny-labs/zigrt/internal/service"
 	"github.com/chinny-labs/zigrt/internal/sim"
 	"github.com/chinny-labs/zigrt/internal/web"
@@ -103,4 +105,61 @@ func plural(n int, one, many string) string {
 		return one
 	}
 	return many
+}
+
+// simulate plays a scripted student through a pack on a throwaway database
+// and reports topics mastered, review load and topics never reached (plan
+// 11.1). It is for tuning the rules and checking a pack before installing
+// it; it never touches the real database.
+func simulate(args []string) error {
+	fs := flag.NewFlagSet("simulate", flag.ContinueOnError)
+	packPath := fs.String("pack", "", "a pack folder or file (default: the embedded pack)")
+	profile := fs.String("profile", "forgetful", "the kind of student")
+	days := fs.Int("days", 60, "days to simulate")
+	seed := fs.Uint64("seed", 1, "seed, for a repeatable run")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	prof, ok := sim.ProfileNamed(*profile)
+	if !ok {
+		var names []string
+		for _, p := range sim.Profiles {
+			names = append(names, p.Name+" ("+p.Description+")")
+		}
+		return fmt.Errorf("no profile %q; choose from: %s", *profile, strings.Join(names, "; "))
+	}
+	if *days < 1 || *days > 730 {
+		return errors.New("-days must be from 1 to 730")
+	}
+	var p *content.Pack
+	var err error
+	if *packPath == "" {
+		p, err = pack.Embedded()
+	} else {
+		p, err = content.Open(*packPath)
+	}
+	if err != nil {
+		return err
+	}
+	rep, err := sim.Simulate(context.Background(), p, prof, *days, *seed)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%s %s, a %q student (%s), %d days:\n", p.Manifest.ID, p.Manifest.Version, prof.Name, prof.Description, rep.Days)
+	fmt.Printf("  placed by the placement test  %d\n", rep.Placed)
+	fmt.Printf("  mastered at the end           %d of %d", rep.Mastered, rep.Topics)
+	var grades []string
+	for _, g := range content.Grades {
+		if n := rep.MasteredByGrade[g]; n > 0 {
+			grades = append(grades, fmt.Sprintf("%s: %d", g, n))
+		}
+	}
+	if len(grades) > 0 {
+		fmt.Printf(" (%s)", strings.Join(grades, ", "))
+	}
+	fmt.Printf("\n  lessons %d, reviews %d (at most %d in a day), quizzes %d, XP %d\n", rep.Lessons, rep.Reviews, rep.ReviewsMax, rep.Quizzes, rep.XP)
+	if len(rep.NeverReached) > 0 {
+		fmt.Printf("  never reached (%d): %s\n", len(rep.NeverReached), strings.Join(rep.NeverReached, ", "))
+	}
+	return nil
 }

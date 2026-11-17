@@ -8,6 +8,7 @@
 //	zigrt rebuild                  recompute progress from the history
 //	zigrt demo [-days n]           fill an empty database with a demo household
 //	zigrt preview [-pack dir] [topic...]  render a pack's lessons to static pages
+//	zigrt simulate [-profile p] [-days n]  play a scripted student through a pack
 //	zigrt version                  print the version
 package main
 
@@ -67,6 +68,8 @@ func main() {
 		err = demo(args)
 	case "preview":
 		err = preview(args)
+	case "simulate":
+		err = simulate(args)
 	case "version", "--version", "-v":
 		fmt.Printf("zigrt %s (%s)\n", buildinfo.Version, buildinfo.ShortCommit())
 	case "help", "-h", "--help":
@@ -93,6 +96,8 @@ func usage(w io.Writer) {
   demo [-days 28]                fill an empty database with a demo household and its history
   preview [-pack .] [-out preview] [-seeds 3] [topic...]
                                  render a content pack's lessons to static pages, for authors
+  simulate [-pack file] [-profile forgetful] [-days 60] [-seed 1]
+                                 play a scripted student through a pack on a throwaway database
   version                        print the version
 `)
 }

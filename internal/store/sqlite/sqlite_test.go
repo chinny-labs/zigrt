@@ -2,13 +2,20 @@ package sqlite_test
 
 import (
 	"context"
+	"database/sql"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
+
+	"github.com/pressly/goose/v3"
+	"github.com/pressly/goose/v3/database"
 
 	"github.com/chinny-labs/zigrt/internal/store"
 	"github.com/chinny-labs/zigrt/internal/store/sqlite"
 	"github.com/chinny-labs/zigrt/internal/store/storetest"
+	"github.com/chinny-labs/zigrt/migrations"
 )
 
 func open(t *testing.T) store.Store {
@@ -99,5 +106,49 @@ func TestBackupRestore(t *testing.T) {
 	removed, err := sqlite.Prune(dir, 2)
 	if err != nil || len(removed) != 2 || removed[0] != "zigrt-20260102.db" {
 		t.Fatalf("pruned %v, %v", removed, err)
+	}
+}
+
+// Migration 4 rebuilds mastery_events: a database with history keeps it.
+func TestMigration4KeepsHistory(t *testing.T) {
+	ctx := context.Background()
+	path := filepath.Join(t.TempDir(), "zigrt.db")
+	db, err := sql.Open("sqlite", "file:"+path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fsys, _ := fs.Sub(migrations.SQLite, "sqlite")
+	p, err := goose.NewProvider(database.DialectSQLite3, db, fsys)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := p.UpTo(ctx, 3); err != nil {
+		t.Fatal(err)
+	}
+	for _, q := range []string{
+		`INSERT INTO users (id, role, display_name, created_at) VALUES ('u1', 'student', 'Mika', '2026-03-07T15:00:00.000000Z')`,
+		`INSERT INTO mastery_events (id, student_id, topic_id, kind, task_id, detail, created_at)
+		 VALUES ('e1', 'u1', 'add', 'lesson_passed', 't1', '{"on":"2026-03-07","stage":0}', '2026-03-07T15:00:00.000000Z')`,
+	} {
+		if _, err := db.ExecContext(ctx, q); err != nil {
+			t.Fatal(err)
+		}
+	}
+	db.Close()
+
+	st, err := sqlite.Open(ctx, path, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	evs, err := st.ListMasteryEvents(ctx, "u1")
+	if err != nil || len(evs) != 1 || evs[0].Kind != "lesson_passed" || string(evs[0].Detail) != `{"on":"2026-03-07","stage":0}` {
+		t.Fatalf("after migrating: %+v %v", evs, err)
+	}
+	err = st.Tx(ctx, "u1", func(tx store.Tx) error {
+		return tx.InsertMasteryEvent(ctx, store.MasteryEvent{ID: "e2", StudentID: "u1", TopicID: "add", Kind: "quiz_missed", CreatedAt: time.Now()})
+	})
+	if err != nil {
+		t.Fatalf("quiz_missed: %v", err)
 	}
 }

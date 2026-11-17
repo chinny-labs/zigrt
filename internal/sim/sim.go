@@ -23,13 +23,24 @@ type Clock interface {
 	Advance(time.Duration)
 }
 
+// Question is a problem in front of a simulated student.
+type Question struct {
+	Kind    store.TaskKind
+	Topic   *content.Topic
+	Problem *problem.Problem
+}
+
 // Student is one scripted student.
 type Student struct {
 	Svc   *service.Service
 	User  store.User
 	Clock Clock
-	// Right decides whether the student answers a problem right.
-	Right func(p *problem.Problem) bool
+	// Right decides whether the student answers a problem right; nil is
+	// always.
+	Right func(q Question) bool
+	// NotLearned decides whether, in the placement test, the student says
+	// "I haven't learned this" instead of answering; nil is never.
+	NotLearned func(q Question) bool
 	// Think is how long each answer takes.
 	Think func(p *problem.Problem) time.Duration
 	// MaxTasks bounds the tasks in one day.
@@ -41,6 +52,8 @@ type Day struct {
 	Lessons, Reviews int // tasks finished
 	Passed, Failed   int
 	Paused           int // lessons paused by misses
+	Placements       int // placement tests finished
+	Quizzes          int
 	XP               int
 	GoalMet          bool
 	Complete         bool // the course had nothing left
@@ -72,15 +85,23 @@ func (s *Student) Day(ctx context.Context) (Day, error) {
 		default:
 			return d, nil
 		}
-		v, err := s.Do(ctx, next.Kind, next.Topic.ID)
+		topicID := ""
+		if next.Topic != nil {
+			topicID = next.Topic.ID
+		}
+		v, err := s.Do(ctx, next.Kind, topicID)
 		if err != nil {
-			return d, fmt.Errorf("%s %s: %w", next.Kind, next.Topic.ID, err)
+			return d, fmt.Errorf("%s %s: %w", next.Kind, topicID, err)
 		}
 		switch {
 		case v.Phase == service.PhasePaused:
 			d.Paused++
 		case v.Task.Kind == store.TaskLesson:
 			d.Lessons++
+		case v.Task.Kind == store.TaskDiagnostic:
+			d.Placements++
+		case v.Task.Kind == store.TaskQuiz:
+			d.Quizzes++
 		default:
 			d.Reviews++
 		}
@@ -112,8 +133,13 @@ func (s *Student) Do(ctx context.Context, kind store.TaskKind, topicID string) (
 			return v, nil
 		case service.PhaseProblem:
 			s.Clock.Advance(s.think(v.Problem))
+			q := Question{Kind: v.Task.Kind, Topic: v.ProblemTopic, Problem: v.Problem}
+			if q.Kind == store.TaskDiagnostic && s.NotLearned != nil && s.NotLearned(q) {
+				v, err = s.Svc.NotLearned(ctx, s.User, t.ID, v.AttemptID)
+				continue
+			}
 			resp := v.Problem.Wrong()
-			if s.Right == nil || s.Right(v.Problem) {
+			if s.Right == nil || s.Right(q) {
 				resp = v.Problem.Right()
 			}
 			v, err = s.Svc.SubmitAnswer(ctx, s.User, t.ID, v.AttemptID, resp)

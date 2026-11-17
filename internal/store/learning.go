@@ -174,6 +174,14 @@ func (x queries) ListFinishedTasks(ctx context.Context, studentID string, limit 
 	return x.listTasks(ctx, q, studentID)
 }
 
+func (x queries) ListTasksOfKind(ctx context.Context, studentID string, kind TaskKind, limit int) ([]Task, error) {
+	q := `SELECT ` + taskCols + ` FROM tasks WHERE student_id = ? AND kind = ? ORDER BY started_at DESC, id DESC`
+	if limit > 0 {
+		q += fmt.Sprintf(` LIMIT %d`, limit)
+	}
+	return x.listTasks(ctx, q, studentID, kind)
+}
+
 func (x queries) CreateTask(ctx context.Context, t Task) error {
 	_, err := x.exec(ctx, `INSERT INTO tasks (`+taskCols+`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		t.ID, t.StudentID, t.Kind, nul(t.TopicID), t.PackVersion, t.Status, string(t.State), t.XPAwarded,
@@ -360,6 +368,13 @@ func (x queries) ListXPEvents(ctx context.Context, studentID string) ([]XPEvent,
 		out = append(out, e)
 	}
 	return out, rows.Err()
+}
+
+func (x queries) SumXPSince(ctx context.Context, studentID string, after time.Time) (int, error) {
+	var n int
+	err := x.row(ctx, `SELECT COALESCE(SUM(amount), 0) FROM xp_events WHERE student_id = ? AND created_at > ?`,
+		studentID, x.t(after)).Scan(&n)
+	return n, err
 }
 
 func (x queries) SumXP(ctx context.Context, studentID, sourceKind, localDate string) (int, error) {

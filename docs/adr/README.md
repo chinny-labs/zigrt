@@ -17,3 +17,4 @@ One short record per significant choice. Add the next number; do not edit an acc
 | [11](0011-mastery-events-and-review-days.md) | Mastery history records what happened; a rebuild works out the rest |
 | [12](0012-embedded-pack-committed-with-a-lock.md) | The embedded content pack is committed with a lock file |
 | [13](0013-preview-in-the-app-binary.md) | Lesson preview is a command of the app, not of the authoring tool |
+| [14](0014-placement-quizzes-compression.md) | Placement, quizzes and review compression |

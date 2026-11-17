@@ -83,7 +83,7 @@ func Demo(ctx context.Context, svc *service.Service, timezone, password string, 
 		miss := k.miss
 		kids = append(kids, kid{weekends: k.weekends, s: &Student{
 			Svc: svc, User: u, Clock: clk,
-			Right: func(*problem.Problem) bool { return rng.IntN(miss) != 0 },
+			Right: func(Question) bool { return rng.IntN(miss) != 0 },
 			Think: func(pr *problem.Problem) time.Duration {
 				if t := svc.Pack().TopicOf(pr.Template); t != nil && t.FluencySeconds > 0 {
 					return time.Duration(2+rng.IntN(3)) * time.Second // facts come quickly

@@ -153,8 +153,10 @@ func (c Config) DrillXP(correct, earnedToday int) int {
 type TaskKind string
 
 const (
-	TaskLesson TaskKind = "lesson"
-	TaskReview TaskKind = "review"
+	TaskLesson    TaskKind = "lesson"
+	TaskReview    TaskKind = "review"
+	TaskQuiz      TaskKind = "quiz"
+	TaskPlacement TaskKind = "diagnostic" // the placement test (plan 3.3)
 )
 
 // Next is one task on the student home.
@@ -174,6 +176,10 @@ type Situation struct {
 	PausedToday  map[string]bool // lessons that paused today
 	ReviewsInRow int             // reviews finished since the last lesson
 	LastStrand   string          // the strand of the last lesson finished
+
+	NeedsPlacement bool // a new student who has not taken or skipped the placement test
+	PlacementOpen  bool // a placement test is started and not finished
+	QuizDue        bool // enough XP since the last quiz, and topics mastered to quiz
 }
 
 // NextTasks chooses the student's tasks, the recommended one first (plan
@@ -207,9 +213,21 @@ func (c Config) NextTasks(g *Graph, sit Situation) ([]Next, bool) {
 
 	var reviews []Next
 	var due []TopicState
+	isDue := map[string]bool{}
 	for _, st := range s {
 		if st.State == Mastered && st.Due <= sit.Today && g.Topic(st.Topic) != nil {
-			due = append(due, st)
+			isDue[st.Topic] = true
+		}
+	}
+	for id := range isDue {
+		// Compression (plan 3.5): a due topic that another due topic fully
+		// encompasses is left out; passing that review credits it.
+		covered := false
+		for _, e := range g.Topic(id).EncompassedBy {
+			covered = covered || (e.Weight >= 1 && isDue[e.Topic] && e.Topic != id)
+		}
+		if !covered {
+			due = append(due, s[id])
 		}
 	}
 	slices.SortFunc(due, func(a, b TopicState) int {
@@ -256,6 +274,18 @@ func (c Config) NextTasks(g *Graph, sit Situation) ([]Next, bool) {
 		out = slices.Concat(lessons[:1], reviews, lessons[1:])
 	default:
 		out = slices.Concat(reviews, lessons)
+	}
+	// A quiz comes after a lesson in progress, before reviews (plan 3.8).
+	if c.OfferQuizzes && sit.QuizDue {
+		at := 0
+		if len(resume) > 0 {
+			at = 1
+		}
+		out = slices.Insert(out, at, Next{Kind: TaskQuiz})
+	}
+	// The placement test goes first for a new student, or to finish one.
+	if c.OfferPlacement && (sit.PlacementOpen || sit.NeedsPlacement) {
+		out = slices.Insert(out, 0, Next{Kind: TaskPlacement, Resume: sit.PlacementOpen})
 	}
 	if len(out) > 0 {
 		return out[:min(len(out), c.MaxTasks)], false
