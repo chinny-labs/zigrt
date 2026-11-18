@@ -62,3 +62,12 @@ backup:
 e2e:
     cd e2e && npm ci
     e2e/run-image.sh
+
+# Retake the README and website screenshots from the demo household.
+screenshots:
+    cd e2e && npm ci
+    e2e/screenshots.sh
+
+# Build the website (landing page plus docs/) into site/_site and check its links.
+site:
+    cd site && npm ci && node build.mjs && node check-links.mjs

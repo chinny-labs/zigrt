@@ -29,8 +29,9 @@ To use Postgres, put the URL in a file, add it as a second secret in `compose.ya
 
 ## Kubernetes (Helm)
 
+<!-- x-release-please-start-version -->
 ```sh
-helm install zigrt oci://ghcr.io/chinny-labs/charts/zigrt --version 0.1.0 \
+helm install zigrt oci://ghcr.io/chinny-labs/charts/zigrt --version 1.1.0 \
   --namespace zigrt --create-namespace \
   --set timezone=America/New_York \
   --set baseURL=https://zigrt.home.example.com \
@@ -38,6 +39,7 @@ helm install zigrt oci://ghcr.io/chinny-labs/charts/zigrt --version 0.1.0 \
   --set ingress.enabled=true --set 'ingress.hosts[0].host=zigrt.home.example.com'
 kubectl logs -n zigrt deploy/zigrt | grep -i "setup token"
 ```
+<!-- x-release-please-end -->
 
 The chart's version and its `appVersion` are the release, so `--version` pins the image too. Upgrading is changing that version.
 
@@ -50,6 +52,7 @@ The chart runs one replica with strategy `Recreate`, a ReadWriteOnce volume for 
 
 With Flux, the chart comes from an OCI `HelmRepository` (the URL is the repository; the chart name goes in the `HelmRelease`):
 
+<!-- x-release-please-start-version -->
 ```yaml
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
@@ -64,13 +67,14 @@ spec:
   chart:
     spec:
       chart: zigrt
-      version: "0.1.0"
+      version: "1.1.0"
       sourceRef: {kind: HelmRepository, name: zigrt}
   values:
     timezone: America/New_York
     baseURL: https://zigrt.home.example.com
     persistence: {storageClass: longhorn}
 ```
+<!-- x-release-please-end -->
 
 ## TLS
 
