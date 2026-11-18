@@ -758,6 +758,7 @@ ol.tower { list-style: none; margin: 0; padding: 0; }
 .fig-arc2 { stroke: var(--zg-sun-ink); }
 .fig-tiny { font-size: 12px; }
 .fig-outer { fill: var(--zg-ink-muted); }
+.fig-plotline { stroke: var(--zg-blue); stroke-width: 3; fill: none; }
 .fig-mirror { stroke: var(--zg-sun-ink); stroke-width: 3; stroke-dasharray: 10 8; }
 .fig-x { fill: var(--zg-blue); font-size: 26px; }
 

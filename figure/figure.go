@@ -64,6 +64,8 @@ var Catalogue = map[string][]string{
 	"protractor":      {"degrees", "side"},
 	"symmetry":        {"name", "axis"},
 	"triangle":        {"kind", "turn"},
+	"joined-prisms":   {"a", "b", "h1", "h2", "w", "unit"},
+	"plot":            {"size", "points", "join"},
 }
 
 // Draw returns a figure as an SVG element, or an error when its arguments
@@ -141,6 +143,10 @@ func Draw(name string, a Args) (string, error) {
 		err = d.symmetry(a)
 	case "triangle":
 		err = d.triangle(a)
+	case "joined-prisms":
+		err = d.joinedPrisms(a)
+	case "plot":
+		err = d.plot(a)
 	default:
 		return "", fmt.Errorf("figure: there is no figure %q", name)
 	}

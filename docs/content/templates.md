@@ -207,6 +207,8 @@ Figures the app draws, with the arguments each takes:
 | `protractor` | `degrees` (1 to 179), `side`: `right` (the fixed ray on the inner scale's 0) or `left` (the outer scale's) |
 | `symmetry` | `name` (a flat shape), `axis` (degrees from upright): a dashed line through the middle |
 | `triangle` | `kind` (`equilateral`, `isosceles`, `scalene`, `right`, `obtuse`, `acute`), `turn`; equal sides ticked, a right angle squared |
+| `joined-prisms` | `a`, `b` (the two lengths), `h1`, `h2` (their heights), `w` (the shared depth), `unit`: two boxes side by side, edges labelled |
+| `plot` | `size` (2 to 20), `points` (`"1,3\|2,5"`, up to 12), `join` (1 joins them in order) |
 | `line-plot` | `from`, `to`, `step` (at most 16 ticks; halves, quarters and eighths labelled ½, ¼, ⅛), `marks` (`"2:3\|5/2:1"`, value and how many Xs, at most 8 over one value) |
 
 Any other name must be a static picture in `figures/<name>.svg`, which takes no arguments. Packs are untrusted, so a static figure is shown only as cleaned: drawing elements (`svg`, `g`, `path`, `rect`, `circle`, `ellipse`, `line`, `polyline`, `polygon`, `text`, `tspan`, `title`, `desc`) with geometry and paint attributes. A script, style, link, `use`, image, event handler or `url(...)` fails the subresources gate. A file is at most 64 KB.

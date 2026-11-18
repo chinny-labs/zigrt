@@ -46,6 +46,8 @@ func TestDraw(t *testing.T) {
 		"protractor":      {"degrees": "65", "side": "right"},
 		"symmetry":        {"name": "hexagon", "axis": "90"},
 		"triangle":        {"kind": "right", "turn": "15"},
+		"joined-prisms":   {"a": "4", "b": "3", "h1": "5", "h2": "2", "w": "3", "unit": "cm"},
+		"plot":            {"size": "10", "points": "1,3|2,5|3,7", "join": "1"},
 	}
 	for _, name := range Names() {
 		svg, err := Draw(name, good[name])
@@ -410,6 +412,30 @@ func TestGrade4Figures(t *testing.T) {
 		"protractor": {"degrees": "190", "side": "right"},
 		"symmetry":   {"name": "star", "axis": "0"},
 		"triangle":   {"kind": "square", "turn": "0"},
+	} {
+		if _, err := Draw(name, a); err == nil {
+			t.Errorf("%s %v drew", name, a)
+		}
+	}
+}
+
+func TestGrade5Figures(t *testing.T) {
+	svg, err := Draw("joined-prisms", Args{"a": "4", "b": "3", "h1": "5", "h2": "2", "w": "3", "unit": "cm"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{">4 cm<", ">3 cm<", ">5 cm<", ">2 cm<"} {
+		if !strings.Contains(svg, want) {
+			t.Errorf("joined boxes lack %s: %s", want, svg)
+		}
+	}
+	svg, err = Draw("plot", Args{"size": "10", "points": "1,3|2,5|3,7", "join": "1"})
+	if err != nil || strings.Count(svg, `class="fig-mark"`) != 3 || !strings.Contains(svg, "fig-plotline") {
+		t.Errorf("plot: %v %s", err, svg)
+	}
+	for name, a := range map[string]Args{
+		"joined-prisms": {"a": "0", "b": "3", "h1": "5", "h2": "2", "w": "3", "unit": ""},
+		"plot":          {"size": "5", "points": "1,3|9,9", "join": "0"},
 	} {
 		if _, err := Draw(name, a); err == nil {
 			t.Errorf("%s %v drew", name, a)
