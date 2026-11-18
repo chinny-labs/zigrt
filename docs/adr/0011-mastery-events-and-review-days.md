@@ -19,3 +19,9 @@ ADR 3 makes `mastery_events` the source of truth for each topic's state, with `t
 - `zigrt rebuild` and `Service.CheckProjections` agree with the live path by construction; the store contract suite checks it after every simulated day on both engines.
 - The event log is larger than the primary facts alone, which at household scale does not matter.
 - A rule change can move due dates on rebuild. That is the point, but it should be noted in release notes when it happens.
+
+## Amendment, 2026-11-18: held lessons' reviews jump the queue
+
+A lesson stopped twice waits until its prerequisites are no longer due. With a 147-topic pack, simulated students carried a backlog of overdue reviews: about half their mastered topics, because the daily goal ends a session after three or four tasks. Reviews are offered most overdue first, so the held lesson's prerequisites could sit behind dozens of older ones and the lesson never came back. A "struggling" student (learns 70%, forgets 25%) stalled for months on one early topic in 4 of 20 runs, mastering 94 to 127 of 147 topics in 200 days.
+
+Now the due prerequisites of any held lesson come first, ordered by the held lesson's place in the course, and are never left out by compression. That covers a lesson with a task in progress, set aside or reopened. Once they are reviewed, the lesson resumes at the front. The same 20 runs master 146 or 147 of 147; the steady, forgetful and grade 2 profiles are unchanged. The backlog itself is a separate tuning question.

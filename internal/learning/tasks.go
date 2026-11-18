@@ -211,6 +211,26 @@ func (c Config) NextTasks(g *Graph, sit Situation) ([]Next, bool) {
 		}
 	}
 
+	// A lesson stopped twice waits for its prerequisites' reviews (plan
+	// 3.4). Those reviews jump the queue, so a long backlog of other reviews
+	// can't hold the lesson back for good; once they are done the lesson
+	// resumes. They are never folded into another topic's review either.
+	mending := map[string]int{}     // prerequisite → teaching order of the held lesson
+	for _, id := range sit.Course { // started, set aside or reopened alike
+		t := g.Topic(id)
+		st := s[id]
+		if t == nil || st.State != Learning || st.Pauses < c.PausesBeforeReview || sit.PausedToday[id] || !s.prereqsMastered(g, id) {
+			continue
+		}
+		for _, r := range t.Requires {
+			if s.IsDue(r, sit.Today) {
+				if o, ok := mending[r]; !ok || t.Order < o {
+					mending[r] = t.Order
+				}
+			}
+		}
+	}
+
 	var reviews []Next
 	var due []TopicState
 	isDue := map[string]bool{}
@@ -226,12 +246,22 @@ func (c Config) NextTasks(g *Graph, sit Situation) ([]Next, bool) {
 		for _, e := range g.Topic(id).EncompassedBy {
 			covered = covered || (e.Weight >= 1 && isDue[e.Topic] && e.Topic != id)
 		}
-		if !covered {
+		if _, held := mending[id]; held || !covered {
 			due = append(due, s[id])
 		}
 	}
 	slices.SortFunc(due, func(a, b TopicState) int {
-		if a.Due != b.Due {
+		ma, aHeld := mending[a.Topic]
+		mb, bHeld := mending[b.Topic]
+		switch {
+		case aHeld != bHeld:
+			if aHeld {
+				return -1 // a held lesson's prerequisites first
+			}
+			return 1
+		case aHeld && ma != mb:
+			return ma - mb // for the earliest held lesson first
+		case a.Due != b.Due:
 			return int(a.Due - b.Due) // most overdue first
 		}
 		return g.Topic(a.Topic).Order - g.Topic(b.Topic).Order
