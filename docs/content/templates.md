@@ -194,10 +194,15 @@ Figures the app draws, with the arguments each takes:
 | `ruler` | `start`, `length` (whole, halves or quarters), `max` (2 to 15), `unit` (`cm`, `in`, any word, or `cubes` for a row of unit cubes from 0): a pencil above a ruler |
 | `table` | `rows` (`"Cats:4\|Dogs:7"`, 2 to 5 rows, counts 0 to 25), `style`: `number` or `tally` |
 | `cut-shape` | `name` (`circle`, `square`, `rectangle`), `parts` (2 to 8), `equal` (1, or 0 for unequal parts, 2 to 4 of them), `shaded` |
+| `coins` | `pennies`, `nickels`, `dimes`, `quarters` (0 to 9 each, 1 to 15 in all), drawn at their relative sizes and marked 1¢, 5¢, 10¢, 25¢ |
+| `picture-graph` | `rows` (`"Cats:4\|Dogs:6"`, 2 to 6 rows), `key` (1 to 10): each symbol is worth `key`; with an even key, a half symbol is half of it |
+| `bar-graph` | `rows` (whole numbers to 1000), `scale`: the axis is marked every `scale`, 2 to 12 lines |
+| `grid` | `rows`, `cols` (1 to 12), `shaded`: a rectangle of unit squares, the first `shaded` filled |
+| `line-plot` | `from`, `to`, `step` (at most 16 ticks; halves, quarters and eighths labelled ½, ¼, ⅛), `marks` (`"2:3\|5/2:1"`, value and how many Xs, at most 8 over one value) |
 
 Any other name must be a static picture in `figures/<name>.svg`, which takes no arguments. Packs are untrusted, so a static figure is shown only as cleaned: drawing elements (`svg`, `g`, `path`, `rect`, `circle`, `ellipse`, `line`, `polyline`, `polygon`, `text`, `tspan`, `title`, `desc`) with geometry and paint attributes. A script, style, link, `use`, image, event handler or `url(...)` fails the subresources gate. A file is at most 64 KB.
 
-Word arguments (`arrange`, `style`, `name`, `kind`, `tip`, `place`, `unit`, `rows`) are text: write them quoted (`arrange: "'dice'"`) or from a `choose` variable. A shape's or solid's picture never names it, so "What shape is this?" doesn't give itself away.
+Word arguments (`arrange`, `style`, `name`, `kind`, `tip`, `place`, `unit`, `rows`, `marks`) are text: write them quoted (`arrange: "'dice'"`) or from a `choose` variable. A shape's or solid's picture never names it, so "What shape is this?" doesn't give itself away.
 
 Each catalogue figure has limits it can draw: a fraction bar of 1 to 24 parts, an array up to 12 by 12, a number line of at most 40 jumps with its mark on the line, a clock from 1:00 to 12:59, a grid of size 2 to 20 with the point on it. The `figures` gate draws every generated figure, so a template that strays outside fails `check`.
 
