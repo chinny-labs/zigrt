@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/chinny-labs/zigrt/compare/v1.0.0...v1.1.0) (2026-11-18)
+
+
+### Features
+
+* start a student at a grade ([#40](https://github.com/chinny-labs/zigrt/issues/40)) ([118f85a](https://github.com/chinny-labs/zigrt/commit/118f85addd31be7a1d977fa894cddd7c6f95d9e7))
+
 ## [1.0.0](https://github.com/chinny-labs/zigrt/compare/v0.12.0...v1.0.0) (2026-11-18)
 
 
