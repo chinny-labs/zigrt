@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zigrt · self-hosted mastery-learning maths for kids</title>
+<meta name="description" content="Zigrt is self-hosted maths for one household: it decides what each child should learn next, teaches it in small steps, and brings it back just before it would be forgotten. The complete K-5 curriculum, one container, SQLite or Postgres, AGPL-3.0.">
+<meta property="og:title" content="Zigrt">
+<meta property="og:description" content="Self-hosted mastery-learning maths, K-5. One container, works without JavaScript, no cloud.">
+<meta property="og:image" content="screenshots/student-home.png">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html"><img src="icon.svg" alt="" width="32" height="32">zigrt</a>
+  <nav aria-label="Site"><a href="#features">Features</a><a href="docs/index.html">Docs</a><a href="https://github.com/chinny-labs/zigrt">GitHub</a></nav>
+</header>
+
+<main>
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Self-hosted · K-5 · AGPL-3.0</span>
+      <h1>Maths, climbed <em>one block at a time.</em></h1>
+      <p class="lede">Zigrt decides what each child should learn next, teaches it in small steps, and brings it back for review just before it would be forgotten. The name is short for ziggurat: a tower climbed one tier at a time.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#install">Install</a>
+        <a class="btn btn-outline" href="docs/guide/parents.html">Read the parent's guide</a>
+      </div>
+      <ul class="facts">
+        <li>255 lessons, K to Grade 5</li><li>One container</li><li>SQLite or Postgres</li><li>No cloud, no AI, no ads</li>
+      </ul>
+    </div>
+    <div class="stage">
+      <div class="browser">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="screenshots/parent-dashboard-dark.png">
+          <img src="screenshots/parent-dashboard.png" width="2000" height="1600" alt="The parent dashboard: a card per child with this week's XP against the goal, their streak and new blocks placed">
+        </picture>
+      </div>
+      <div class="phone">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="screenshots/student-home-dark.png">
+          <img src="screenshots/student-home.png" width="780" height="1688" alt="A student's home on a phone: their tower by grade, today's climb, and the next step as one big button">
+        </picture>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band alt" id="features">
+  <div class="wrap">
+    <div class="head">
+      <h2>A tutor that remembers everything</h2>
+      <p>Every answer is kept. From them, Zigrt works out what each child knows, what they are ready for, and what is about to slip.</p>
+    </div>
+    <ul class="features">
+      <li><span class="dot t-blue" aria-hidden="true">🧱</span><h3>Mastery, block by block</h3><p>255 blocks from counting to fractions, each built on the ones under it. A child is only taught what they have the footing for.</p></li>
+      <li><span class="dot t-sun" aria-hidden="true">👀</span><h3>Watch, then try</h3><p>Each step shows a worked example, then asks until it sticks. New numbers every time, never the same question twice.</p></li>
+      <li><span class="dot t-mint" aria-hidden="true">🔁</span><h3>Reviews just in time</h3><p>Spaced reviews from a day to eight months apart. Harder work counts as review for the easier blocks inside it.</p></li>
+      <li><span class="dot t-rose" aria-hidden="true">🎯</span><h3>Start where they are</h3><p>An adaptive placement check, or start a child at their grade in one tap. They skip what they know.</p></li>
+      <li><span class="dot t-blue" aria-hidden="true">📐</span><h3>Pictures throughout</h3><p>Ten frames, coins, number lines, area models, graphs and protractors, drawn on the server as crisp SVG.</p></li>
+      <li><span class="dot t-sun" aria-hidden="true">🖨️</span><h3>Drills and worksheets</h3><p>Fact drills with a big number pad, and printable worksheets with answer keys. Assign one and it waits on the child's home.</p></li>
+      <li><span class="dot t-mint" aria-hidden="true">📊</span><h3>A view for parents</h3><p>XP each day, what was done, who is stuck, and a weekly email. Daily goals, rest days and streaks per child.</p></li>
+      <li><span class="dot t-rose" aria-hidden="true">🔒</span><h3>Private by default</h3><p>No telemetry, no CDN, no outbound requests, no AI at run time. Pages work without JavaScript. A JSON API and MCP server if you want them.</p></li>
+    </ul>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap showcase">
+    <div class="head">
+      <h2>A tour</h2>
+      <p>Taken from the demo household: two children, Ada and Ben, after two months of after-school climbing.</p>
+    </div>
+
+    <div class="show flip">
+      <div class="text">
+        <h3>Their own tower</h3>
+        <p>Children sign in with a PIN on a big number pad and see one thing to do next. Each finished block goes on their tower; each grade is a tier, and each strand a face of it.</p>
+        <p><a href="docs/guide/how-it-works.html">How Zigrt teaches →</a></p>
+      </div>
+      <div class="pair">
+        <div class="phone"><img src="screenshots/pin-pad.png" width="780" height="1688" loading="lazy" alt="The PIN pad"></div>
+        <div class="phone"><img src="screenshots/student-tower.png" width="780" height="1688" loading="lazy" alt="A student's tower: Kindergarten done, Grade 1 under way, the strands of Grade 1 and their blocks"></div>
+      </div>
+    </div>
+
+    <div class="show">
+      <div class="text">
+        <h3>Pictures that do the explaining</h3>
+        <p>Every lesson step starts with a worked example. Area models split a multiplication into parts; a protractor shows which scale to read. The figures are drawn by the server for each problem, so they always match the numbers.</p>
+        <p><a href="docs/content/templates.html">How lessons are written →</a></p>
+      </div>
+      <div class="pair">
+        <div class="phone"><img src="screenshots/figure-area-model.png" width="780" height="1688" loading="lazy" alt="A Grade 4 lesson: 28 × 6 drawn as a rectangle split into 20 × 6 and 8 × 6"></div>
+        <div class="phone"><img src="screenshots/figure-protractor.png" width="780" height="1688" loading="lazy" alt="A Grade 4 lesson: reading a 70° angle on a protractor's outer scale"></div>
+      </div>
+    </div>
+
+    <div class="show wide flip">
+      <div class="text">
+        <h3>One page per child</h3>
+        <p>XP each day against the goal, everything they did with the score, and their tower down to each block. The bell tells you when someone is locked out, a lesson keeps stopping, or a grade is finished.</p>
+        <p><a href="docs/guide/parents.html#keeping-an-eye-on-progress">Keeping an eye on progress →</a></p>
+      </div>
+      <div class="browser"><img src="screenshots/parent-student.png" width="2000" height="1600" loading="lazy" alt="A parent's view of Ada: XP each day against a dashed goal line, and a list of her quizzes and reviews with scores"></div>
+    </div>
+
+    <div class="show">
+      <div class="text">
+        <h3>Start where they are</h3>
+        <p>A child who has finished Grade 1 shouldn't sit through it again. Start them at their grade, or let the placement check find out in up to 35 questions. Either way, earlier blocks still come back as quick reviews.</p>
+        <p><a href="docs/guide/parents.html#choosing-where-a-child-starts">Choosing where a child starts →</a></p>
+      </div>
+      <div class="card-shot"><img src="screenshots/start-grade.png" width="880" height="592" loading="lazy" alt="The Start at a grade card in a student's settings, with Grade 1 chosen"></div>
+    </div>
+
+    <div class="show flip">
+      <div class="text">
+        <h3>Phone, tablet or laptop, light or dark</h3>
+        <p>Big targets for small hands, a calm parent side, and a dark theme that follows the device. Drills give facts a quick workout; worksheets print cleanly with an answer key on its own page.</p>
+      </div>
+      <div class="pair">
+        <div class="phone"><img src="screenshots/drill-builder.png" width="780" height="1688" loading="lazy" alt="The drill builder: operations, levels, layouts and how many problems"></div>
+        <div class="phone"><img src="screenshots/student-home-dark.png" width="780" height="1688" loading="lazy" alt="Ben's home in the dark theme"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band alt" id="install">
+  <div class="wrap">
+    <div class="head">
+      <h2>Install</h2>
+      <p>One container and one volume. Put it behind your TLS reverse proxy (Caddy, Traefik, a Gateway) and you're done.</p>
+    </div>
+    <div class="quick">
+      <div>
+        <h3>Docker Compose</h3>
+<pre><code>mkdir zigrt &amp;&amp; cd zigrt
+curl -fsSLO https://raw.githubusercontent.com/chinny-labs/zigrt/main/deploy/compose/compose.yaml
+openssl rand -base64 32 &gt; zigrt_key.txt
+docker compose up -d
+docker compose logs zigrt | grep -i "setup token"</code></pre>
+        <p>Open <code>https://&lt;host&gt;/setup</code>, paste the setup token and create the first parent. Then add your children.</p>
+      </div>
+      <div>
+        <h3>Kubernetes (Helm)</h3>
+<!-- x-release-please-start-version -->
+<pre><code>helm install zigrt oci://ghcr.io/chinny-labs/charts/zigrt \
+  --version 1.1.0 --namespace zigrt --create-namespace
+kubectl logs -n zigrt deploy/zigrt | grep -i "setup token"</code></pre>
+<!-- x-release-please-end -->
+        <p>Multi-arch images (amd64, arm64). Nightly SQLite snapshots, a portable export between SQLite and Postgres, <code>/healthz</code>, <code>/readyz</code> and Prometheus metrics.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="head">
+      <h2>Documentation</h2>
+      <p>Using it, running it, connecting tools to it, writing lessons for it, and why it's built the way it is.</p>
+    </div>
+    <ul class="doc-grid">
+      <li><a href="docs/guide/parents.html"><strong>Using Zigrt</strong><span>Setting up, where each child starts, and what to watch.</span></a></li>
+      <li><a href="docs/guide/how-it-works.html"><strong>How Zigrt teaches</strong><span>Blocks, lessons, reviews, placement and quizzes.</span></a></li>
+      <li><a href="docs/operations/install.html"><strong>Install</strong><span>Compose, Helm, Postgres, proxies and every setting.</span></a></li>
+      <li><a href="docs/operations/upgrade.html"><strong>Upgrade</strong><span>Moving to a new release and going back.</span></a></li>
+      <li><a href="docs/operations/backup.html"><strong>Backup and restore</strong><span>Nightly snapshots, export and import, moving engines.</span></a></li>
+      <li><a href="docs/operations/content.html"><strong>Content packs</strong><span>The lessons that ship, and installing newer ones.</span></a></li>
+      <li><a href="docs/operations/api.html"><strong>API and MCP</strong><span>Tokens, the JSON API, and connecting Claude.</span></a></li>
+      <li><a href="docs/operations/troubleshooting.html"><strong>Troubleshooting</strong><span>Setup tokens, cookies, lockouts and stuck lessons.</span></a></li>
+      <li><a href="docs/content/templates.html"><strong>Writing content</strong><span>Topics, steps and problem templates.</span></a></li>
+      <li><a href="docs/adr/index.html"><strong>Decisions</strong><span>The architecture decision records, one per choice.</span></a></li>
+    </ul>
+  </div>
+</section>
+</main>
+
+<!-- footer -->
+</body>
+</html>
