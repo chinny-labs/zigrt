@@ -29,6 +29,10 @@ var Figures = map[string][]string{
 	"compare":      {"a", "b", "c", "kind"},               // bars or towers to compare; c 0 for two
 	"balance":      {"tip"},                               // a pan balance: left, right or level
 	"position":     {"place"},                             // a ball above, below, beside or in a box
+	"base-ten":     {"hundreds", "tens", "ones"},          // flats, rods and cubes
+	"ruler":        {"start", "length", "max", "unit"},    // a pencil above a ruler; unit 'cubes' for a row of cubes
+	"table":        {"rows", "style"},                     // rows "Cats:4|Dogs:7", as numbers or tally marks
+	"cut-shape":    {"name", "parts", "equal", "shaded"},  // a circle, square or rectangle cut into parts
 }
 
 // FigureName is the figure a template draws, or "" when it draws none.

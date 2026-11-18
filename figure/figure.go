@@ -46,6 +46,10 @@ var Catalogue = map[string][]string{
 	"compare":      {"a", "b", "c", "kind"},
 	"balance":      {"tip"},
 	"position":     {"place"},
+	"base-ten":     {"hundreds", "tens", "ones"},
+	"ruler":        {"start", "length", "max", "unit"},
+	"table":        {"rows", "style"},
+	"cut-shape":    {"name", "parts", "equal", "shaded"},
 }
 
 // Draw returns a figure as an SVG element, or an error when its arguments
@@ -87,6 +91,14 @@ func Draw(name string, a Args) (string, error) {
 		err = d.balance(a)
 	case "position":
 		err = d.position(a)
+	case "base-ten":
+		err = d.baseTen(a)
+	case "ruler":
+		err = d.ruler(a)
+	case "table":
+		err = d.table(a)
+	case "cut-shape":
+		err = d.cutShape(a)
 	default:
 		return "", fmt.Errorf("figure: there is no figure %q", name)
 	}

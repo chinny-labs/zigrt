@@ -164,4 +164,5 @@ func TestSelect(t *testing.T) {
 var kFigures = map[string]bool{
 	"dots": true, "dot-groups": true, "ten-frame": true, "shape": true, "shape-mix": true,
 	"solid": true, "compare": true, "balance": true, "position": true,
+	"base-ten": true, "ruler": true, "table": true, "cut-shape": true,
 }

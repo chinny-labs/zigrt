@@ -27,6 +27,10 @@ func TestDraw(t *testing.T) {
 		"compare":      {"a": "4", "b": "7", "c": "0", "kind": "height"},
 		"balance":      {"tip": "left"},
 		"position":     {"place": "above"},
+		"base-ten":     {"hundreds": "1", "tens": "3", "ones": "7"},
+		"ruler":        {"start": "0", "length": "6", "max": "10", "unit": "cm"},
+		"table":        {"rows": "Cats:4|Dogs:7|Fish:2", "style": "tally"},
+		"cut-shape":    {"name": "circle", "parts": "4", "equal": "1", "shaded": "1"},
 	}
 	for _, name := range Names() {
 		svg, err := Draw(name, good[name])
@@ -188,5 +192,56 @@ func TestEarlyFigures(t *testing.T) {
 		if _, err := Draw(name, a); err == nil {
 			t.Errorf("%s %v: drew", name, a)
 		}
+	}
+}
+
+func TestGrade1Figures(t *testing.T) {
+	draw := func(name string, a Args) string {
+		t.Helper()
+		svg, err := Draw(name, a)
+		if err != nil {
+			t.Fatalf("%s %v: %v", name, a, err)
+		}
+		return svg
+	}
+	svg := draw("base-ten", Args{"hundreds": "2", "tens": "3", "ones": "14"})
+	if strings.Count(svg, "fig-alt2") != 2 || strings.Count(svg, `class="fig-block fig-rod"`) != 3 || strings.Count(svg, `class="fig-block fig-alt"`) != 14 {
+		t.Errorf("base ten: %s", svg)
+	}
+	svg = draw("ruler", Args{"start": "2", "length": "5/2", "max": "8", "unit": "in"})
+	if strings.Count(svg, `class="fig-tick"`) != 33 || !strings.Contains(svg, ">8<") || !strings.Contains(svg, ">in<") {
+		t.Errorf("ruler: %s", svg)
+	}
+	svg = draw("ruler", Args{"start": "0", "length": "7", "max": "10", "unit": "cubes"})
+	if strings.Count(svg, `class="fig-shape fig-fill"`) != 7 || strings.Contains(svg, "fig-tick") {
+		t.Errorf("cubes: %s", svg)
+	}
+	svg = draw("table", Args{"rows": "Sun:12|Rain:3", "style": "tally"})
+	// 12: two full groups (4 + a crossing stroke each) and 2 more; 3: three.
+	if got := strings.Count(svg, `class="fig-tick"`); got != 10+2+3 {
+		t.Errorf("tally strokes %d: %s", got, svg)
+	}
+	svg = draw("table", Args{"rows": "<b>Cats</b>:4|Dogs:7", "style": "number"})
+	if strings.Contains(svg, "<b>") || !strings.Contains(svg, ">7<") {
+		t.Errorf("table: %s", svg)
+	}
+	for _, name := range []string{"circle", "square", "rectangle"} {
+		svg = draw("cut-shape", Args{"name": name, "parts": "4", "equal": "0", "shaded": "1"})
+		if strings.Count(svg, `class="fig-fill fig-part"`) != 1 || strings.Count(svg, `class="fig-empty"`) != 3 {
+			t.Errorf("cut %s: %s", name, svg)
+		}
+	}
+	for name, a := range map[string]Args{
+		"base-ten":  {"hundreds": "0", "tens": "0", "ones": "0"},
+		"ruler":     {"start": "3", "length": "8", "max": "10", "unit": "cm"},
+		"table":     {"rows": "Cats", "style": "number"},
+		"cut-shape": {"name": "circle", "parts": "6", "equal": "0", "shaded": "1"},
+	} {
+		if _, err := Draw(name, a); err == nil {
+			t.Errorf("%s %v drew", name, a)
+		}
+	}
+	if _, err := Draw("ruler", Args{"start": "1", "length": "3", "max": "10", "unit": "cubes"}); err == nil {
+		t.Error("cubes not from 0")
 	}
 }
