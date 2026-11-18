@@ -59,6 +59,11 @@ var Catalogue = map[string][]string{
 	"dial":            {"value", "max", "step", "unit"},
 	"jug":             {"value", "max", "step", "unit"},
 	"split-rectangle": {"cols", "rows", "areas"},
+	"lines":           {"kind", "turn"},
+	"angle":           {"a", "b", "turn", "labels"},
+	"protractor":      {"degrees", "side"},
+	"symmetry":        {"name", "axis"},
+	"triangle":        {"kind", "turn"},
 }
 
 // Draw returns a figure as an SVG element, or an error when its arguments
@@ -126,6 +131,16 @@ func Draw(name string, a Args) (string, error) {
 		err = d.jug(a)
 	case "split-rectangle":
 		err = d.splitRectangle(a)
+	case "lines":
+		err = d.lines(a)
+	case "angle":
+		err = d.angle(a)
+	case "protractor":
+		err = d.protractor(a)
+	case "symmetry":
+		err = d.symmetry(a)
+	case "triangle":
+		err = d.triangle(a)
 	default:
 		return "", fmt.Errorf("figure: there is no figure %q", name)
 	}

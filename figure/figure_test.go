@@ -41,6 +41,11 @@ func TestDraw(t *testing.T) {
 		"dial":            {"value": "350", "max": "1000", "step": "100", "unit": "g"},
 		"jug":             {"value": "600", "max": "1000", "step": "100", "unit": "ml"},
 		"split-rectangle": {"cols": "20|3", "rows": "10|4", "areas": "1"},
+		"lines":           {"kind": "perpendicular", "turn": "20"},
+		"angle":           {"a": "35", "b": "55", "turn": "0", "labels": "35°|?"},
+		"protractor":      {"degrees": "65", "side": "right"},
+		"symmetry":        {"name": "hexagon", "axis": "90"},
+		"triangle":        {"kind": "right", "turn": "15"},
 	}
 	for _, name := range Names() {
 		svg, err := Draw(name, good[name])
@@ -357,5 +362,57 @@ func TestGrade3Figures(t *testing.T) {
 	}
 	if _, err := Draw("polygon", Args{"shape": "triangle", "sides": "3|4|5", "hide": "3", "unit": ""}); err == nil {
 		t.Error("hid a fourth side of a triangle")
+	}
+}
+
+func TestGrade4Figures(t *testing.T) {
+	draw := func(name string, a Args) string {
+		t.Helper()
+		svg, err := Draw(name, a)
+		if err != nil {
+			t.Fatalf("%s %v: %v", name, a, err)
+		}
+		return svg
+	}
+	for kind, pins := range map[string]int{"point": 1, "line": 0, "ray": 1, "segment": 2, "parallel": 0, "perpendicular": 0, "intersecting": 0} {
+		svg := draw("lines", Args{"kind": kind, "turn": "30"})
+		if strings.Count(svg, "fig-pin") != pins {
+			t.Errorf("%s: %d points: %s", kind, strings.Count(svg, "fig-pin"), svg)
+		}
+	}
+	svg := draw("angle", Args{"a": "35", "b": "55", "turn": "10", "labels": "35°|?"})
+	if !strings.Contains(svg, ">35°<") || !strings.Contains(svg, ">?<") || strings.Count(svg, `class="fig-line"`) != 3 {
+		t.Errorf("two angles: %s", svg)
+	}
+	svg = draw("angle", Args{"a": "90", "b": "0", "turn": "0", "labels": ""})
+	if strings.Contains(svg, "fig-arc") || !strings.Contains(svg, "fig-thin") {
+		t.Errorf("a right angle has a square, not an arc: %s", svg)
+	}
+	svg = draw("protractor", Args{"degrees": "40", "side": "left"})
+	if strings.Count(svg, "fig-tick") != 37 || !strings.Contains(svg, ">180<") {
+		t.Errorf("protractor: %s", svg)
+	}
+	svg = draw("symmetry", Args{"name": "square", "axis": "45"})
+	if !strings.Contains(svg, "fig-mirror") {
+		t.Errorf("symmetry: %s", svg)
+	}
+	for _, k := range TriangleKinds {
+		svg = draw("triangle", Args{"kind": k, "turn": "0"})
+		ticks := strings.Count(svg, `class="fig-line fig-thin"`)
+		want := map[string]int{"equilateral": 3, "isosceles": 2, "right": 1}[k]
+		if ticks != want {
+			t.Errorf("%s: %d marks, want %d", k, ticks, want)
+		}
+	}
+	for name, a := range map[string]Args{
+		"lines":      {"kind": "curve", "turn": "0"},
+		"angle":      {"a": "200", "b": "200", "turn": "0", "labels": ""},
+		"protractor": {"degrees": "190", "side": "right"},
+		"symmetry":   {"name": "star", "axis": "0"},
+		"triangle":   {"kind": "square", "turn": "0"},
+	} {
+		if _, err := Draw(name, a); err == nil {
+			t.Errorf("%s %v drew", name, a)
+		}
 	}
 }

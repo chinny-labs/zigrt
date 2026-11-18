@@ -202,6 +202,11 @@ Figures the app draws, with the arguments each takes:
 | `dial` | `value`, `max`, `step` (2 to 20 marks), `unit`: a kitchen scale |
 | `jug` | `value`, `max`, `step`, `unit`: a measuring jug |
 | `split-rectangle` | `cols`, `rows` (1 to 3 parts each, `"20\|3"`), `areas` (1 writes each part's area inside): an area model |
+| `lines` | `kind`: `point`, `line`, `ray`, `segment`, `parallel`, `perpendicular` (with the square mark) or `intersecting`; `turn` |
+| `angle` | `a` (1 to 359), `b` (0 for one angle, else a second beside it), `turn`, `labels` (`"35°\|?"`, up to 6 characters each); a right angle gets a square |
+| `protractor` | `degrees` (1 to 179), `side`: `right` (the fixed ray on the inner scale's 0) or `left` (the outer scale's) |
+| `symmetry` | `name` (a flat shape), `axis` (degrees from upright): a dashed line through the middle |
+| `triangle` | `kind` (`equilateral`, `isosceles`, `scalene`, `right`, `obtuse`, `acute`), `turn`; equal sides ticked, a right angle squared |
 | `line-plot` | `from`, `to`, `step` (at most 16 ticks; halves, quarters and eighths labelled ½, ¼, ⅛), `marks` (`"2:3\|5/2:1"`, value and how many Xs, at most 8 over one value) |
 
 Any other name must be a static picture in `figures/<name>.svg`, which takes no arguments. Packs are untrusted, so a static figure is shown only as cleaned: drawing elements (`svg`, `g`, `path`, `rect`, `circle`, `ellipse`, `line`, `polyline`, `polygon`, `text`, `tspan`, `title`, `desc`) with geometry and paint attributes. A script, style, link, `use`, image, event handler or `url(...)` fails the subresources gate. A file is at most 64 KB.

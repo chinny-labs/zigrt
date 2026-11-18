@@ -42,6 +42,11 @@ var Figures = map[string][]string{
 	"dial":            {"value", "max", "step", "unit"},            // a kitchen scale
 	"jug":             {"value", "max", "step", "unit"},            // a measuring jug
 	"split-rectangle": {"cols", "rows", "areas"},                   // an area model, cols "20|3", rows "10|4"
+	"lines":           {"kind", "turn"},                            // point, line, ray, segment, parallel, perpendicular, intersecting
+	"angle":           {"a", "b", "turn", "labels"},                // one angle, or two side by side; labels "35°|?"
+	"protractor":      {"degrees", "side"},                         // an angle on a protractor; side right or left
+	"symmetry":        {"name", "axis"},                            // a flat shape with a dashed line through it
+	"triangle":        {"kind", "turn"},                            // equilateral, isosceles, scalene, right, obtuse, acute
 }
 
 // FigureName is the figure a template draws, or "" when it draws none.
