@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.0](https://github.com/chinny-labs/zigrt/compare/v0.12.0...v1.0.0) (2026-11-18)
+
+
+### Features
+
+* embed the complete K-5 curriculum (2026.11.2) ([#38](https://github.com/chinny-labs/zigrt/issues/38)) ([8efb1c9](https://github.com/chinny-labs/zigrt/commit/8efb1c936b3455a63cd495808db781396db5c2c2))
+
 ## [0.12.0](https://github.com/chinny-labs/zigrt/compare/v0.11.0...v0.12.0) (2026-11-18)
 
 
