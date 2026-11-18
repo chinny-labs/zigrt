@@ -198,6 +198,10 @@ Figures the app draws, with the arguments each takes:
 | `picture-graph` | `rows` (`"Cats:4\|Dogs:6"`, 2 to 6 rows), `key` (1 to 10): each symbol is worth `key`; with an even key, a half symbol is half of it |
 | `bar-graph` | `rows` (whole numbers to 1000), `scale`: the axis is marked every `scale`, 2 to 12 lines |
 | `grid` | `rows`, `cols` (1 to 12), `shaded`: a rectangle of unit squares, the first `shaded` filled |
+| `polygon` | `shape` (`rectangle` and `square` take 2 and 1 `sides`; `triangle` 3; `pentagon` 5; `hexagon` 6; `L` 6: top, down, step, down, bottom, up, drawn to scale), `sides` (`"9\|4"`), `hide` (the side shown as "?", or -1), `unit` |
+| `dial` | `value`, `max`, `step` (2 to 20 marks), `unit`: a kitchen scale |
+| `jug` | `value`, `max`, `step`, `unit`: a measuring jug |
+| `split-rectangle` | `cols`, `rows` (1 to 3 parts each, `"20\|3"`), `areas` (1 writes each part's area inside): an area model |
 | `line-plot` | `from`, `to`, `step` (at most 16 ticks; halves, quarters and eighths labelled ½, ¼, ⅛), `marks` (`"2:3\|5/2:1"`, value and how many Xs, at most 8 over one value) |
 
 Any other name must be a static picture in `figures/<name>.svg`, which takes no arguments. Packs are untrusted, so a static figure is shown only as cleaned: drawing elements (`svg`, `g`, `path`, `rect`, `circle`, `ellipse`, `line`, `polyline`, `polygon`, `text`, `tspan`, `title`, `desc`) with geometry and paint attributes. A script, style, link, `use`, image, event handler or `url(...)` fails the subresources gate. A file is at most 64 KB.

@@ -30,31 +30,35 @@ type Args map[string]string
 
 // Catalogue lists every figure Draw knows, with its arguments.
 var Catalogue = map[string][]string{
-	"array":         {"rows", "cols"},
-	"clock":         {"hour", "minute"},
-	"coordinate":    {"size", "x", "y"},
-	"fraction-bar":  {"parts", "shaded"},
-	"number-line":   {"from", "to", "step", "mark"},
-	"rectangle":     {"width", "height", "unit"},
-	"prism":         {"length", "width", "height", "unit"},
-	"dots":          {"count", "arrange"},
-	"dot-groups":    {"a", "b", "style"},
-	"ten-frame":     {"frames", "filled"},
-	"shape":         {"name", "turn"},
-	"shape-mix":     {"circles", "triangles", "squares"},
-	"solid":         {"name"},
-	"compare":       {"a", "b", "c", "kind"},
-	"balance":       {"tip"},
-	"position":      {"place"},
-	"base-ten":      {"hundreds", "tens", "ones"},
-	"ruler":         {"start", "length", "max", "unit"},
-	"table":         {"rows", "style"},
-	"cut-shape":     {"name", "parts", "equal", "shaded"},
-	"coins":         {"pennies", "nickels", "dimes", "quarters"},
-	"picture-graph": {"rows", "key"},
-	"bar-graph":     {"rows", "scale"},
-	"line-plot":     {"from", "to", "step", "marks"},
-	"grid":          {"rows", "cols", "shaded"},
+	"array":           {"rows", "cols"},
+	"clock":           {"hour", "minute"},
+	"coordinate":      {"size", "x", "y"},
+	"fraction-bar":    {"parts", "shaded"},
+	"number-line":     {"from", "to", "step", "mark"},
+	"rectangle":       {"width", "height", "unit"},
+	"prism":           {"length", "width", "height", "unit"},
+	"dots":            {"count", "arrange"},
+	"dot-groups":      {"a", "b", "style"},
+	"ten-frame":       {"frames", "filled"},
+	"shape":           {"name", "turn"},
+	"shape-mix":       {"circles", "triangles", "squares"},
+	"solid":           {"name"},
+	"compare":         {"a", "b", "c", "kind"},
+	"balance":         {"tip"},
+	"position":        {"place"},
+	"base-ten":        {"hundreds", "tens", "ones"},
+	"ruler":           {"start", "length", "max", "unit"},
+	"table":           {"rows", "style"},
+	"cut-shape":       {"name", "parts", "equal", "shaded"},
+	"coins":           {"pennies", "nickels", "dimes", "quarters"},
+	"picture-graph":   {"rows", "key"},
+	"bar-graph":       {"rows", "scale"},
+	"line-plot":       {"from", "to", "step", "marks"},
+	"grid":            {"rows", "cols", "shaded"},
+	"polygon":         {"shape", "sides", "hide", "unit"},
+	"dial":            {"value", "max", "step", "unit"},
+	"jug":             {"value", "max", "step", "unit"},
+	"split-rectangle": {"cols", "rows", "areas"},
 }
 
 // Draw returns a figure as an SVG element, or an error when its arguments
@@ -114,6 +118,14 @@ func Draw(name string, a Args) (string, error) {
 		err = d.linePlot(a)
 	case "grid":
 		err = d.grid(a)
+	case "polygon":
+		err = d.polygon(a)
+	case "dial":
+		err = d.dial(a)
+	case "jug":
+		err = d.jug(a)
+	case "split-rectangle":
+		err = d.splitRectangle(a)
 	default:
 		return "", fmt.Errorf("figure: there is no figure %q", name)
 	}

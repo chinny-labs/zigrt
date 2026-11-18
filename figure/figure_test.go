@@ -12,31 +12,35 @@ import (
 
 func TestDraw(t *testing.T) {
 	good := map[string]Args{
-		"array":         {"rows": "3", "cols": "4"},
-		"clock":         {"hour": "4", "minute": "35"},
-		"coordinate":    {"size": "10", "x": "3", "y": "7"},
-		"fraction-bar":  {"parts": "8", "shaded": "3"},
-		"number-line":   {"from": "0", "to": "2", "step": "1/4", "mark": "5/4"},
-		"rectangle":     {"width": "9", "height": "3", "unit": "cm"},
-		"prism":         {"length": "5", "width": "2", "height": "3", "unit": "cubes"},
-		"dots":          {"count": "7", "arrange": "scatter"},
-		"dot-groups":    {"a": "4", "b": "3", "style": "apart"},
-		"ten-frame":     {"frames": "2", "filled": "13"},
-		"shape":         {"name": "hexagon", "turn": "30"},
-		"shape-mix":     {"circles": "3", "triangles": "2", "squares": "4"},
-		"solid":         {"name": "cylinder"},
-		"compare":       {"a": "4", "b": "7", "c": "0", "kind": "height"},
-		"balance":       {"tip": "left"},
-		"position":      {"place": "above"},
-		"base-ten":      {"hundreds": "1", "tens": "3", "ones": "7"},
-		"ruler":         {"start": "0", "length": "6", "max": "10", "unit": "cm"},
-		"table":         {"rows": "Cats:4|Dogs:7|Fish:2", "style": "tally"},
-		"cut-shape":     {"name": "circle", "parts": "4", "equal": "1", "shaded": "1"},
-		"coins":         {"pennies": "3", "nickels": "1", "dimes": "2", "quarters": "1"},
-		"picture-graph": {"rows": "Cats:4|Dogs:6", "key": "2"},
-		"bar-graph":     {"rows": "Red:4|Blue:7|Green:2", "scale": "1"},
-		"line-plot":     {"from": "0", "to": "2", "step": "1/4", "marks": "1/2:2|3/4:1|5/4:3"},
-		"grid":          {"rows": "3", "cols": "4", "shaded": "5"},
+		"array":           {"rows": "3", "cols": "4"},
+		"clock":           {"hour": "4", "minute": "35"},
+		"coordinate":      {"size": "10", "x": "3", "y": "7"},
+		"fraction-bar":    {"parts": "8", "shaded": "3"},
+		"number-line":     {"from": "0", "to": "2", "step": "1/4", "mark": "5/4"},
+		"rectangle":       {"width": "9", "height": "3", "unit": "cm"},
+		"prism":           {"length": "5", "width": "2", "height": "3", "unit": "cubes"},
+		"dots":            {"count": "7", "arrange": "scatter"},
+		"dot-groups":      {"a": "4", "b": "3", "style": "apart"},
+		"ten-frame":       {"frames": "2", "filled": "13"},
+		"shape":           {"name": "hexagon", "turn": "30"},
+		"shape-mix":       {"circles": "3", "triangles": "2", "squares": "4"},
+		"solid":           {"name": "cylinder"},
+		"compare":         {"a": "4", "b": "7", "c": "0", "kind": "height"},
+		"balance":         {"tip": "left"},
+		"position":        {"place": "above"},
+		"base-ten":        {"hundreds": "1", "tens": "3", "ones": "7"},
+		"ruler":           {"start": "0", "length": "6", "max": "10", "unit": "cm"},
+		"table":           {"rows": "Cats:4|Dogs:7|Fish:2", "style": "tally"},
+		"cut-shape":       {"name": "circle", "parts": "4", "equal": "1", "shaded": "1"},
+		"coins":           {"pennies": "3", "nickels": "1", "dimes": "2", "quarters": "1"},
+		"picture-graph":   {"rows": "Cats:4|Dogs:6", "key": "2"},
+		"bar-graph":       {"rows": "Red:4|Blue:7|Green:2", "scale": "1"},
+		"line-plot":       {"from": "0", "to": "2", "step": "1/4", "marks": "1/2:2|3/4:1|5/4:3"},
+		"grid":            {"rows": "3", "cols": "4", "shaded": "5"},
+		"polygon":         {"shape": "L", "sides": "4|2|3|3|7|5", "hide": "-1", "unit": "m"},
+		"dial":            {"value": "350", "max": "1000", "step": "100", "unit": "g"},
+		"jug":             {"value": "600", "max": "1000", "step": "100", "unit": "ml"},
+		"split-rectangle": {"cols": "20|3", "rows": "10|4", "areas": "1"},
 	}
 	for _, name := range Names() {
 		svg, err := Draw(name, good[name])
@@ -301,5 +305,57 @@ func TestMixedLabel(t *testing.T) {
 		if got := mixedLabel(r); got != want {
 			t.Errorf("%s: %q, want %q", in, got, want)
 		}
+	}
+}
+
+func TestGrade3Figures(t *testing.T) {
+	draw := func(name string, a Args) string {
+		t.Helper()
+		svg, err := Draw(name, a)
+		if err != nil {
+			t.Fatalf("%s %v: %v", name, a, err)
+		}
+		return svg
+	}
+	svg := draw("polygon", Args{"shape": "rectangle", "sides": "9|4", "hide": "1", "unit": "cm"})
+	if strings.Count(svg, ">9 cm<") != 2 || strings.Count(svg, ">4 cm<") != 1 || strings.Count(svg, ">?<") != 1 {
+		t.Errorf("rectangle: %s", svg)
+	}
+	svg = draw("polygon", Args{"shape": "L", "sides": "4|2|3|3|7|5", "hide": "-1", "unit": ""})
+	for _, want := range []string{">4<", ">2<", ">3<", ">7<", ">5<"} {
+		if !strings.Contains(svg, want) {
+			t.Errorf("L lacks %s: %s", want, svg)
+		}
+	}
+	svg = draw("polygon", Args{"shape": "pentagon", "sides": "5|5|5|5|5", "hide": "-1", "unit": "in"})
+	if strings.Count(svg, ">5 in<") != 5 {
+		t.Errorf("pentagon: %s", svg)
+	}
+	svg = draw("dial", Args{"value": "3", "max": "10", "step": "1", "unit": "kg"})
+	if strings.Count(svg, `class="fig-tick"`) != 11 || !strings.Contains(svg, ">kg<") {
+		t.Errorf("dial: %s", svg)
+	}
+	svg = draw("jug", Args{"value": "750", "max": "1000", "step": "250", "unit": "ml"})
+	if strings.Count(svg, `class="fig-tick"`) != 5 || !strings.Contains(svg, "fig-water") {
+		t.Errorf("jug: %s", svg)
+	}
+	svg = draw("split-rectangle", Args{"cols": "20|3", "rows": "10|4", "areas": "1"})
+	for _, want := range []string{">200<", ">30<", ">80<", ">12<", ">20<", ">4<"} {
+		if !strings.Contains(svg, want) {
+			t.Errorf("area model lacks %s: %s", want, svg)
+		}
+	}
+	for name, a := range map[string]Args{
+		"polygon":         {"shape": "L", "sides": "4|2|3|3|8|5", "hide": "-1", "unit": ""},
+		"dial":            {"value": "12", "max": "10", "step": "1", "unit": "kg"},
+		"jug":             {"value": "1", "max": "1000", "step": "30", "unit": "ml"},
+		"split-rectangle": {"cols": "7", "rows": "3", "areas": "0"},
+	} {
+		if _, err := Draw(name, a); err == nil {
+			t.Errorf("%s %v drew", name, a)
+		}
+	}
+	if _, err := Draw("polygon", Args{"shape": "triangle", "sides": "3|4|5", "hide": "3", "unit": ""}); err == nil {
+		t.Error("hid a fourth side of a triangle")
 	}
 }
