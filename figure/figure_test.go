@@ -78,7 +78,7 @@ func TestDraw(t *testing.T) {
 		}
 	}
 	svg, _ = Draw("rectangle", Args{"width": "2.5", "height": "1/3", "unit": "<b>m</b>"})
-	if !strings.Contains(svg, ">2.5 &lt;b&gt;m&lt;/b&gt;<") || !strings.Contains(svg, ">1/3 &lt;b") {
+	if !strings.Contains(svg, ">2½ &lt;b&gt;m&lt;/b&gt;<") || !strings.Contains(svg, ">1/3 &lt;b") {
 		t.Errorf("rectangle labels: %s", svg)
 	}
 }
@@ -440,5 +440,12 @@ func TestGrade5Figures(t *testing.T) {
 		if _, err := Draw(name, a); err == nil {
 			t.Errorf("%s %v drew", name, a)
 		}
+	}
+}
+
+func TestEdgesShowFractions(t *testing.T) {
+	svg, err := Draw("rectangle", Args{"width": "2/5", "height": "7/4", "unit": "m"})
+	if err != nil || !strings.Contains(svg, ">2/5 m<") || !strings.Contains(svg, ">1¾ m<") {
+		t.Fatalf("%v %s", err, svg)
 	}
 }
