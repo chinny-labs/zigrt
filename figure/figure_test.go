@@ -46,6 +46,8 @@ func TestDraw(t *testing.T) {
 		"protractor":      {"degrees": "65", "side": "right"},
 		"symmetry":        {"name": "hexagon", "axis": "90"},
 		"triangle":        {"kind": "right", "turn": "15"},
+		"joined-prisms":   {"a": "4", "b": "3", "h1": "5", "h2": "2", "w": "3", "unit": "cm"},
+		"plot":            {"size": "10", "points": "1,3|2,5|3,7", "join": "1"},
 	}
 	for _, name := range Names() {
 		svg, err := Draw(name, good[name])
@@ -76,7 +78,7 @@ func TestDraw(t *testing.T) {
 		}
 	}
 	svg, _ = Draw("rectangle", Args{"width": "2.5", "height": "1/3", "unit": "<b>m</b>"})
-	if !strings.Contains(svg, ">2.5 &lt;b&gt;m&lt;/b&gt;<") || !strings.Contains(svg, ">1/3 &lt;b") {
+	if !strings.Contains(svg, ">2½ &lt;b&gt;m&lt;/b&gt;<") || !strings.Contains(svg, ">1/3 &lt;b") {
 		t.Errorf("rectangle labels: %s", svg)
 	}
 }
@@ -414,5 +416,36 @@ func TestGrade4Figures(t *testing.T) {
 		if _, err := Draw(name, a); err == nil {
 			t.Errorf("%s %v drew", name, a)
 		}
+	}
+}
+
+func TestGrade5Figures(t *testing.T) {
+	svg, err := Draw("joined-prisms", Args{"a": "4", "b": "3", "h1": "5", "h2": "2", "w": "3", "unit": "cm"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{">4 cm<", ">3 cm<", ">5 cm<", ">2 cm<"} {
+		if !strings.Contains(svg, want) {
+			t.Errorf("joined boxes lack %s: %s", want, svg)
+		}
+	}
+	svg, err = Draw("plot", Args{"size": "10", "points": "1,3|2,5|3,7", "join": "1"})
+	if err != nil || strings.Count(svg, `class="fig-mark"`) != 3 || !strings.Contains(svg, "fig-plotline") {
+		t.Errorf("plot: %v %s", err, svg)
+	}
+	for name, a := range map[string]Args{
+		"joined-prisms": {"a": "0", "b": "3", "h1": "5", "h2": "2", "w": "3", "unit": ""},
+		"plot":          {"size": "5", "points": "1,3|9,9", "join": "0"},
+	} {
+		if _, err := Draw(name, a); err == nil {
+			t.Errorf("%s %v drew", name, a)
+		}
+	}
+}
+
+func TestEdgesShowFractions(t *testing.T) {
+	svg, err := Draw("rectangle", Args{"width": "2/5", "height": "7/4", "unit": "m"})
+	if err != nil || !strings.Contains(svg, ">2/5 m<") || !strings.Contains(svg, ">1¾ m<") {
+		t.Fatalf("%v %s", err, svg)
 	}
 }

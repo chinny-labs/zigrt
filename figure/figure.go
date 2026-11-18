@@ -64,6 +64,8 @@ var Catalogue = map[string][]string{
 	"protractor":      {"degrees", "side"},
 	"symmetry":        {"name", "axis"},
 	"triangle":        {"kind", "turn"},
+	"joined-prisms":   {"a", "b", "h1", "h2", "w", "unit"},
+	"plot":            {"size", "points", "join"},
 }
 
 // Draw returns a figure as an SVG element, or an error when its arguments
@@ -141,6 +143,10 @@ func Draw(name string, a Args) (string, error) {
 		err = d.symmetry(a)
 	case "triangle":
 		err = d.triangle(a)
+	case "joined-prisms":
+		err = d.joinedPrisms(a)
+	case "plot":
+		err = d.plot(a)
 	default:
 		return "", fmt.Errorf("figure: there is no figure %q", name)
 	}
@@ -211,7 +217,9 @@ func positive(a Args, key string, hi float64) (float64, string, error) {
 	if f <= 0 || f > hi {
 		return 0, "", fmt.Errorf("%s is %s; it must be more than 0 and at most %s", key, r.RatString(), num(hi))
 	}
-	return f, label(r), nil
+	// Edges are lengths in a fraction lesson as often as not: show 2/5,
+	// 1½ or 2, never 0.4.
+	return f, mixedLabel(r), nil
 }
 
 // label writes a number as a figure shows it: whole, decimal when it ends

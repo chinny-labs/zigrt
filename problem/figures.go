@@ -47,6 +47,8 @@ var Figures = map[string][]string{
 	"protractor":      {"degrees", "side"},                         // an angle on a protractor; side right or left
 	"symmetry":        {"name", "axis"},                            // a flat shape with a dashed line through it
 	"triangle":        {"kind", "turn"},                            // equilateral, isosceles, scalene, right, obtuse, acute
+	"joined-prisms":   {"a", "b", "h1", "h2", "w", "unit"},         // two boxes side by side, edges labelled
+	"plot":            {"size", "points", "join"},                  // points "1,3|2,5" on a grid, joined when join is 1
 }
 
 // FigureName is the figure a template draws, or "" when it draws none.
