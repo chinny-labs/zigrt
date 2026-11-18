@@ -40,6 +40,20 @@
     </section>
     <button class="btn btn-primary" type="submit">Save changes</button>
   </form>
+  {{if $d.Starts}}<section class="card stack" aria-labelledby="start-h">
+    <h2 id="start-h">Start at a grade</h2>
+    <form method="post" action="/parent/students/{{$s.ID}}/start-grade" class="stack">
+      {{template "csrf" .}}
+      <div class="field">
+        <label for="grade">Grade</label>
+        <select id="grade" name="grade">
+          {{range $d.Starts}}<option value="{{.Grade}}"{{if .Selected}} selected{{end}}>{{gradeOf .Grade}}</option>{{end}}
+        </select>
+        <span class="hint">Every block {{$s.DisplayName}}'s course needs from earlier grades is marked placed, so lessons start at this grade. Those blocks still come back now and then as reviews.</span>
+      </div>
+      <button class="btn btn-secondary" type="submit">Start here</button>
+    </form>
+  </section>{{end}}
   <section class="card stack-sm" aria-labelledby="more-h">
     <h2 id="more-h" class="visually-hidden">More</h2>
     <form method="post" action="/parent/students/{{$s.ID}}/placement">{{template "csrf" .}}<button class="rowlink rowbtn" type="submit"><span>Run the placement check again</span>{{template "i-next"}}</button></form>

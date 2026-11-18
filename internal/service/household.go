@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/chinny-labs/zigrt/content"
 	"github.com/chinny-labs/zigrt/internal/drill"
 	"github.com/chinny-labs/zigrt/internal/learning"
 	"github.com/chinny-labs/zigrt/internal/store"
@@ -253,6 +254,60 @@ func (s *Service) OverrideTopic(ctx context.Context, actor store.User, studentID
 	})
 }
 
+// PlaceBelowGrade starts a student at a grade: every block of an earlier
+// grade in their course's working set is marked placed, as if a parent had
+// marked each one (plan 3.3, ADR 15). Blocks already placed are left alone.
+// It reports how many it marked.
+func (s *Service) PlaceBelowGrade(ctx context.Context, actor store.User, studentID, grade string) (int, error) {
+	if err := requireParent(actor); err != nil {
+		return 0, err
+	}
+	rank := slices.Index(content.Grades, grade)
+	if rank <= 0 {
+		return 0, invalid("grade", "Choose Grade 1 or later.")
+	}
+	l, err := s.library()
+	if err != nil {
+		return 0, err
+	}
+	n := 0
+	err = s.Store.Tx(ctx, studentID, func(tx store.Tx) error {
+		n = 0
+		if _, err := getStudent(ctx, tx, studentID); err != nil {
+			return err
+		}
+		set, err := tx.GetStudentSettings(ctx, studentID)
+		if err != nil && !errors.Is(err, store.ErrNotFound) {
+			return err
+		}
+		today, err := s.today(ctx, tx)
+		if err != nil {
+			return err
+		}
+		states, err := loadStates(ctx, tx, studentID)
+		if err != nil {
+			return err
+		}
+		now := s.now()
+		for _, id := range l.courseTopics(set.CourseID) {
+			t := l.pack.Topic(id)
+			if t == nil || slices.Index(content.Grades, t.Grade) >= rank || states[id].State == learning.Mastered {
+				continue
+			}
+			if err := s.applyEvent(ctx, tx, l, studentID, states, learning.Event{Kind: learning.ParentOverride,
+				Topic: id, On: today.date, Mastered: true}, now); err != nil {
+				return err
+			}
+			n++
+		}
+		if n == 0 {
+			return nil
+		}
+		return s.audit(ctx, tx, actor.ID, "student.start_grade", studentID, map[string]any{"grade": grade, "blocks": n})
+	})
+	return n, err
+}
+
 // RerunPlacement offers a student the placement test again: it is waiting
 // at the top of their list next time they sign in.
 func (s *Service) RerunPlacement(ctx context.Context, actor store.User, studentID string) error {
@@ -278,10 +333,14 @@ func (s *Service) RerunPlacement(ctx context.Context, actor store.User, studentI
 		if err != nil && !errors.Is(err, store.ErrNotFound) {
 			return err
 		}
+		states, err := loadStates(ctx, tx, studentID)
+		if err != nil {
+			return err
+		}
 		now := s.now()
 		t := store.Task{ID: store.NewID(), StudentID: studentID, Kind: store.TaskDiagnostic, PackVersion: l.pack.Manifest.Version,
 			Status: store.TaskPaused, StartedAt: now, UpdatedAt: now}
-		if err := encodeState(&t, taskState{Phase: PhaseIntro, Placement: &learning.Placement{}, Set: l.courseTopics(set.CourseID)}); err != nil {
+		if err := encodeState(&t, taskState{Phase: PhaseIntro, Placement: &learning.Placement{}, Set: l.placementSet(set.CourseID, states)}); err != nil {
 			return err
 		}
 		if err := tx.CreateTask(ctx, t); err != nil {

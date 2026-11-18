@@ -68,6 +68,7 @@ func (s *Server) routes() http.Handler {
 	mux.HandleFunc("GET /parent/students/{id}/settings", s.parent(s.studentSettingsPage))
 	mux.HandleFunc("POST /parent/students/{id}/settings", s.parent(s.studentSettingsSave))
 	mux.HandleFunc("POST /parent/students/{id}/placement", s.parent(s.studentPlacement))
+	mux.HandleFunc("POST /parent/students/{id}/start-grade", s.parent(s.studentStartGrade))
 	mux.HandleFunc("GET /parent/students/{id}/blocks", s.parent(s.studentBlocksPage))
 	mux.HandleFunc("POST /parent/students/{id}/blocks/{topic}", s.parent(s.studentBlockSave))
 	mux.HandleFunc("GET /parent/students/{id}/delete", s.parent(s.studentDeletePage))
