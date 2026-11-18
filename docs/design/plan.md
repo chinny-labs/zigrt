@@ -128,7 +128,7 @@ A lesson teaches one topic in 2 to 4 knowledge points. Each knowledge point is a
 - A knowledge point is passed with 2 correct answers in a row.
 - After a wrong answer the student sees the worked solution to that exact problem, then gets a fresh one.
 - 3 wrong answers in a knowledge point stops the lesson for the day with a kind message. It resumes at that point next time.
-- A lesson stopped twice schedules immediate reviews of its `requires` topics before it is offered again.
+- A lesson stopped twice schedules immediate reviews of its `requires` topics before it is offered again. Those reviews go to the front of the queue, ahead of older due reviews and never folded into another topic's review, so a backlog cannot hold the lesson back indefinitely (ADR 11).
 - Passing every knowledge point makes the topic Mastered at stage 0, first review due the next day.
 
 ### 3.5 Spaced review

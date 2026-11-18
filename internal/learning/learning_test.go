@@ -200,6 +200,48 @@ func TestPausesHoldTheLesson(t *testing.T) {
 	}
 }
 
+// TestHeldLessonsJumpTheQueue: a lesson stopped twice waits for its
+// prerequisites' reviews, so those go ahead of a backlog of older reviews,
+// and are offered even when another due review would cover them. Without
+// that, a struggling student with a long backlog never got back to the
+// lesson (simulated: months stuck on one topic).
+func TestHeldLessonsJumpTheQueue(t *testing.T) {
+	c, g := Default(), testGraph()
+	s := States{
+		"shapes": {Topic: "shapes", State: Mastered, Stage: 1, Due: day0.Add(-20)},
+		"add":    {Topic: "add", State: Mastered, Stage: 1, Due: day0.Add(-10)},
+		"count":  {Topic: "count", State: Mastered, Stage: 2, Due: day0.Add(-1)},
+		"clock":  {Topic: "clock", State: Learning, Pauses: 2},
+	}
+	sit := Situation{Today: day0, Course: []string{"count", "add", "shapes", "sub", "clock"}, States: s, InProgress: []string{"clock"}}
+	tasks, _ := c.NextTasks(g, sit)
+	// count is the least overdue and add (due) fully covers it, yet it
+	// comes first: clock is waiting on it.
+	if got := topics(tasks); got != "review:count review:shapes review:add lesson:sub" {
+		t.Fatalf("with clock held: %s", got)
+	}
+	// Once count is reviewed, clock is back at the front.
+	c.Apply(g, s, Event{Kind: ReviewPassed, Topic: "count", On: day0})
+	tasks, _ = c.NextTasks(g, sit)
+	if got := topics(tasks); got != "resume:clock review:shapes review:add lesson:sub" {
+		t.Fatalf("after count's review: %s", got)
+	}
+	// A held lesson with no task (set aside, or reopened) still pulls its
+	// prerequisites forward.
+	s["count"] = TopicState{Topic: "count", State: Mastered, Stage: 2, Due: day0.Add(-1)}
+	sit.InProgress = nil
+	tasks, _ = c.NextTasks(g, sit)
+	if got := topics(tasks); got != "review:count review:shapes review:add lesson:sub" {
+		t.Fatalf("held without a task: %s", got)
+	}
+	// Not held while paused today: the backlog keeps its usual order.
+	sit.PausedToday = map[string]bool{"clock": true}
+	tasks, _ = c.NextTasks(g, sit)
+	if got := topics(tasks); got != "review:shapes review:add lesson:sub" {
+		t.Fatalf("paused today: %s", got)
+	}
+}
+
 func topics(ns []Next) string {
 	out := ""
 	for i, n := range ns {
