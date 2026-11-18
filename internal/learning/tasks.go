@@ -296,11 +296,15 @@ func (c Config) NextTasks(g *Graph, sit Situation) ([]Next, bool) {
 		ready = slices.Delete(ready, i, i+1)
 	}
 
+	inRow := c.MaxReviewsInRow
+	if c.BacklogReviews > 0 && len(reviews) > c.BacklogReviews {
+		inRow = max(inRow, c.BacklogReviewsInRow)
+	}
 	var out []Next
 	switch {
 	case len(resume) > 0:
 		out = slices.Concat(resume[:1], reviews, resume[1:], lessons)
-	case sit.ReviewsInRow >= c.MaxReviewsInRow && len(lessons) > 0:
+	case sit.ReviewsInRow >= inRow && len(lessons) > 0:
 		out = slices.Concat(lessons[:1], reviews, lessons[1:])
 	default:
 		out = slices.Concat(reviews, lessons)

@@ -37,7 +37,12 @@ type Config struct {
 	DefaultLessonXP    int // when the pack gives a topic none
 
 	MaxReviewsInRow int // reviews in a row before a lesson goes first
-	MaxTasks        int // tasks on the student home
+	// While more than BacklogReviews reviews are due, a lesson goes first
+	// only after BacklogReviewsInRow reviews in a row instead, so a student
+	// catches up without new learning stopping (0 turns this off).
+	BacklogReviews      int
+	BacklogReviewsInRow int
+	MaxTasks            int // tasks on the student home
 
 	FastAnswer time.Duration // answers quicker than this count as rushed
 	FastRun    int           // rushed answers in a row that pause the task
@@ -59,24 +64,26 @@ type Config struct {
 // Default is the plan's tuning.
 func Default() Config {
 	return Config{
-		KPPassStreak:       2,
-		KPMaxMisses:        3,
-		Intervals:          []int{1, 3, 7, 14, 30, 60, 120, 240},
-		FailStageDrop:      2,
-		FailsToReopen:      2,
-		PausesBeforeReview: 2,
-		ReviewProblems:     5,
-		ReviewPassPercent:  80,
-		ReviewBaseXP:       4,
-		PerfectReviewBonus: 1,
-		LessonBonusPercent: 20,
-		DefaultLessonXP:    10,
-		MaxReviewsInRow:    3,
-		MaxTasks:           4,
-		FastAnswer:         1500 * time.Millisecond,
-		FastRun:            3,
-		DrillXPPer:         10,
-		DrillXPDailyCap:    5,
+		KPPassStreak:        2,
+		KPMaxMisses:         3,
+		Intervals:           []int{1, 3, 7, 14, 30, 60, 120, 240},
+		FailStageDrop:       2,
+		FailsToReopen:       2,
+		PausesBeforeReview:  2,
+		ReviewProblems:      5,
+		ReviewPassPercent:   80,
+		ReviewBaseXP:        4,
+		PerfectReviewBonus:  1,
+		LessonBonusPercent:  20,
+		DefaultLessonXP:     10,
+		MaxReviewsInRow:     3,
+		BacklogReviews:      10,
+		BacklogReviewsInRow: 5,
+		MaxTasks:            4,
+		FastAnswer:          1500 * time.Millisecond,
+		FastRun:             3,
+		DrillXPPer:          10,
+		DrillXPDailyCap:     5,
 
 		OfferPlacement:        true,
 		OfferQuizzes:          true,

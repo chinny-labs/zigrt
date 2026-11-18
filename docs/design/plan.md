@@ -171,7 +171,7 @@ The student home shows up to four tasks; the first is the recommended one. The l
 
 1. A lesson in progress, if any.
 2. A quiz, if 150 XP have passed since the last one.
-3. Due reviews, most overdue first, after compression. At most 3 in a row before a lesson is offered.
+3. Due reviews, most overdue first, after compression; the prerequisites of a lesson stopped twice go first. At most 3 in a row before a lesson is offered, or 5 while more than 10 reviews are due (ADR 11).
 4. New lessons from Ready topics, in the pack's teaching order, alternating strands where the graph allows (for example, addition then measurement then addition).
 
 If nothing is due and nothing is Ready, the course is complete and the home screen says so and offers early reviews and drills.

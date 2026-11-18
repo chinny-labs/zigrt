@@ -242,6 +242,37 @@ func TestHeldLessonsJumpTheQueue(t *testing.T) {
 	}
 }
 
+// TestBacklogPutsReviewsFirst: with more than BacklogReviews due, a lesson
+// waits for BacklogReviewsInRow reviews in a row instead of MaxReviewsInRow.
+func TestBacklogPutsReviewsFirst(t *testing.T) {
+	c, g := Default(), testGraph()
+	c.BacklogReviews, c.BacklogReviewsInRow = 1, 5
+	// count is folded into add's review (compression), so two are offered.
+	s := States{
+		"count":  {Topic: "count", State: Mastered, Stage: 1, Due: day0.Add(-3)},
+		"shapes": {Topic: "shapes", State: Mastered, Stage: 1, Due: day0.Add(-2)},
+		"add":    {Topic: "add", State: Mastered, Stage: 1, Due: day0.Add(-1)},
+	}
+	sit := Situation{Today: day0, Course: []string{"count", "add", "shapes", "sub", "clock"}, States: s, ReviewsInRow: 3}
+	// More than 1 due: after 3 reviews in a row, still reviews first.
+	tasks, _ := c.NextTasks(g, sit)
+	if got := topics(tasks); got != "review:shapes review:add lesson:sub lesson:clock" {
+		t.Fatalf("backlog, 3 in a row: %s", got)
+	}
+	sit.ReviewsInRow = 5
+	tasks, _ = c.NextTasks(g, sit)
+	if got := topics(tasks); got != "lesson:sub review:shapes review:add lesson:clock" {
+		t.Fatalf("backlog, 5 in a row: %s", got)
+	}
+	// One due (not more than 1): the usual 3 in a row.
+	s["shapes"] = TopicState{Topic: "shapes", State: Mastered, Stage: 1, Due: day0.Add(5)}
+	sit.ReviewsInRow = 3
+	tasks, _ = c.NextTasks(g, sit)
+	if got := topics(tasks); got != "lesson:sub review:add lesson:clock" {
+		t.Fatalf("no backlog: %s", got)
+	}
+}
+
 func topics(ns []Next) string {
 	out := ""
 	for i, n := range ns {
