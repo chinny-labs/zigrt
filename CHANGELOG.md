@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.11.0](https://github.com/chinny-labs/zigrt/compare/v0.10.0...v0.11.0) (2026-11-18)
+
+
+### Features
+
+* **figure:** the grade 4 figures ([#34](https://github.com/chinny-labs/zigrt/issues/34)) ([1d0ae88](https://github.com/chinny-labs/zigrt/commit/1d0ae8812da8493606b54e1b3a9115144cc1e5d5))
+* **learning:** reviews first while a student is behind ([#35](https://github.com/chinny-labs/zigrt/issues/35)) ([793bfbb](https://github.com/chinny-labs/zigrt/commit/793bfbb21e427480caea43c6ddd77ae735c62d4a))
+
+
+### Bug Fixes
+
+* **learning:** a held lesson's prerequisite reviews jump the queue ([#32](https://github.com/chinny-labs/zigrt/issues/32)) ([f1107bd](https://github.com/chinny-labs/zigrt/commit/f1107bd825d4d29bcd2172ac42978bf3d8aa46ef))
+
 ## [0.10.0](https://github.com/chinny-labs/zigrt/compare/v0.9.0...v0.10.0) (2026-11-18)
 
 
