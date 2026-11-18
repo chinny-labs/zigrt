@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/chinny-labs/zigrt/compare/v0.9.0...v0.10.0) (2026-11-18)
+
+
+### Features
+
+* **figure:** the grade 3 figures ([#30](https://github.com/chinny-labs/zigrt/issues/30)) ([d57d274](https://github.com/chinny-labs/zigrt/commit/d57d274381a40448c065e0ecad33efd3bf1a480a))
+
 ## [0.9.0](https://github.com/chinny-labs/zigrt/compare/v0.8.0...v0.9.0) (2026-11-18)
 
 
