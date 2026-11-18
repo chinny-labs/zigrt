@@ -161,8 +161,8 @@ func TestReads(t *testing.T) {
 				}
 			}
 		}
-		if len(topics.Topics) != 30 || placed != s.Placed {
-			t.Errorf("%s: %d topics with %d placed, want 30 with %d", s.Name, len(topics.Topics), placed, s.Placed)
+		if want := len(e.svc.Pack().Topics); len(topics.Topics) != want || placed != s.Placed {
+			t.Errorf("%s: %d topics with %d placed, want %d with %d", s.Name, len(topics.Topics), placed, want, s.Placed)
 		}
 
 		var act struct{ Activity []api.Activity }
@@ -186,7 +186,7 @@ func TestReads(t *testing.T) {
 	}
 
 	var sys api.System
-	if e.call("read", "GET", "/system", nil, &sys); sys.PackID != "zigrt-k5" || sys.Topics != 30 || !sys.Healthy {
+	if e.call("read", "GET", "/system", nil, &sys); sys.PackID != "zigrt-k5" || sys.Topics != len(e.svc.Pack().Topics) || !sys.Healthy {
 		t.Errorf("system: %+v", sys)
 	}
 
