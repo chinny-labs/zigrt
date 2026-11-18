@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"slices"
 	"strings"
 	"time"
 
@@ -124,6 +125,37 @@ type settingsData struct {
 	Goal     int
 	Fluency  bool
 	CourseID string
+	Starts   []gradeOption // the grades a student can be started at
+}
+
+type gradeOption struct {
+	Grade    string
+	Selected bool
+}
+
+// startGrades lists the grades from Grade 1 up to the course's highest,
+// with the course's lowest grade picked.
+func startGrades(courses []content.Course, courseID string) []gradeOption {
+	if len(courses) == 0 {
+		return nil
+	}
+	c := courses[0]
+	for _, cc := range courses {
+		if cc.ID == courseID {
+			c = cc
+		}
+	}
+	lo, hi := len(content.Grades), 0
+	for _, g := range c.Grades {
+		if i := slices.Index(content.Grades, g); i >= 0 {
+			lo, hi = min(lo, i), max(hi, i)
+		}
+	}
+	var out []gradeOption
+	for i := 1; i <= hi; i++ {
+		out = append(out, gradeOption{Grade: content.Grades[i], Selected: i == lo})
+	}
+	return out
 }
 
 type dayToggle struct {
@@ -144,6 +176,7 @@ func (s *Server) renderSettings(w http.ResponseWriter, r *http.Request, status i
 	d := settingsData{S: st, Goal: st.Settings.DailyXPGoal, Fluency: st.Settings.FluencyEnabled, CourseID: st.Settings.CourseID}
 	if p := s.svc.Pack(); p != nil {
 		d.Courses = p.Manifest.Courses
+		d.Starts = startGrades(d.Courses, d.CourseID)
 	}
 	for _, wd := range []time.Weekday{time.Monday, time.Tuesday, time.Wednesday, time.Thursday, time.Friday, time.Saturday, time.Sunday} {
 		digit := fmt.Sprint(int(wd))
@@ -188,6 +221,21 @@ func (s *Server) studentPlacement(w http.ResponseWriter, r *http.Request, c *req
 	}
 	s.flash(w, "ok", "The placement check is at the top of their list next time they sign in.")
 	http.Redirect(w, r, studentPath(id), http.StatusSeeOther) //nolint:gosec // a same-site path built from one escaped segment
+}
+
+func (s *Server) studentStartGrade(w http.ResponseWriter, r *http.Request, c *reqCtx) {
+	id, grade := r.PathValue("id"), r.PostFormValue("grade")
+	n, err := s.svc.PlaceBelowGrade(r.Context(), *c.User, id, grade)
+	if err != nil {
+		s.parentFail(w, r, err)
+		return
+	}
+	if n == 0 {
+		s.flash(w, "ok", "Every block before "+gradeName(grade)+" was already placed.")
+	} else {
+		s.flash(w, "ok", fmt.Sprintf("Placed %d blocks from before %s. Lessons start there.", n, gradeName(grade)))
+	}
+	http.Redirect(w, r, studentPath(id, "/settings"), http.StatusSeeOther) //nolint:gosec // a same-site path built from one escaped segment
 }
 
 // --- marking blocks placed or not -------------------------------------------

@@ -463,7 +463,11 @@ func (s *Service) StartTask(ctx context.Context, student store.User, kind store.
 			if err != nil && !errors.Is(err, store.ErrNotFound) {
 				return err
 			}
-			st = taskState{Phase: PhaseIntro, Placement: &learning.Placement{}, Set: l.courseTopics(set.CourseID)}
+			states, err := loadStates(ctx, tx, student.ID)
+			if err != nil {
+				return err
+			}
+			st = taskState{Phase: PhaseIntro, Placement: &learning.Placement{}, Set: l.placementSet(set.CourseID, states)}
 		case store.TaskQuiz:
 			topics, err := s.quizTopics(ctx, tx, student.ID)
 			if err != nil {

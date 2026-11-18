@@ -159,3 +159,83 @@ func (a *app) upload(c *http.Client, formPage, path, field, name string, data []
 	b, _ := io.ReadAll(resp.Body)
 	return resp, string(b)
 }
+
+// TestStartAtGrade starts a student at a grade: every earlier block their
+// course needs is placed, a second go places nothing, and a placement check
+// run afterwards asks only about what is left.
+func TestStartAtGrade(t *testing.T) {
+	a := newApp(t)
+	a.setUp()
+	id := a.addStudent("Mika", "2468")
+	sp := "/parent/students/" + id
+	ctx := t.Context()
+	placed := func() map[string]bool {
+		t.Helper()
+		rows, err := a.svc.Store.ListTopicStates(ctx, id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		m := map[string]bool{}
+		for _, r := range rows {
+			if r.State == "mastered" {
+				m[r.TopicID] = true
+			}
+		}
+		return m
+	}
+
+	a.post(a.c, sp+"/settings", sp+"/settings", url.Values{"display_name": {"Mika"}, "avatar": {"sun"},
+		"course": {"grade-5"}, "daily_xp_goal": {"20"}})
+	_, body := a.get(a.c, sp+"/settings")
+	if !strings.Contains(body, "Start at a grade") || !strings.Contains(body, `<option value="5" selected>Grade 5</option>`) ||
+		strings.Contains(body, `<option value="K"`) {
+		t.Fatalf("settings lack the start form:\n%s", body)
+	}
+
+	resp, body := a.post(a.c, sp+"/settings", sp+"/start-grade", url.Values{"grade": {"5"}})
+	if resp.StatusCode != http.StatusSeeOther || resp.Header.Get("Location") != sp+"/settings" {
+		t.Fatalf("start: %d\n%s", resp.StatusCode, body)
+	}
+	got := placed()
+	want := 0
+	for _, tp := range a.svc.Pack().Topics {
+		if tp.Grade == "5" && got[tp.ID] {
+			t.Fatalf("%s is Grade 5 but was placed", tp.ID)
+		}
+		if tp.Grade != "5" && got[tp.ID] {
+			want++
+		}
+	}
+	if want == 0 || len(got) != want {
+		t.Fatalf("placed %d blocks, %d before Grade 5", len(got), want)
+	}
+	if _, body = a.get(a.c, sp+"/settings"); !strings.Contains(body, "Lessons start there.") {
+		t.Fatalf("no flash:\n%s", body)
+	}
+
+	// Again: nothing new.
+	a.post(a.c, sp+"/settings", sp+"/start-grade", url.Values{"grade": {"5"}})
+	if _, body = a.get(a.c, sp+"/settings"); !strings.Contains(body, "already placed") || len(placed()) != want {
+		t.Fatalf("second go:\n%s", body)
+	}
+
+	// Kindergarten is not a starting grade.
+	if resp, _ = a.post(a.c, sp+"/settings", sp+"/start-grade", url.Values{"grade": {"K"}}); resp.StatusCode != http.StatusUnprocessableEntity {
+		t.Fatalf("start at K: %d", resp.StatusCode)
+	}
+
+	// A placement check now skips the placed blocks.
+	a.post(a.c, sp+"/settings", sp+"/placement", url.Values{})
+	open, err := a.svc.Store.ListOpenTasks(ctx, id)
+	if err != nil || len(open) != 1 {
+		t.Fatalf("open tasks %v %v", open, err)
+	}
+	for tid := range got {
+		if strings.Contains(string(open[0].State), `"`+tid+`"`) {
+			t.Fatalf("the placement check still asks about %s: %s", tid, open[0].State)
+		}
+	}
+	if !strings.Contains(string(open[0].State), `"set":[`) {
+		t.Fatalf("placement has no set: %s", open[0].State)
+	}
+}

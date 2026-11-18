@@ -61,6 +61,19 @@ func (l *library) courseTopics(courseID string) []string {
 	return l.graph.WorkingSet(ids)
 }
 
+// placementSet is what a placement test places within: the course's working
+// set, less the blocks already placed (by a parent, say), so no question is
+// spent on them.
+func (l *library) placementSet(courseID string, states learning.States) []string {
+	var out []string
+	for _, id := range l.courseTopics(courseID) {
+		if states[id].State != learning.Mastered {
+			out = append(out, id)
+		}
+	}
+	return out
+}
+
 func hasCourse(cs []content.Course, id string) bool {
 	for _, c := range cs {
 		if c.ID == id {
