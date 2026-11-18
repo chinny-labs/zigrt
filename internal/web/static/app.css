@@ -752,6 +752,7 @@ ol.tower { list-style: none; margin: 0; padding: 0; }
 .fig-coin { fill: var(--zg-track); stroke: var(--zg-ink); stroke-width: 3; }
 .fig-penny { fill: var(--zg-sun-tint); }
 .fig-square { stroke: var(--zg-ink); }
+.fig-water { fill: var(--zg-blue); opacity: 0.45; }
 .fig-x { fill: var(--zg-blue); font-size: 26px; }
 
 /* --- placement (S4, S5) ---------------------------------------------------------- */

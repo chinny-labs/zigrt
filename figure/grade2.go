@@ -176,6 +176,7 @@ func (d *drawer) barGraph(a Args) error {
 		}
 		d.text(x+bw/2, bottom+26, "fig-small", r.label)
 	}
+	d.widen(340) // two bars alone would otherwise stand very tall
 	return nil
 }
 
