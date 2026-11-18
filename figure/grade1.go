@@ -124,7 +124,11 @@ func (d *drawer) ruler(a Args) error {
 		}
 		d.add(`<line class="fig-tick" x1="%s" y1="60" x2="%s" y2="%s"/>`, num(x), num(x), num(60+h))
 		if i%4 == 0 {
-			d.text(x, 108, "", strconv.Itoa(i/4))
+			size := "" // past 10 units, two-digit labels need the smaller size
+			if max > 10 {
+				size = "fig-small"
+			}
+			d.text(x, 108, size, strconv.Itoa(i/4))
 		}
 	}
 	if unitName != "" {
