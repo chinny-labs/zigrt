@@ -167,4 +167,5 @@ var kFigures = map[string]bool{
 	"base-ten": true, "ruler": true, "table": true, "cut-shape": true,
 	"coins": true, "picture-graph": true, "bar-graph": true, "line-plot": true, "grid": true,
 	"polygon": true, "dial": true, "jug": true, "split-rectangle": true,
+	"lines": true, "angle": true, "protractor": true, "symmetry": true, "triangle": true,
 }

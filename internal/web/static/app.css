@@ -753,6 +753,12 @@ ol.tower { list-style: none; margin: 0; padding: 0; }
 .fig-penny { fill: var(--zg-sun-tint); }
 .fig-square { stroke: var(--zg-ink); }
 .fig-water { fill: var(--zg-blue); opacity: 0.45; }
+/* Grade 4: angles, protractors and symmetry. */
+.fig-arc { fill: none; stroke: var(--zg-blue); stroke-width: 3; }
+.fig-arc2 { stroke: var(--zg-sun-ink); }
+.fig-tiny { font-size: 12px; }
+.fig-outer { fill: var(--zg-ink-muted); }
+.fig-mirror { stroke: var(--zg-sun-ink); stroke-width: 3; stroke-dasharray: 10 8; }
 .fig-x { fill: var(--zg-blue); font-size: 26px; }
 
 /* --- placement (S4, S5) ---------------------------------------------------------- */
