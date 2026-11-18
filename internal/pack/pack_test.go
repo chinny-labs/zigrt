@@ -41,7 +41,7 @@ func TestEmbedded(t *testing.T) {
 		t.Errorf("answer types %v, layouts %v", types, layouts)
 	}
 	for name := range problem.Figures {
-		if !figures[name] && !kFigures[name] {
+		if !figures[name] {
 			t.Errorf("no %s figure", name)
 		}
 	}
@@ -122,7 +122,7 @@ func writePack(t *testing.T, dir, name, version, minApp string) {
 func TestSelect(t *testing.T) {
 	// No folder, or an empty one: the embedded pack.
 	for _, dir := range []string{"", filepath.Join(t.TempDir(), "missing"), t.TempDir()} {
-		f, err := Select(dir, "0.2.0")
+		f, err := Select(dir, "1.0.0")
 		if err != nil || f.Source != "embedded" {
 			t.Fatalf("Select(%q) = %s, %v", dir, f.Source, err)
 		}
@@ -138,7 +138,7 @@ func TestSelect(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "notes.txt"), []byte("hi"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	f, err := Select(dir, "0.2.0")
+	f, err := Select(dir, "1.0.0")
 	if err != nil || f.Pack.Manifest.Version != "2099.01.1" || f.Source != filepath.Join(dir, "new") {
 		t.Fatalf("newer: %s from %s, %v", f.Pack.Manifest.Version, f.Source, err)
 	}
@@ -153,20 +153,8 @@ func TestSelect(t *testing.T) {
 	// The newest pack needs a newer app: refuse, rather than quietly run
 	// an older pack than the operator installed.
 	writePack(t, dir, "future", "2099.02.1", "9.0.0")
-	f, err = Select(dir, "0.2.0")
+	f, err = Select(dir, "1.0.0")
 	if err == nil || f.Pack.Manifest.Version != "2099.02.1" || !strings.Contains(err.Error(), "needs Zigrt 9.0.0") {
 		t.Fatalf("too new: %v", err)
 	}
-}
-
-// kFigures were added for the kindergarten lessons, which are not in the
-// pinned pack yet. Remove this once a pack with the K lessons is pinned.
-var kFigures = map[string]bool{
-	"dots": true, "dot-groups": true, "ten-frame": true, "shape": true, "shape-mix": true,
-	"solid": true, "compare": true, "balance": true, "position": true,
-	"base-ten": true, "ruler": true, "table": true, "cut-shape": true,
-	"coins": true, "picture-graph": true, "bar-graph": true, "line-plot": true, "grid": true,
-	"polygon": true, "dial": true, "jug": true, "split-rectangle": true,
-	"lines": true, "angle": true, "protractor": true, "symmetry": true, "triangle": true,
-	"joined-prisms": true, "plot": true,
 }

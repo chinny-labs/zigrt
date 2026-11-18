@@ -114,7 +114,7 @@ func TestMCP(t *testing.T) {
 		t.Errorf("unknown name: %q", msg)
 	}
 	var topics struct{ Topics []api.Topic }
-	if call(t, read, "list_topics", map[string]any{"student": s.ID}, &topics); len(topics.Topics) != 30 {
+	if call(t, read, "list_topics", map[string]any{"student": s.ID}, &topics); len(topics.Topics) != len(e.svc.Pack().Topics) {
 		t.Errorf("list_topics: %d", len(topics.Topics))
 	}
 	var st struct{ Days int }

@@ -2,6 +2,7 @@ package storetest
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
 	"errors"
 	"math/rand/v2"
@@ -13,7 +14,6 @@ import (
 	"github.com/chinny-labs/zigrt/content"
 	"github.com/chinny-labs/zigrt/internal/drill"
 	"github.com/chinny-labs/zigrt/internal/learning"
-	"github.com/chinny-labs/zigrt/internal/pack"
 	"github.com/chinny-labs/zigrt/internal/service"
 	"github.com/chinny-labs/zigrt/internal/sim"
 	"github.com/chinny-labs/zigrt/internal/store"
@@ -21,6 +21,15 @@ import (
 )
 
 // HardestPack loads the 20-topic prototype pack from content/testdata.
+//
+//go:embed testdata/sample-2026.11.1.zip
+var sampleZip []byte
+
+// SamplePack is the 30-topic sample pack (curriculum 2026.11.1), frozen as
+// test data so the engine's long simulations (mastery in 90 days, every
+// topic reached in 60) keep testing the engine as the real curriculum grows.
+func SamplePack() (*content.Pack, error) { return content.LoadFile(sampleZip) }
+
 func HardestPack(t *testing.T) *content.Pack {
 	t.Helper()
 	_, file, _, _ := runtime.Caller(0)
@@ -339,7 +348,7 @@ func testSimulatedWeeks(t *testing.T, open Opener) {
 // testSampleWeeks does the same with the sample pack the app embeds: 30
 // topics from kindergarten to grade 5.
 func testSampleWeeks(t *testing.T, open Opener) {
-	p, err := pack.Embedded()
+	p, err := SamplePack()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -478,7 +487,7 @@ func testDemo(t *testing.T, open Opener) {
 	ctx := context.Background()
 	st := open(t)
 	svc := service.New(st, nil)
-	p, err := pack.Embedded()
+	p, err := SamplePack()
 	must(t, err)
 	svc.SetPack(p)
 	end := time.Date(2026, 11, 17, 12, 0, 0, 0, time.UTC)
@@ -515,7 +524,7 @@ func testDemo(t *testing.T, open Opener) {
 func testPlacementFlow(t *testing.T, open Opener) {
 	ctx := context.Background()
 	f := NewFixture(t, open)
-	p, err := pack.Embedded()
+	p, err := SamplePack()
 	must(t, err)
 	f.withPack(p)
 	f.Svc.Learn.OfferPlacement = true
@@ -603,7 +612,7 @@ func testPlacementFlow(t *testing.T, open Opener) {
 func testQuizFlow(t *testing.T, open Opener) {
 	ctx := context.Background()
 	f := NewFixture(t, open)
-	p, err := pack.Embedded()
+	p, err := SamplePack()
 	must(t, err)
 	f.withPack(p)
 	f.Svc.Learn.OfferQuizzes = true
@@ -673,7 +682,7 @@ func mustLoc(t *testing.T, name string) *time.Location {
 // knows grade 2 is placed there and no higher; review load stays bounded;
 // no topic is left unreached; every review lands on schedule.
 func testProfiles(t *testing.T, open Opener) {
-	p, err := pack.Embedded()
+	p, err := SamplePack()
 	must(t, err)
 	for _, prof := range sim.Profiles {
 		t.Run(prof.Name, func(t *testing.T) {

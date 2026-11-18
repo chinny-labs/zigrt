@@ -1,6 +1,6 @@
 # The content pack this build embeds (ADR 12). Rewrite it with
 # `just pack-update <version>`, which downloads the release asset and checks it.
-version 2026.11.1
-file zigrt-k5-2026.11.1.zip
-url https://github.com/chinny-labs/zigrt-curriculum/releases/download/2026.11.1/zigrt-k5-2026.11.1.zip
-sha256 bc3d5497a0af630a69869f5afcda5571887b7332af6f4e604672420d870f51b5
+version 2026.11.2
+file zigrt-k5-2026.11.2.zip
+url https://github.com/chinny-labs/zigrt-curriculum/releases/download/2026.11.2/zigrt-k5-2026.11.2.zip
+sha256 dd6089079b2336c80abcc9b5f200ac278eaecce037f2b4a5b7681445fb4aac9c
