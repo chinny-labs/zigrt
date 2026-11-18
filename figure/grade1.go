@@ -60,6 +60,7 @@ func (d *drawer) baseTen(a Args) error {
 		x += float64((o+4)/5) * (u + 7)
 	}
 	d.w, d.h = x+4, 10*u+16
+	d.widen(240) // a few rods would otherwise fill the screen's height
 	return nil
 }
 
